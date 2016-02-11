@@ -2,10 +2,8 @@
 #include <allegro.h>
 #include "game.h"
 
-// Max number of states
 #define MAX_STATES  8
 
-// Stack of states
 static struct State* states[MAX_STATES];
 static int current_state = 0;
 
