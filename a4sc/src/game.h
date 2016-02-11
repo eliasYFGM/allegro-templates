@@ -16,6 +16,9 @@ struct Game_Config
     int audio;
 };
 
+// FPS holder
+volatile int fps;
+
 // Background color
 int bg_color;
 

@@ -22,6 +22,15 @@ static void ticker()
 }
 END_OF_FUNCTION(ticker)
 
+static volatile int frame_counter = 0;
+
+static void update_fps()
+{
+    fps = frame_counter;
+    frame_counter = 0;
+}
+END_OF_FUNCTION(update_fps)
+
 // The game will keep running until is set to '0' (done through game_over() )
 static volatile int is_running;
 
@@ -87,11 +96,16 @@ int game_init(struct Game_Config* config, const char* title)
     // Background color
     bg_color = makecol(192, 192, 192);
 
+    // Main game timer
     LOCK_VARIABLE(ticks);
     LOCK_FUNCTION(ticker);
-
-    // Create main timer
     install_int_ex(ticker, BPS_TO_TIMER(config->framerate));
+
+    // FPS timer
+    LOCK_VARIABLE(fps);
+    LOCK_VARIABLE(frame_counter);
+    LOCK_FUNCTION(update_fps);
+    install_int(update_fps, 1000);
 
 #ifndef ALLEGRO_DOS
     set_close_button_callback(close_button_handler);
@@ -144,6 +158,8 @@ void game_run()
                 show_mouse(backbuffer);
                 blit(backbuffer, screen, 0, 0, 0, 0, SCREEN_W, SCREEN_H);
                 show_mouse(NULL);
+
+                ++frame_counter;
             }
         }
 #ifndef ALLEGRO_DOS
