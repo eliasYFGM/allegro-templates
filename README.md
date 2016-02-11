@@ -1,5 +1,5 @@
 # Allegro Game Templates
-A4 and A5 templates for game development.
+I originally made these templates as part of my own projects. A Code::Blocks project file is included in every template.
 
 a(4/5): Basic template that provides init, update, draw and shutdown functions in the same "main" file.
 
