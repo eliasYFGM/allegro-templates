@@ -1,43 +1,32 @@
 #include "game.h"
 #include "gamestate.h"
 
-// Window title
-#define AL_WINDOW_TITLE     "Allegro application"
-
-// Display resolution
-#define AL_SCREEN_WIDTH     640
-#define AL_SCREEN_HEIGHT    480
-
-// Framerate (FPS)
-#define AL_REFRESH_RATE     40
-
-// Color depth
-#define AL_COLOR_DEPTH      8
-
-// Whether to use fullscreen
-static int AL_USE_FULLSCREEN = 0;
-
-// Whether to use audio module
-static int AL_WANT_AUDIO = 0;
-
-//---------------------------------------------------
-// The main procedure
-//---------------------------------------------------
 int main(int argc, char* argv[])
 {
     struct Game_Config config =
     {
-        AL_SCREEN_WIDTH,
-        AL_SCREEN_HEIGHT,
-        AL_USE_FULLSCREEN,
-        AL_REFRESH_RATE,
-        AL_COLOR_DEPTH,
-        AL_WANT_AUDIO
+        // Window title
+        "Allegro application",
+        // Game resolution
+        640, 480,
+        // Refresh rate (or FPS)
+        40,
+        // Color depth (8, 15, 16, 24, 32)
+        8,
+        // Want full-screen?
+        0,
+        // Want audio module?
+        0
     };
 
-    if (game_init(&config, AL_WINDOW_TITLE))
+    if (game_init(config))
     {
+        // Starting state
+        // Second argument is a pointer that will be passed to the init() function
+        // of the state (a void* pointer)
         change_state(GAME_STATE, NULL);
+
+        // Run the game
         game_run();
     }
 

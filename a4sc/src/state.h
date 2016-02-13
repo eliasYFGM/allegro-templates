@@ -3,7 +3,7 @@
 
 #include <allegro.h>
 
-// Main State structure
+// Main state structure
 struct State
 {
     void (*init)(void*);

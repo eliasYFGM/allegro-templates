@@ -17,18 +17,19 @@ ALLEGRO_FONT* font;
 
 struct Game_Config
 {
+    char title[100];
     int width;
     int height;
-    int fullscreen;
     int framerate;
+    int fullscreen;
     int audio;
 };
 
-// Current background color
+// Background color
 ALLEGRO_COLOR bg_color;
 
 // Main game engine routines
-int game_init(struct Game_Config* config, const char* title);
+int game_init(struct Game_Config config);
 void game_run();
 void game_over();
 

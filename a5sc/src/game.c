@@ -7,21 +7,27 @@
 
 #include "game.h"
 
-// Max number of states for the stack
+struct Game
+{
+    ALLEGRO_DISPLAY* display;
+    ALLEGRO_BITMAP* buffer;
+    ALLEGRO_TIMER* timer;
+    ALLEGRO_EVENT_QUEUE* event_queue;
+    int initialized;
+    int is_running;
+}
+game =
+{
+    NULL, NULL, NULL, NULL,
+    0, 0
+};
+
 #define MAX_STATES  8
 
-// Stack of states
 static struct State* states[MAX_STATES];
-static int current_state = 0;
+static int current_s = 0;
 
-static ALLEGRO_DISPLAY* display;
-static ALLEGRO_BITMAP* buffer;
-static ALLEGRO_TIMER* timer;
-static ALLEGRO_EVENT_QUEUE* event_queue;
-
-static int initialized = 0, is_running = 0;
-
-// Updates the aspect ratio when going fullscreen or windowed
+// Updates the aspect ratio when going full-screen or windowed
 static void aspect_ratio_transform(ALLEGRO_DISPLAY* display)
 {
     int window_w = al_get_display_width(display);
@@ -42,11 +48,11 @@ static void aspect_ratio_transform(ALLEGRO_DISPLAY* display)
     al_use_transform(&trans);
 }
 
-int game_init(struct Game_Config* config, const char* title)
+int game_init(struct Game_Config config)
 {
     int i;
 
-    if (initialized)
+    if (game.initialized)
     {
         puts("WARNING: Game already initialized");
         return 1;
@@ -54,7 +60,7 @@ int game_init(struct Game_Config* config, const char* title)
 
     for (i=0; i<MAX_STATES; ++i)
     {
-        states[current_state] = NULL;
+        states[current_s] = NULL;
     }
 
     // Initialize Allegro and stuff
@@ -72,7 +78,7 @@ int game_init(struct Game_Config* config, const char* title)
         return 0;
     }
 
-    if (config->audio)
+    if (config.audio)
     {
         if (!al_install_audio())
         {
@@ -96,57 +102,57 @@ int game_init(struct Game_Config* config, const char* title)
 
     al_init_font_addon();
 
-    if (config->fullscreen)
+    if (config.fullscreen)
     {
         al_set_new_display_flags(ALLEGRO_FULLSCREEN_WINDOW);
     }
 
-    SCREEN_W = config->width;
-    SCREEN_H = config->height;
+    SCREEN_W = config.width;
+    SCREEN_H = config.height;
 
     // Create our display
-    display = al_create_display(SCREEN_W, SCREEN_H);
+    game.display = al_create_display(SCREEN_W, SCREEN_H);
 
-    if (!display)
+    if (!game.display)
     {
         puts("ERROR: Could not create a display window...");
         return 0;
     }
 
     // Set the window/display title
-    al_set_window_title(display, title);
+    al_set_window_title(game.display, config.title);
+
+    // Use built-in Allegro font
+    font = al_create_builtin_font();
 
     // Use linear filtering for scaling game screen
     al_add_new_bitmap_flag(ALLEGRO_MAG_LINEAR);
 
     // Back-buffer
-    buffer = al_create_bitmap(SCREEN_W, SCREEN_H);
+    game.buffer = al_create_bitmap(SCREEN_W, SCREEN_H);
 
     // Update the aspect ratio
-    aspect_ratio_transform(display);
-
-    // Use built-in Allegro font
-    font = al_create_builtin_font();
+    aspect_ratio_transform(game.display);
 
     // Background color
     bg_color = al_map_rgb(192, 192, 192);
 
     // Create our timer (FPS handler)
-    timer = al_create_timer(1.0 / config->framerate);
+    game.timer = al_create_timer(1.0 / config.framerate);
 
     // Create our event queue
-    event_queue = al_create_event_queue();
+    game.event_queue = al_create_event_queue();
 
     // We need to tell Allegro which events we'll use
-    al_register_event_source(event_queue, al_get_display_event_source(display));
-    al_register_event_source(event_queue, al_get_keyboard_event_source());
-    al_register_event_source(event_queue, al_get_mouse_event_source());
-    al_register_event_source(event_queue, al_get_timer_event_source(timer));
+    al_register_event_source(game.event_queue, al_get_display_event_source(game.display));
+    al_register_event_source(game.event_queue, al_get_keyboard_event_source());
+    al_register_event_source(game.event_queue, al_get_mouse_event_source());
+    al_register_event_source(game.event_queue, al_get_timer_event_source(game.timer));
 
-    al_start_timer(timer);
+    al_start_timer(game.timer);
 
-    initialized = 1;
-    is_running = 1;
+    game.initialized = 1;
+    game.is_running = 1;
 
     return 1;
 }
@@ -156,18 +162,18 @@ void game_run()
     int i, redraw = 0;
 
     // Main game loop
-    while (is_running)
+    while (game.is_running)
     {
         ALLEGRO_EVENT event;
-        al_wait_for_event(event_queue, &event);
+        al_wait_for_event(game.event_queue, &event);
 
         // Event processing
-        states[current_state]->events(&event);
+        states[current_s]->events(&event);
 
         // If the close button was pressed...
         if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
         {
-            is_running = 0;
+            game.is_running = 0;
             break;
         }
         else if (event.type == ALLEGRO_EVENT_KEY_DOWN)
@@ -175,7 +181,7 @@ void game_run()
             // Escape key will end the game
             if (event.keyboard.keycode == ALLEGRO_KEY_ESCAPE)
             {
-                is_running = 0;
+                game.is_running = 0;
                 break;
             }
 
@@ -183,37 +189,37 @@ void game_run()
             // Inspired by Game Maker.
             if (event.keyboard.keycode == ALLEGRO_KEY_F4)
             {
-                if (al_get_display_flags(display) & ALLEGRO_FULLSCREEN_WINDOW)
+                if (al_get_display_flags(game.display) & ALLEGRO_FULLSCREEN_WINDOW)
                 {
-                    al_toggle_display_flag(display, ALLEGRO_FULLSCREEN_WINDOW, 0);
+                    al_toggle_display_flag(game.display, ALLEGRO_FULLSCREEN_WINDOW, 0);
                 }
                 else
                 {
-                    al_toggle_display_flag(display, ALLEGRO_FULLSCREEN_WINDOW, 1);
+                    al_toggle_display_flag(game.display, ALLEGRO_FULLSCREEN_WINDOW, 1);
                 }
 
-                aspect_ratio_transform(display);
+                aspect_ratio_transform(game.display);
             }
         }
         else if (event.type == ALLEGRO_EVENT_TIMER)
         {
-            states[current_state]->update();
+            states[current_s]->update();
             redraw = 1;
         }
 
-        if (redraw && al_event_queue_is_empty(event_queue))
+        if (redraw && al_event_queue_is_empty(game.event_queue))
         {
             redraw = 0;
 
-            al_set_target_bitmap(buffer);
+            al_set_target_bitmap(game.buffer);
 
             al_clear_to_color(bg_color);
 
-            states[current_state]->draw();
+            states[current_s]->draw();
 
-            al_set_target_backbuffer(display);
+            al_set_target_backbuffer(game.display);
 
-            al_draw_bitmap(buffer, 0, 0, 0);
+            al_draw_bitmap(game.buffer, 0, 0, 0);
 
             al_flip_display();
         }
@@ -227,57 +233,57 @@ void game_run()
         }
     }
 
-    al_destroy_display(display);
-    al_destroy_bitmap(buffer);
-    al_destroy_timer(timer);
-    al_destroy_event_queue(event_queue);
+    al_destroy_display(game.display);
+    al_destroy_bitmap(game.buffer);
+    al_destroy_timer(game.timer);
+    al_destroy_event_queue(game.event_queue);
     al_destroy_font(font);
 }
 
 void game_over()
 {
-    is_running = 0;
+    game.is_running = 0;
 }
 
 void change_state(struct State* state, void* param)
 {
-    if (states[current_state] != NULL)
+    if (states[current_s] != NULL)
     {
-        states[current_state]->end();
+        states[current_s]->end();
     }
 
-    states[current_state] = state;
+    states[current_s] = state;
     state->init(param);
 }
 
 void push_state(struct State* state, void* param)
 {
-    if (current_state < MAX_STATES)
+    if (current_s < MAX_STATES)
     {
-        if (states[current_state] != NULL)
+        if (states[current_s] != NULL)
         {
-            states[current_state]->pause();
+            states[current_s]->pause();
         }
 
-        states[++current_state] = state;
+        states[++current_s] = state;
         state->init(param);
     }
     else
     {
-        puts("WARNING: Can't add new state (current_state = MAX_STATES)");
+        puts("WARNING: Can't add new state (current_s = MAX_STATES)");
     }
 }
 
 void pop_state()
 {
-    if (current_state > 0)
+    if (current_s > 0)
     {
-        states[current_state]->end();
-        states[current_state] = NULL;
-        states[--current_state]->resume();
+        states[current_s]->end();
+        states[current_s] = NULL;
+        states[--current_s]->resume();
     }
     else
     {
-        puts("WARNING: Can't remove any more states (current_state = 0)");
+        puts("WARNING: Can't remove any more states (current_s = 0)");
     }
 }

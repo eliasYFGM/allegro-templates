@@ -30,7 +30,6 @@ static void state_draw(BITMAP* bmp)
 static struct State state;
 static int is_new = TRUE;
 
-// Returns a pointer to the state
 struct State* get_game_state()
 {
     if (is_new)

@@ -2,18 +2,22 @@
 #include <allegro.h>
 #include "game.h"
 
+struct Game
+{
+    BITMAP* buffer;
+    int initialized;
+}
+game =
+{
+    NULL,
+    0
+};
+
 #define MAX_STATES  8
 
 static struct State* states[MAX_STATES];
-static int current_state = 0;
+static int current_s = 0;
 
-// Back-buffer where the main drawing takes place
-static BITMAP* backbuffer;
-
-// Just to check whether the game was already initialized
-static int initialized = FALSE;
-
-// Each tick = new frame
 static volatile int ticks = 0;
 
 static void ticker()
@@ -31,23 +35,22 @@ static void update_fps()
 }
 END_OF_FUNCTION(update_fps)
 
-// The game will keep running until is set to '0' (done through game_over() )
 static volatile int is_running;
 
 #ifndef ALLEGRO_DOS
 static void close_button_handler()
 {
-    is_running = FALSE;
+    is_running = 0;
 }
 END_OF_FUNCTION(close_button_handler)
 #endif // ALLEGRO_DOS
 
 // Main game initialization
-int game_init(struct Game_Config* config, const char* title)
+int game_init(struct Game_Config config)
 {
     int i;
 
-    if (initialized)
+    if (game.initialized)
     {
         puts("WARNING: Game already initialized");
         return 0;
@@ -58,26 +61,26 @@ int game_init(struct Game_Config* config, const char* title)
         states[i] = NULL;
     }
 
-    // Initialize Allegro
     allegro_init();
-
-    // Install modules
     install_keyboard();
     install_mouse();
     install_timer();
 
-    if (install_sound(DIGI_AUTODETECT, MIDI_AUTODETECT, 0))
+    if (config.audio)
     {
-        puts("WARNING: Could not initialize audio");
+        if (install_sound(DIGI_AUTODETECT, MIDI_NONE, 0))
+        {
+            puts("WARNING: Could not initialize audio");
+        }
     }
 
-    set_color_depth(config->depth);
+    set_color_depth(config.depth);
 
 #ifdef ALLEGRO_DOS
-    if (set_gfx_mode(GFX_AUTODETECT, config->width, config->height, 0, 0))
+    if (set_gfx_mode(GFX_AUTODETECT, config.width, config.height, 0, 0))
 #else
-    if (set_gfx_mode(config->fullscreen ? GFX_AUTODETECT_FULLSCREEN : GFX_AUTODETECT_WINDOWED,
-        config->width, config->height, 0, 0))
+    if (set_gfx_mode(config.fullscreen ? GFX_AUTODETECT_FULLSCREEN : GFX_AUTODETECT_WINDOWED,
+        config.width, config.height, 0, 0))
 #endif
     {
         set_gfx_mode(GFX_TEXT, 0, 0, 0, 0);
@@ -86,20 +89,16 @@ int game_init(struct Game_Config* config, const char* title)
     }
 
 #ifndef ALLEGRO_DOS
-    // Set the window/display title
-    set_window_title(title);
+    set_window_title(config.title);
 #endif // ALLEGRO_DOS
 
-    // Internal game screen
-    backbuffer = create_bitmap(SCREEN_W, SCREEN_H);
-
-    // Background color
+    game.buffer = create_bitmap(SCREEN_W, SCREEN_H);
     bg_color = makecol(192, 192, 192);
 
     // Main game timer
     LOCK_VARIABLE(ticks);
     LOCK_FUNCTION(ticker);
-    install_int_ex(ticker, BPS_TO_TIMER(config->framerate));
+    install_int_ex(ticker, BPS_TO_TIMER(config.framerate));
 
     // FPS timer
     LOCK_VARIABLE(fps);
@@ -111,8 +110,8 @@ int game_init(struct Game_Config* config, const char* title)
     set_close_button_callback(close_button_handler);
 #endif // ALLEGRO_DOS
 
-    is_running = TRUE;
-    initialized = TRUE;
+    is_running = 1;
+    game.initialized = 1;
 
     return 1;
 }
@@ -120,15 +119,15 @@ int game_init(struct Game_Config* config, const char* title)
 // Game loop
 void game_run()
 {
-    int i, redraw = FALSE;
+    int i, redraw = 0;
 
-    if (!states[current_state])
+    if (!states[current_s])
     {
         puts("ERROR: change_state was not called");
         return;
     }
 
-    // This is the main game loop
+    // Game loop
     while (is_running)
     {
         if (ticks)
@@ -139,24 +138,24 @@ void game_run()
 
                 if (key[KEY_ESC])
                 {
-                    is_running = FALSE;
+                    is_running = 0;
                     break;
                 }
 
-                states[current_state]->update();
-                redraw = TRUE;
+                states[current_s]->update();
+                redraw = 1;
             }
 
             if (is_running && redraw)
             {
-                redraw = FALSE;
+                redraw = 0;
 
-                clear_to_color(backbuffer, bg_color);
+                clear_to_color(game.buffer, bg_color);
 
-                states[current_state]->draw(backbuffer);
+                states[current_s]->draw(game.buffer);
 
-                show_mouse(backbuffer);
-                blit(backbuffer, screen, 0, 0, 0, 0, SCREEN_W, SCREEN_H);
+                show_mouse(game.buffer);
+                blit(game.buffer, screen, 0, 0, 0, 0, SCREEN_W, SCREEN_H);
                 show_mouse(NULL);
 
                 ++frame_counter;
@@ -178,57 +177,57 @@ void game_run()
         }
     }
 
-    destroy_bitmap(backbuffer);
+    destroy_bitmap(game.buffer);
 }
 
 // Ends the game
 void game_over()
 {
-    is_running = FALSE;
+    is_running = 0;
 }
 
 // Changes the state directly to another
 void change_state(struct State* state, void* param)
 {
-    if (states[current_state] != NULL)
+    if (states[current_s] != NULL)
     {
-        states[current_state]->end();
+        states[current_s]->end();
     }
 
-    states[current_state] = state;
+    states[current_s] = state;
     state->init(param);
 }
 
 // Pushes a new state onto the stack (previous one is 'paused')
 void push_state(struct State* state, void* param)
 {
-    if (current_state < MAX_STATES)
+    if (current_s < MAX_STATES)
     {
-        if (states[current_state] != NULL)
+        if (states[current_s] != NULL)
         {
-            states[current_state]->pause();
+            states[current_s]->pause();
         }
 
-        states[++current_state] = state;
+        states[++current_s] = state;
         state->init(param);
     }
     else
     {
-        puts("WARNING: Can't add new state (current_state = MAX_STATES)");
+        puts("WARNING: Can't add new state (current_s = MAX_STATES)");
     }
 }
 
 // Removes the last state added from the stack
 void pop_state()
 {
-    if (current_state > 0)
+    if (current_s > 0)
     {
-        states[current_state]->end();
-        states[current_state] = NULL;
-        states[--current_state]->resume();
+        states[current_s]->end();
+        states[current_s] = NULL;
+        states[--current_s]->resume();
     }
     else
     {
-        puts("WARNING: Can't remove any more states (current_state = 0)");
+        puts("WARNING: Can't remove any more states (current_s = 0)");
     }
 }
