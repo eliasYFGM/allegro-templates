@@ -1,7 +1,7 @@
-# Allegro Game Templates
+# Allegro Project Templates
 I originally made these templates as part of my own projects. A Code::Blocks project file is included in every template.
 
-These were made under Linux, but they support mingw32 and DOS (A4 only) targets. For a quick installation you can just git-pull into your default CodeBlocks' "UserTemplates" folder.
+These were made under Linux, but they support mingw32 and DOS targets (Allegro 4 only). For a quick installation you can just git-pull into your default CodeBlocks "UserTemplates" folder.
 
 ## Names
 
