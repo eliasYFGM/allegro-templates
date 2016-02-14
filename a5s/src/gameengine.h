@@ -25,14 +25,10 @@ class Game_Engine
 
 public:
 // Main game engine routines
-    bool init(int w, int h, bool fullscreen, int rate, bool audio, const char* title = "Allegro application");
+    bool init(const char* title, int w, int h, int rate, bool fullscreen, bool audio);
     void run();
-    void end();
 
-// Current background color
     ALLEGRO_COLOR bg_color;
-
-// Is the game actually running?
     bool is_running;
 
 // State routines

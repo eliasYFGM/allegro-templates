@@ -9,20 +9,20 @@
 #define C_BLACK  makecol(0, 0, 0)
 #define C_WHITE  makecol(255, 255, 255)
 
+extern volatile int fps;
+
 class Game_Engine
 {
-// Internal game screen
     BITMAP* buffer;
 
 public:
 // Main game engine routines
-    bool init(const char* title, bool fullscreen, int w, int h, int fps, int depth);
+    bool init(const char* title, int w, int h, int rate, int depth, bool fullscreen, bool audio);
     void run();
 
 // Background color
     int bg_color;
 
-// Is the game actually running?
 // Declared as 'static' to let some special functions change it
     static bool is_running;
 

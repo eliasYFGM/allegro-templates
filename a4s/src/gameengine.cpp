@@ -12,6 +12,15 @@ static void ticker()
 }
 END_OF_FUNCTION(ticker)
 
+volatile int fps = 0, frame_counter = 0;
+
+static void update_fps()
+{
+    fps = frame_counter;
+    frame_counter = 0;
+}
+END_OF_FUNCTION(update_fps)
+
 #ifndef ALLEGRO_DOS
 static void close_button_handler()
 {
@@ -20,19 +29,20 @@ static void close_button_handler()
 END_OF_FUNCTION(close_button_handler)
 #endif // ALLEGRO_DOS
 
-bool Game_Engine::init(const char* title, bool fullscreen, int w, int h, int fps, int depth)
+bool Game_Engine::init(const char* title, int w, int h, int rate, int depth, bool fullscreen, bool audio)
 {
-    // Init Allegro
     allegro_init();
-
-    // Install modules
     install_keyboard();
     install_mouse();
     install_timer();
 
-    if (install_sound(DIGI_AUTODETECT, MIDI_AUTODETECT, 0))
+    if (audio)
     {
-        std::cout << "Could not initialize audio" << std::endl;
+        if (install_sound(DIGI_AUTODETECT, MIDI_NONE, 0))
+        {
+            std::cout << "Could not initialize audio" << std::endl;
+            return false;
+        }
     }
 
     set_color_depth(depth);
@@ -44,26 +54,25 @@ bool Game_Engine::init(const char* title, bool fullscreen, int w, int h, int fps
 #endif
     {
         set_gfx_mode(GFX_TEXT, 0, 0, 0, 0);
-        allegro_message("Could not init graphics mode:\n%s", allegro_error);
+        allegro_message("Could not initialize GFX:\n%s", allegro_error);
         return false;
     }
 
 #ifndef ALLEGRO_DOS
-    // Set the window/display title
     set_window_title(title);
 #endif // ALLEGRO_DOS
 
-    // Internal game screen
     buffer = create_bitmap(w, h);
-
-    // Background color
     bg_color = makecol(192, 192, 192);
 
     LOCK_VARIABLE(ticks);
     LOCK_FUNCTION(ticker);
+    install_int_ex(ticker, BPS_TO_TIMER(rate));
 
-    // Create main timer
-    install_int_ex(ticker, BPS_TO_TIMER(fps));
+    LOCK_VARIABLE(fps);
+    LOCK_VARIABLE(frame_counter);
+    LOCK_FUNCTION(update_fps);
+    install_int(update_fps, 1000);
 
 #ifndef ALLEGRO_DOS
     set_close_button_callback(close_button_handler);
@@ -78,7 +87,7 @@ void Game_Engine::run()
 {
     bool redraw = false;
 
-    // This is the main game loop
+    // Game loop
     while (is_running)
     {
         if (ticks)
@@ -107,10 +116,9 @@ void Game_Engine::run()
                 state_list.top()->draw(this, buffer);
 
                 show_mouse(buffer);
-
                 blit(buffer, screen, 0, 0, 0, 0, SCREEN_W, SCREEN_H);
 
-                show_mouse(0);
+                ++frame_counter;
             }
         }
 #ifndef ALLEGRO_DOS

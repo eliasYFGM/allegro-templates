@@ -30,9 +30,8 @@ int SCREEN_W = 0;
 int SCREEN_H = 0;
 ALLEGRO_FONT* font = 0;
 
-bool Game_Engine::init(int w, int h, bool fullscreen, int rate, bool audio, const char* title)
+bool Game_Engine::init(const char* title, int w, int h, int rate, bool fullscreen, bool audio)
 {
-    // Init Allegro and stuff
     al_init();
 
     if (!al_install_keyboard())
@@ -62,7 +61,6 @@ bool Game_Engine::init(int w, int h, bool fullscreen, int rate, bool audio, cons
         }
     }
 
-    // Addons
     if (!al_init_image_addon())
     {
         std::cout << "Could not initialize image addon...\n";
@@ -78,8 +76,6 @@ bool Game_Engine::init(int w, int h, bool fullscreen, int rate, bool audio, cons
 
     SCREEN_W = w;
     SCREEN_H = h;
-
-    // Create our display
     display = al_create_display(SCREEN_W, SCREEN_H);
 
     if (!display)
@@ -88,31 +84,21 @@ bool Game_Engine::init(int w, int h, bool fullscreen, int rate, bool audio, cons
         return false;
     }
 
-    // Set the window/display title
     al_set_window_title(display, title);
 
-    // Use linear filtering for scaling game screen
-    al_add_new_bitmap_flag(ALLEGRO_MAG_LINEAR);
+    // Use built-in Allegro font
+    font = al_create_builtin_font();
 
-    // Backbuffer
+    al_add_new_bitmap_flag(ALLEGRO_MAG_LINEAR);
     buffer = al_create_bitmap(SCREEN_W, SCREEN_H);
 
     // Update the aspect ratio
     aspect_ratio_transform(display);
 
-    // Use built-in Allegro font
-    font = al_create_builtin_font();
-
-    // Background color
     bg_color = al_map_rgb(192, 192, 192);
-
-    // Create our timer (FPS handler)
     timer = al_create_timer(1.0 / rate);
-
-    // Create our event queue
     event_queue = al_create_event_queue();
 
-    // We need to tell Allegro which events we'll use
     al_register_event_source(event_queue, al_get_display_event_source(display));
     al_register_event_source(event_queue, al_get_keyboard_event_source());
     al_register_event_source(event_queue, al_get_mouse_event_source());
@@ -190,10 +176,7 @@ void Game_Engine::run()
             al_flip_display();
         }
     }
-}
 
-void Game_Engine::end()
-{
     while (!state_list.empty())
     {
         delete state_list.top();
