@@ -1,12 +1,3 @@
-/*******************************************************************
- *  Game template for Allegro 5.x
- *  Copyright (C) 2012 Juan Orozco
- *------------------------------------------------------------------
- *  This program is free for any use, commercial or not, open-source
- *  or not. That is, you can use this code in your project without
- *  any restriction(s).
- *******************************************************************/
-
 #include <iostream>
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_image.h>
@@ -17,7 +8,7 @@
 #define C_BLACK  al_map_rgb(0, 0, 0)
 #define C_WHITE  al_map_rgb(255, 255, 255)
 
-// Internal resolution only
+// Internal resolution
 #define SCREEN_W    640
 #define SCREEN_H    480
 
