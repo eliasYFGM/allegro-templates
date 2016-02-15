@@ -2,8 +2,7 @@
 #include <allegro.h>
 #include "game.h"
 
-struct Game
-{
+struct {
     BITMAP* buffer;
     int initialized;
 }

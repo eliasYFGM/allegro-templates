@@ -7,8 +7,7 @@
 
 #include "game.h"
 
-struct Game
-{
+struct {
     ALLEGRO_DISPLAY* display;
     ALLEGRO_BITMAP* buffer;
     ALLEGRO_TIMER* timer;
