@@ -28,7 +28,7 @@ static void state_draw(BITMAP* bmp)
 }
 
 static struct State state;
-static int is_new = TRUE;
+static int is_new = 1;
 
 struct State* get_game_state()
 {
@@ -41,7 +41,7 @@ struct State* get_game_state()
         state.update = &state_update;
         state.draw = &state_draw;
 
-        is_new = FALSE;
+        is_new = 0;
     }
 
     return &state;

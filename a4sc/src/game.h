@@ -8,7 +8,7 @@
 
 struct Game_Config
 {
-    char title[100];
+    char *title;
     int width;
     int height;
     int framerate;
