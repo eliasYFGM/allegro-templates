@@ -30,22 +30,17 @@ static void state_draw()
 {
 }
 
-static struct State state;
-static int is_new = 1;
-
 struct State* get_game_state()
 {
-    if (is_new)
+    static struct State state =
     {
-        state.init = &state_init;
-        state.end = &state_end;
-        state.pause = &state_pause;
-        state.resume = &state_resume;
-        state.events = &state_events;
-        state.update = &state_update;
-        state.draw = &state_draw;
-
-        is_new = 0;
+        state_init,
+        state_end,
+        state_pause,
+        state_resume,
+        state_events,
+        state_update,
+        state_draw
     }
 
     return &state;
