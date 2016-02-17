@@ -37,7 +37,7 @@ struct State* get_game_state()
         state_resume,
         state_update,
         state_draw
-    }
+    };
 
     return &state;
 }
