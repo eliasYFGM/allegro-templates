@@ -41,7 +41,7 @@ struct State* get_game_state()
         state_events,
         state_update,
         state_draw
-    }
+    };
 
     return &state;
 }
