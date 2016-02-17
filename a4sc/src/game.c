@@ -200,7 +200,7 @@ void change_state(struct State* state, void* param)
 // Pushes a new state onto the stack (previous one is 'paused')
 void push_state(struct State* state, void* param)
 {
-    if (current_s < MAX_STATES)
+    if (current_s < (MAX_STATES - 1))
     {
         if (states[current_s] != NULL)
         {
