@@ -21,8 +21,8 @@ int main(int argc, char* argv[])
 
     if (game_init(config))
     {
-        // This is the starting state
-        // The second argument is a pointer that will be passed to the init() function
+        // Starting state
+        // Second argument is a pointer that will be passed to the init() function
         // of the state (a void*)
         change_state(GAME_STATE, NULL);
 
