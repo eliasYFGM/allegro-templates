@@ -21,8 +21,10 @@ game =
     0, 0
 };
 
-#define MAX_STATES  8
+ALLEGRO_FONT* font;
+ALLEGRO_COLOR bg_color;
 
+#define MAX_STATES  8
 static struct State* states[MAX_STATES];
 static int current_s = 0;
 
@@ -47,7 +49,7 @@ static void aspect_ratio_transform(ALLEGRO_DISPLAY* display)
     al_use_transform(&trans);
 }
 
-int game_init(struct Game_Config config)
+int game_init(struct Game_Config* config)
 {
     int i;
 
@@ -77,7 +79,7 @@ int game_init(struct Game_Config config)
         return 0;
     }
 
-    if (config.audio)
+    if (config->audio)
     {
         if (!al_install_audio())
         {
@@ -101,16 +103,13 @@ int game_init(struct Game_Config config)
 
     al_init_font_addon();
 
-    if (config.fullscreen)
+    if (config->fullscreen)
     {
         al_set_new_display_flags(ALLEGRO_FULLSCREEN_WINDOW);
     }
 
-    SCREEN_W = config.width;
-    SCREEN_H = config.height;
-
     // Create our display
-    game.display = al_create_display(SCREEN_W, SCREEN_H);
+    game.display = al_create_display(config->width, config->height);
 
     if (!game.display)
     {
@@ -119,7 +118,7 @@ int game_init(struct Game_Config config)
     }
 
     // Set the window/display title
-    al_set_window_title(game.display, config.title);
+    al_set_window_title(game.display, config->title);
 
     // Use built-in Allegro font
     font = al_create_builtin_font();
@@ -137,7 +136,7 @@ int game_init(struct Game_Config config)
     bg_color = al_map_rgb(192, 192, 192);
 
     // Create our timer (FPS handler)
-    game.timer = al_create_timer(1.0 / config.framerate);
+    game.timer = al_create_timer(1.0 / config->framerate);
 
     // Create our event queue
     game.event_queue = al_create_event_queue();
@@ -242,6 +241,16 @@ void game_run()
 void game_over()
 {
     game.is_running = 0;
+}
+
+int get_screen_width()
+{
+    return al_get_display_width(game.display);
+}
+
+int get_screen_height()
+{
+    return al_get_display_height(game.display);
 }
 
 void change_state(struct State* state, void* param)
