@@ -2,6 +2,8 @@
 #include <allegro.h>
 #include "game.h"
 
+#define MAX_STATES  8
+
 struct {
     BITMAP* buffer;
     int initialized;
@@ -12,7 +14,7 @@ game =
     0
 };
 
-#define MAX_STATES  8
+int bg_color;
 
 static struct State* states[MAX_STATES];
 static int current_s = 0;
@@ -25,6 +27,7 @@ static void ticker()
 }
 END_OF_FUNCTION(ticker)
 
+volatile int fps = 0;
 static volatile int frame_counter = 0;
 
 static void update_fps()
@@ -45,7 +48,7 @@ END_OF_FUNCTION(close_button_handler)
 #endif // ALLEGRO_DOS
 
 // Main game initialization
-int game_init(struct Game_Config config)
+int game_init(struct Game_Config* config)
 {
     int i;
 
@@ -65,7 +68,7 @@ int game_init(struct Game_Config config)
     install_mouse();
     install_timer();
 
-    if (config.audio)
+    if (config->audio)
     {
         if (install_sound(DIGI_AUTODETECT, MIDI_NONE, 0))
         {
@@ -73,13 +76,13 @@ int game_init(struct Game_Config config)
         }
     }
 
-    set_color_depth(config.depth);
+    set_color_depth(config->depth);
 
 #ifdef ALLEGRO_DOS
-    if (set_gfx_mode(GFX_AUTODETECT, config.width, config.height, 0, 0))
+    if (set_gfx_mode(GFX_AUTODETECT, config->width, config->height, 0, 0))
 #else
-    if (set_gfx_mode(config.fullscreen ? GFX_AUTODETECT_FULLSCREEN : GFX_AUTODETECT_WINDOWED,
-        config.width, config.height, 0, 0))
+    if (set_gfx_mode(config->fullscreen ? GFX_AUTODETECT_FULLSCREEN : GFX_AUTODETECT_WINDOWED,
+        config->width, config->height, 0, 0))
 #endif
     {
         set_gfx_mode(GFX_TEXT, 0, 0, 0, 0);
@@ -88,7 +91,7 @@ int game_init(struct Game_Config config)
     }
 
 #ifndef ALLEGRO_DOS
-    set_window_title(config.title);
+    set_window_title(config->title);
 #endif // ALLEGRO_DOS
 
     game.buffer = create_bitmap(SCREEN_W, SCREEN_H);
@@ -97,7 +100,7 @@ int game_init(struct Game_Config config)
     // Main game timer
     LOCK_VARIABLE(ticks);
     LOCK_FUNCTION(ticker);
-    install_int_ex(ticker, BPS_TO_TIMER(config.framerate));
+    install_int_ex(ticker, BPS_TO_TIMER(config->framerate));
 
     // FPS timer
     LOCK_VARIABLE(fps);

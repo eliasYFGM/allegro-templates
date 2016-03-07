@@ -17,11 +17,11 @@ struct Game_Config
     int audio;
 };
 
-volatile int fps;
-int bg_color;
+extern volatile int fps;
+extern int bg_color;
 
 // Main functions that control the game
-int game_init(struct Game_Config config);
+int game_init(struct Game_Config* config);
 void game_run();
 void game_over();
 
