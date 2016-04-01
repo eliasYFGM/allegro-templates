@@ -26,13 +26,6 @@ int game_init(struct Game_Config* config);
 void game_run();
 void game_over();
 
-// Get the (current) display size
-int get_screen_width();
-int get_screen_height();
-
-#define SCREEN_W    get_screen_width()
-#define SCREEN_H    get_screen_height()
-
 // State routines
 void change_state(struct State* state, void* param);
 void push_state(struct State* state, void* param);
