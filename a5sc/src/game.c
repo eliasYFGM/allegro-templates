@@ -28,18 +28,21 @@ ALLEGRO_COLOR bg_color;
 static struct State* states[MAX_STATES];
 static int current_s = 0;
 
-// Updates the aspect ratio when going full-screen or windowed
-static void aspect_ratio_transform(ALLEGRO_DISPLAY* display)
-{
-    int window_w = al_get_display_width(display);
-    int window_h = al_get_display_height(display);
+static float orig_w = 0;
+static float orig_h = 0;
 
-    float sw = (window_w / (float) SCREEN_W);
-    float sh = (window_h / (float) SCREEN_H);
+// Updates the aspect ratio when going full-screen or windowed
+static void aspect_ratio_transform()
+{
+    int window_w = al_get_display_width(game.display);
+    int window_h = al_get_display_height(game.display);
+
+    float sw = (window_w / orig_w);
+    float sh = (window_h / orig_h);
     float scale = (sw < sh ? sw : sh);
 
-    float scale_w = (SCREEN_W * scale);
-    float scale_h = (SCREEN_H * scale);
+    float scale_w = (orig_w * scale);
+    float scale_h = (orig_h * scale);
     int scale_x_pos = (window_w - scale_w) / 2;
     int scale_y_pos = (window_h - scale_h) / 2;
 
@@ -127,10 +130,12 @@ int game_init(struct Game_Config* config)
     al_add_new_bitmap_flag(ALLEGRO_MAG_LINEAR);
 
     // Back-buffer
-    game.buffer = al_create_bitmap(SCREEN_W, SCREEN_H);
-
+    game.buffer = al_create_bitmap(config->width, config->height);
+    
+    orig_w = config->width;
+    orig_h = config->height;
     // Update the aspect ratio
-    aspect_ratio_transform(game.display);
+    aspect_ratio_transform();
 
     // Background color
     bg_color = al_map_rgb(192, 192, 192);
@@ -183,8 +188,7 @@ void game_run()
                 break;
             }
 
-            // The F4 key will switch between screen modes (mantaining aspect ratio)
-            // Inspired by Game Maker.
+            // F4 key will switch between screen modes (mantaining aspect ratio)
             if (event.keyboard.keycode == ALLEGRO_KEY_F4)
             {
                 if (al_get_display_flags(game.display) & ALLEGRO_FULLSCREEN_WINDOW)
@@ -196,7 +200,7 @@ void game_run()
                     al_toggle_display_flag(game.display, ALLEGRO_FULLSCREEN_WINDOW, 1);
                 }
 
-                aspect_ratio_transform(game.display);
+                aspect_ratio_transform();
             }
         }
         else if (event.type == ALLEGRO_EVENT_TIMER)
@@ -216,6 +220,8 @@ void game_run()
             states[current_s]->draw();
 
             al_set_target_backbuffer(game.display);
+            
+            al_clear_to_color(C_BLACK);
 
             al_draw_bitmap(game.buffer, 0, 0, 0);
 
