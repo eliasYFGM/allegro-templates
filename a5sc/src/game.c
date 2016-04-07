@@ -4,29 +4,31 @@
 #include <allegro5/allegro_font.h>
 #include <allegro5/allegro_audio.h>
 #include <allegro5/allegro_acodec.h>
-
 #include "game.h"
+#include "state.h"
 
-struct {
+static struct // Game data
+{
     ALLEGRO_DISPLAY* display;
     ALLEGRO_BITMAP* buffer;
     ALLEGRO_TIMER* timer;
     ALLEGRO_EVENT_QUEUE* event_queue;
     int initialized;
     int is_running;
+    ALLEGRO_COLOR bg_color;
 }
 game =
 {
     NULL, NULL, NULL, NULL,
-    0, 0
+    0, 0,
+    { 0, 0, 0, 0 }
 };
 
 ALLEGRO_FONT* font;
-ALLEGRO_COLOR bg_color;
 
 #define MAX_STATES  8
 static struct State* states[MAX_STATES];
-static int current_s = 0;
+static int current_state = 0;
 
 static float orig_w = 0;
 static float orig_h = 0;
@@ -64,7 +66,7 @@ int game_init(struct Game_Config* config)
 
     for (i=0; i<MAX_STATES; ++i)
     {
-        states[current_s] = NULL;
+        states[current_state] = NULL;
     }
 
     // Initialize Allegro and stuff
@@ -131,14 +133,15 @@ int game_init(struct Game_Config* config)
 
     // Back-buffer
     game.buffer = al_create_bitmap(config->width, config->height);
-    
+
     orig_w = config->width;
     orig_h = config->height;
+
     // Update the aspect ratio
     aspect_ratio_transform();
 
     // Background color
-    bg_color = al_map_rgb(192, 192, 192);
+    game.bg_color = al_map_rgb(192, 192, 192);
 
     // Create our timer (FPS handler)
     game.timer = al_create_timer(1.0 / config->framerate);
@@ -171,7 +174,7 @@ void game_run()
         al_wait_for_event(game.event_queue, &event);
 
         // Event processing
-        states[current_s]->events(&event);
+        states[current_state]->events(&event);
 
         // If the close button was pressed...
         if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
@@ -188,7 +191,8 @@ void game_run()
                 break;
             }
 
-            // F4 key will switch between screen modes (mantaining aspect ratio)
+            // The F4 key will switch between screen modes (mantaining aspect ratio)
+            // Inspired by Game Maker.
             if (event.keyboard.keycode == ALLEGRO_KEY_F4)
             {
                 if (al_get_display_flags(game.display) & ALLEGRO_FULLSCREEN_WINDOW)
@@ -205,7 +209,7 @@ void game_run()
         }
         else if (event.type == ALLEGRO_EVENT_TIMER)
         {
-            states[current_s]->update();
+            states[current_state]->update();
             redraw = 1;
         }
 
@@ -215,12 +219,12 @@ void game_run()
 
             al_set_target_bitmap(game.buffer);
 
-            al_clear_to_color(bg_color);
+            al_clear_to_color(game.bg_color);
 
-            states[current_s]->draw();
+            states[current_state]->draw();
 
             al_set_target_backbuffer(game.display);
-            
+
             al_clear_to_color(C_BLACK);
 
             al_draw_bitmap(game.buffer, 0, 0, 0);
@@ -249,55 +253,50 @@ void game_over()
     game.is_running = 0;
 }
 
-int get_screen_width()
+void set_bg_color(ALLEGRO_COLOR color)
 {
-    return al_get_display_width(game.display);
-}
-
-int get_screen_height()
-{
-    return al_get_display_height(game.display);
+    game.bg_color = color;
 }
 
 void change_state(struct State* state, void* param)
 {
-    if (states[current_s] != NULL)
+    if (states[current_state] != NULL)
     {
-        states[current_s]->end();
+        states[current_state]->end();
     }
 
-    states[current_s] = state;
+    states[current_state] = state;
     state->init(param);
 }
 
 void push_state(struct State* state, void* param)
 {
-    if (current_s < (MAX_STATES - 1))
+    if (current_state < (MAX_STATES - 1))
     {
-        if (states[current_s] != NULL)
+        if (states[current_state] != NULL)
         {
-            states[current_s]->pause();
+            states[current_state]->pause();
         }
 
-        states[++current_s] = state;
+        states[++current_state] = state;
         state->init(param);
     }
     else
     {
-        puts("WARNING: Can't add new state (current_s = MAX_STATES)");
+        puts("WARNING: Can't add new state (current_state = MAX_STATES)");
     }
 }
 
 void pop_state()
 {
-    if (current_s > 0)
+    if (current_state > 0)
     {
-        states[current_s]->end();
-        states[current_s] = NULL;
-        states[--current_s]->resume();
+        states[current_state]->end();
+        states[current_state] = NULL;
+        states[--current_state]->resume();
     }
     else
     {
-        puts("WARNING: Can't remove any more states (current_s = 0)");
+        puts("WARNING: Can't remove any more states (current_state = 0)");
     }
 }

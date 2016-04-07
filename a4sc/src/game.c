@@ -1,23 +1,19 @@
 #include <stdio.h>
 #include <allegro.h>
 #include "game.h"
+#include "state.h"
 
-#define MAX_STATES  8
-
-struct {
+static struct // Game data
+{
     BITMAP* buffer;
     int initialized;
+    int bg_color;
 }
 game =
 {
     NULL,
     0
 };
-
-int bg_color;
-
-static struct State* states[MAX_STATES];
-static int current_s = 0;
 
 static volatile int ticks = 0;
 
@@ -46,6 +42,12 @@ static void close_button_handler()
 }
 END_OF_FUNCTION(close_button_handler)
 #endif // ALLEGRO_DOS
+
+#define MAX_STATES  8
+
+// State data
+static struct State* states[MAX_STATES];
+static int current_state = 0;
 
 // Main game initialization
 int game_init(struct Game_Config* config)
@@ -95,7 +97,7 @@ int game_init(struct Game_Config* config)
 #endif // ALLEGRO_DOS
 
     game.buffer = create_bitmap(SCREEN_W, SCREEN_H);
-    bg_color = makecol(192, 192, 192);
+    game.bg_color = makecol(192, 192, 192);
 
     // Main game timer
     LOCK_VARIABLE(ticks);
@@ -123,7 +125,7 @@ void game_run()
 {
     int i, redraw = 0;
 
-    if (!states[current_s])
+    if (!states[current_state])
     {
         puts("ERROR: change_state was not called");
         return;
@@ -144,7 +146,7 @@ void game_run()
                     break;
                 }
 
-                states[current_s]->update();
+                states[current_state]->update();
                 redraw = 1;
             }
 
@@ -152,9 +154,9 @@ void game_run()
             {
                 redraw = 0;
 
-                clear_to_color(game.buffer, bg_color);
+                clear_to_color(game.buffer, game.bg_color);
 
-                states[current_s]->draw(game.buffer);
+                states[current_state]->draw(game.buffer);
 
                 show_mouse(game.buffer);
                 blit(game.buffer, screen, 0, 0, 0, 0, SCREEN_W, SCREEN_H);
@@ -188,48 +190,53 @@ void game_over()
     is_running = 0;
 }
 
+void set_bg_color(int color)
+{
+    game.bg_color = color;
+}
+
 // Changes the state directly to another
 void change_state(struct State* state, void* param)
 {
-    if (states[current_s] != NULL)
+    if (states[current_state] != NULL)
     {
-        states[current_s]->end();
+        states[current_state]->end();
     }
 
-    states[current_s] = state;
+    states[current_state] = state;
     state->init(param);
 }
 
 // Pushes a new state onto the stack (previous one is 'paused')
 void push_state(struct State* state, void* param)
 {
-    if (current_s < (MAX_STATES - 1))
+    if (current_state < (MAX_STATES - 1))
     {
-        if (states[current_s] != NULL)
+        if (states[current_state] != NULL)
         {
-            states[current_s]->pause();
+            states[current_state]->pause();
         }
 
-        states[++current_s] = state;
+        states[++current_state] = state;
         state->init(param);
     }
     else
     {
-        puts("WARNING: Can't add new state (current_s = MAX_STATES)");
+        puts("WARNING: Can't add new state (current_state = MAX_STATES)");
     }
 }
 
 // Removes the last state added from the stack
 void pop_state()
 {
-    if (current_s > 0)
+    if (current_state > 0)
     {
-        states[current_s]->end();
-        states[current_s] = NULL;
-        states[--current_s]->resume();
+        states[current_state]->end();
+        states[current_state] = NULL;
+        states[--current_state]->resume();
     }
     else
     {
-        puts("WARNING: Can't remove any more states (current_s = 0)");
+        puts("WARNING: Can't remove any more states (current_state = 0)");
     }
 }

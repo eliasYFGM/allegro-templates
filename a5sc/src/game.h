@@ -2,7 +2,6 @@
 #define GAME_H_INCLUDED
 
 #include <allegro5/allegro_font.h>
-#include "state.h"
 
 // Color defines
 #define C_BLACK     al_map_rgb(0, 0, 0)
@@ -19,12 +18,15 @@ struct Game_Config
 };
 
 extern ALLEGRO_FONT* font;
-extern ALLEGRO_COLOR bg_color;
 
 // Main game engine routines
 int game_init(struct Game_Config* config);
 void game_run();
 void game_over();
+
+void set_bg_color(ALLEGRO_COLOR color);
+
+struct State;
 
 // State routines
 void change_state(struct State* state, void* param);
