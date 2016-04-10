@@ -1,0 +1,16 @@
+a4/Debug/
+a4/Release*/
+a4s/Debug/
+a4s/Release*/
+a4sc/Debug/
+a4sc/Release*/
+a5/Debug/
+a5/Release*/
+a5s/Debug/
+a5s/Release*/
+a5sc/Debug/
+a5sc/Release*/
+*.depend
+*.layout
+*.exe
+*.o
