@@ -47,7 +47,7 @@
 				</Linker>
 			</Target>
 			<Target title="Release-msdosdjgpp">
-				<Option output="game.exe" prefix_auto="1" extension_auto="0" />
+				<Option output="gamedos.exe" prefix_auto="1" extension_auto="0" />
 				<Option object_output="Release-msdosdjgpp/" />
 				<Option type="0" />
 				<Option compiler="djgpp_cross-compiler" />

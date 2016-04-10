@@ -12,7 +12,7 @@ static struct // Game data
 game =
 {
     NULL,
-    0
+    0, 0
 };
 
 static volatile int ticks = 0;

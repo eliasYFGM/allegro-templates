@@ -17,11 +17,10 @@ struct Game_Config
 
 extern volatile int fps;
 
-// Main functions that control the game
+// Main game engine routines
 int game_init(struct Game_Config* config);
 void game_run();
 void game_over();
-
 void set_bg_color(int color);
 
 struct State;
@@ -32,7 +31,8 @@ void push_state(struct State* state, void* param);
 void pop_state();
 
 // Bounding box collision (taken from Alex4)
-#define check_bb_collision(x1,y1,w1,h1,x2,y2,w2,h2) (!( ((x1)>=(x2)+(w2)) || ((x2)>=(x1)+(w1)) || \
-                                                        ((y1)>=(y2)+(h2)) || ((y2)>=(y1)+(h1)) ))
+#define check_bb_collision(x1,y1,w1,h1,x2,y2,w2,h2) \
+    (!( ((x1)>=(x2)+(w2)) || ((x2)>=(x1)+(w1)) || \
+        ((y1)>=(y2)+(h2)) || ((y2)>=(y1)+(h1)) ))
 
 #endif // GAME_H_INCLUDED
