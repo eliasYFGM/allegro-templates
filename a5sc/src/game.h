@@ -17,8 +17,8 @@ struct Game_Config
     int audio;
 };
 
-// Pointer to the original game settings (main.c)
-struct Game_Config* game_config;
+// Pointer to the original settings (given in main.c)
+extern struct Game_Config* game_config;
 
 #define SCREEN_W    game_config->width
 #define SCREEN_H    game_config->height

@@ -15,6 +15,10 @@ struct Game_Config
     int audio;
 };
 
+// Pointer to the original settings (given in main.c)
+extern struct Game_Config* game_config;
+
+// FPS is updated each second
 extern volatile int fps;
 
 // Main game engine routines

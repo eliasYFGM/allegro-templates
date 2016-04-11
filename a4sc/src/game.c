@@ -15,6 +15,8 @@ game =
     0, 0
 };
 
+struct Game_Config* game_config = NULL;
+
 static volatile int ticks = 0;
 
 static void ticker()
@@ -116,6 +118,7 @@ int game_init(struct Game_Config* config)
 
     is_running = 1;
     game.initialized = 1;
+    game_config = config;
 
     return 1;
 }
@@ -177,7 +180,7 @@ void game_run()
     {
         if (states[i] != NULL)
         {
-            states[i]->end();
+            states[i]->end(1);
         }
     }
 
@@ -200,7 +203,7 @@ void change_state(struct State* state, void* param)
 {
     if (states[current_state] != NULL)
     {
-        states[current_state]->end();
+        states[current_state]->end(0);
     }
 
     states[current_state] = state;
@@ -231,7 +234,7 @@ void pop_state()
 {
     if (current_state > 0)
     {
-        states[current_state]->end();
+        states[current_state]->end(0);
         states[current_state] = NULL;
         states[--current_state]->resume();
     }

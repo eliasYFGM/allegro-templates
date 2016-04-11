@@ -6,8 +6,9 @@
 // Main state structure
 struct State
 {
+    // Startup and shutdown
     void (*init)(void*);
-    void (*end)();
+    void (*end)(int); // argument will be larger than 0 when the game finishes
 
     void (*pause)();
     void (*resume)();
