@@ -111,7 +111,7 @@ int game_init(struct Game_Config* config)
         al_set_new_display_flags(ALLEGRO_FULLSCREEN_WINDOW);
     }
 
-    // Create our display
+    // Initialize variables...
     game.display = al_create_display(config->width, config->height);
 
     if (!game.display)
@@ -120,33 +120,19 @@ int game_init(struct Game_Config* config)
         return 0;
     }
 
-    // Set the window/display title
     al_set_window_title(game.display, config->title);
 
-    // Use built-in Allegro font
     font = al_create_builtin_font();
 
-    // Use linear filtering for scaling game screen
-    al_add_new_bitmap_flag(ALLEGRO_MAG_LINEAR);
-
-    // Back-buffer
-    game.buffer = al_create_bitmap(config->width, config->height);
-
     game_config = config;
-
-    // Update aspect ratio
     aspect_ratio_transform();
 
-    // Default background color
-    game.bg_color = al_map_rgb(192, 192, 192);
+    al_add_new_bitmap_flag(ALLEGRO_MAG_LINEAR);
 
-    // Create our timer (FPS handler)
+    game.buffer = al_create_bitmap(config->width, config->height);
     game.timer = al_create_timer(1.0 / config->framerate);
-
-    // Create our event queue
     game.event_queue = al_create_event_queue();
 
-    // We need to tell Allegro which events we'll use
     al_register_event_source(game.event_queue, al_get_display_event_source(game.display));
     al_register_event_source(game.event_queue, al_get_keyboard_event_source());
     al_register_event_source(game.event_queue, al_get_mouse_event_source());
@@ -154,6 +140,7 @@ int game_init(struct Game_Config* config)
 
     al_start_timer(game.timer);
 
+    game.bg_color = al_map_rgb(192, 192, 192);
     game.initialized = 1;
     game.is_running = 1;
 
