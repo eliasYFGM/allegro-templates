@@ -7,7 +7,7 @@ static void on_init(void* param)
 {
 }
 
-static void on_end(int over)
+static void on_end()
 {
 }
 

@@ -180,7 +180,7 @@ void game_run()
     {
         if (states[i] != NULL)
         {
-            states[i]->end(1);
+            states[i]->end();
         }
     }
 
@@ -203,7 +203,7 @@ void change_state(struct State* state, void* param)
 {
     if (states[current_state] != NULL)
     {
-        states[current_state]->end(0);
+        states[current_state]->end();
     }
 
     states[current_state] = state;
@@ -234,7 +234,7 @@ void pop_state()
 {
     if (current_state > 0)
     {
-        states[current_state]->end(0);
+        states[current_state]->end();
         states[current_state] = NULL;
         states[--current_state]->resume();
     }
