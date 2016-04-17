@@ -101,17 +101,6 @@ int game_init(struct Game_Config* config)
     game.buffer = create_bitmap(SCREEN_W, SCREEN_H);
     game.bg_color = makecol(192, 192, 192);
 
-    // Main game timer
-    LOCK_VARIABLE(ticks);
-    LOCK_FUNCTION(ticker);
-    install_int_ex(ticker, BPS_TO_TIMER(config->framerate));
-
-    // FPS timer
-    LOCK_VARIABLE(fps);
-    LOCK_VARIABLE(frame_counter);
-    LOCK_FUNCTION(update_fps);
-    install_int(update_fps, 1000);
-
 #ifndef ALLEGRO_DOS
     set_close_button_callback(close_button_handler);
 #endif // ALLEGRO_DOS
@@ -133,6 +122,17 @@ void game_run()
         puts("ERROR: change_state was not called");
         return;
     }
+
+    // Main game timer
+    LOCK_VARIABLE(ticks);
+    LOCK_FUNCTION(ticker);
+    install_int_ex(ticker, BPS_TO_TIMER(game_config->framerate));
+
+    // FPS timer
+    LOCK_VARIABLE(fps);
+    LOCK_VARIABLE(frame_counter);
+    LOCK_FUNCTION(update_fps);
+    install_int(update_fps, 1000);
 
     // Game loop
     while (is_running)

@@ -95,17 +95,10 @@ bool Game_Engine::init(const char* title, int w, int h, int rate, bool fullscree
     // Update the aspect ratio
     aspect_ratio_transform(display);
 
-    bg_color = al_map_rgb(192, 192, 192);
     timer = al_create_timer(1.0 / rate);
     event_queue = al_create_event_queue();
 
-    al_register_event_source(event_queue, al_get_display_event_source(display));
-    al_register_event_source(event_queue, al_get_keyboard_event_source());
-    al_register_event_source(event_queue, al_get_mouse_event_source());
-    al_register_event_source(event_queue, al_get_timer_event_source(timer));
-
-    al_start_timer(timer);
-
+    bg_color = al_map_rgb(192, 192, 192);
     is_running = true;
 
     return true;
@@ -114,6 +107,13 @@ bool Game_Engine::init(const char* title, int w, int h, int rate, bool fullscree
 void Game_Engine::run()
 {
     bool redraw = false;
+
+    al_register_event_source(event_queue, al_get_display_event_source(display));
+    al_register_event_source(event_queue, al_get_keyboard_event_source());
+    al_register_event_source(event_queue, al_get_mouse_event_source());
+    al_register_event_source(event_queue, al_get_timer_event_source(timer));
+
+    al_start_timer(timer);
 
     // This is the main game loop
     while (is_running)

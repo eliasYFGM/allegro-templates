@@ -133,13 +133,6 @@ int game_init(struct Game_Config* config)
     game.timer = al_create_timer(1.0 / config->framerate);
     game.event_queue = al_create_event_queue();
 
-    al_register_event_source(game.event_queue, al_get_display_event_source(game.display));
-    al_register_event_source(game.event_queue, al_get_keyboard_event_source());
-    al_register_event_source(game.event_queue, al_get_mouse_event_source());
-    al_register_event_source(game.event_queue, al_get_timer_event_source(game.timer));
-
-    al_start_timer(game.timer);
-
     game.bg_color = al_map_rgb(192, 192, 192);
     game.initialized = 1;
     game.is_running = 1;
@@ -150,6 +143,24 @@ int game_init(struct Game_Config* config)
 void game_run()
 {
     int i, redraw = 0;
+
+    // Generate display events
+    al_register_event_source(game.event_queue,
+        al_get_display_event_source(game.display));
+
+    // Keyboard events
+    al_register_event_source(game.event_queue,
+        al_get_keyboard_event_source());
+
+    // Mouse events
+    al_register_event_source(game.event_queue,
+        al_get_mouse_event_source());
+
+    // Timer events
+    al_register_event_source(game.event_queue,
+        al_get_timer_event_source(game.timer));
+
+    al_start_timer(game.timer);
 
     // Main game loop
     while (game.is_running)

@@ -69,11 +69,6 @@ bool Game_Engine::init(const char* title, int w, int h, int rate, int depth, boo
     LOCK_FUNCTION(ticker);
     install_int_ex(ticker, BPS_TO_TIMER(rate));
 
-    LOCK_VARIABLE(fps);
-    LOCK_VARIABLE(frame_counter);
-    LOCK_FUNCTION(update_fps);
-    install_int(update_fps, 1000);
-
 #ifndef ALLEGRO_DOS
     set_close_button_callback(close_button_handler);
 #endif // ALLEGRO_DOS
@@ -86,6 +81,11 @@ bool Game_Engine::init(const char* title, int w, int h, int rate, int depth, boo
 void Game_Engine::run()
 {
     bool redraw = false;
+
+    LOCK_VARIABLE(fps);
+    LOCK_VARIABLE(frame_counter);
+    LOCK_FUNCTION(update_fps);
+    install_int(update_fps, 1000);
 
     // Game loop
     while (is_running)
