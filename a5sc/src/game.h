@@ -40,7 +40,8 @@ void push_state(struct State* state, void* param);
 void pop_state();
 
 // Simple bounding box collision checking (taken from Alex4 source)
-#define check_bb_collision(x1,y1,w1,h1,x2,y2,w2,h2) (!( ((x1)>=(x2)+(w2)) || ((x2)>=(x1)+(w1)) || \
-                                                        ((y1)>=(y2)+(h2)) || ((y2)>=(y1)+(h1)) ))
+#define check_bb_collision(x1,y1,w1,h1,x2,y2,w2,h2) \
+    (!( ((x1)>=(x2)+(w2)) || ((x2)>=(x1)+(w1)) || \
+        ((y1)>=(y2)+(h2)) || ((y2)>=(y1)+(h1)) ))
 
 #endif // GAME_H_INCLUDED

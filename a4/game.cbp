@@ -24,7 +24,7 @@
 				<Option type="0" />
 				<Option compiler="gcc" />
 				<Compiler>
-					<Add option="-O" />
+					<Add option="-O2" />
 					<Add option="-DALLEGRO_STATICLINK" />
 				</Compiler>
 				<Linker>
@@ -36,10 +36,10 @@
 				<Option output="game.exe" prefix_auto="1" extension_auto="0" />
 				<Option object_output="Release-mingw/" />
 				<Option type="0" />
-				<Option compiler="mingw-w64_cross-compiler" />
+				<Option compiler="mingw_cross-compiler" />
 				<Compiler>
 					<Add option="-march=pentium4" />
-					<Add option="-O" />
+					<Add option="-O2" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
@@ -53,7 +53,7 @@
 				<Option type="0" />
 				<Option compiler="djgpp_cross-compiler" />
 				<Compiler>
-					<Add option="-O" />
+					<Add option="-O2" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
