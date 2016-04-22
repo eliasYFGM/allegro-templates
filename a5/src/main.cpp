@@ -48,8 +48,7 @@ static void aspect_ratio_transform(ALLEGRO_DISPLAY* display)
     al_use_transform(&trans);
 }
 
-// Struct holding game data
-struct Game
+static struct // Game data
 {
     ALLEGRO_DISPLAY*        display;
     ALLEGRO_BITMAP*         buffer;
@@ -57,36 +56,50 @@ struct Game
     ALLEGRO_EVENT_QUEUE*    event_queue;
     ALLEGRO_FONT*           font;
     bool is_running;
+}
+game =
+{
+    NULL, NULL, NULL, NULL, NULL,
+    0
 };
+
+// This is called already after shutdown_game()
+static void unload_resources()
+{
+    al_destroy_display(game.display);
+    al_destroy_bitmap(game.buffer);
+    al_destroy_timer(game.timer);
+    al_destroy_event_queue(game.event_queue);
+    al_destroy_font(game.font);
+}
 
 //---------------------------------------------------
 // Game functions
 //---------------------------------------------------
-bool init_game(Game& game)
+bool init_game()
 {
-    // TODO: Load resources, init variables and stuff
-
-    // Always return 'true' on success; 'false' on failure
+    // Always return 'true' on success
     return true;
 }
 
-void process_events(Game& game, ALLEGRO_EVENT& event)
+void process_events(ALLEGRO_EVENT& event)
 {
+    // TODO: event processing
 }
 
-void update_game(Game& game)
+void update_game()
 {
-    // TODO: Update your game here
+    // TODO: game logic
 }
 
-void render_game(Game& game)
+void render_game()
 {
-    // TODO: Put drawing functions here
+    // TODO: game rendering
 }
 
 void shutdown_game()
 {
-    // TODO: Free resources
+    // TODO: free resources
 }
 
 //---------------------------------------------------
@@ -138,51 +151,31 @@ int main(int argc, char **argv)
         al_set_new_display_flags(ALLEGRO_FULLSCREEN_WINDOW);
     }
 
-    // Game engine
-    Game game;
-
-    // Create our display
     game.display = al_create_display(SCREEN_W, SCREEN_H);
+    al_set_window_title(game.display, AL_WINDOW_TITLE);
+
+    // Use linear filtering for scaling game screen
+    al_add_new_bitmap_flag(ALLEGRO_MAG_LINEAR);
+
+    game.buffer = al_create_bitmap(SCREEN_W, SCREEN_H);
+    game.timer = al_create_timer(1.0 / AL_REFRESH_RATE);
+    game.event_queue = al_create_event_queue();
+    game.font = al_create_builtin_font();
+
+    aspect_ratio_transform(game.display);
+
+    // Setup game
+    if (!init_game())
+    {
+        unload_resources();
+        return -1;
+    }
 
     if (!AL_SHOW_CURSOR)
     {
         al_hide_mouse_cursor(game.display);
     }
 
-    // Set the window/display title
-    al_set_window_title(game.display, AL_WINDOW_TITLE);
-
-    // Use linear filtering for scaling game screen
-    al_add_new_bitmap_flag(ALLEGRO_MAG_LINEAR);
-
-    // Backbuffer
-    game.buffer = al_create_bitmap(SCREEN_W, SCREEN_H);
-
-    // Create our timer (FPS handler)
-    game.timer = al_create_timer(1.0 / AL_REFRESH_RATE);
-
-    // Create our event queue
-    game.event_queue = al_create_event_queue();
-
-    // Update aspect ratio
-    aspect_ratio_transform(game.display);
-
-    // Load the Allegro 4 font from the header (embeded)
-    game.font = al_create_builtin_font();
-
-    // Setup our game
-    if (!init_game(game))
-    {
-        al_destroy_display(game.display);
-        al_destroy_bitmap(game.buffer);
-        al_destroy_timer(game.timer);
-        al_destroy_event_queue(game.event_queue);
-        al_destroy_font(game.font);
-
-        return -1;
-    }
-
-    // We need to tell Allegro which events we'll use
     al_register_event_source(game.event_queue, al_get_display_event_source(game.display));
     al_register_event_source(game.event_queue, al_get_keyboard_event_source());
     al_register_event_source(game.event_queue, al_get_mouse_event_source());
@@ -190,15 +183,17 @@ int main(int argc, char **argv)
 
     al_start_timer(game.timer);
 
-    // This is the main game loop
+    game.is_running = true;
+
+    // Game loop
     while (game.is_running)
     {
-        static bool redraw = false;
+        bool redraw = false;
 
         ALLEGRO_EVENT event;
         al_wait_for_event(game.event_queue, &event);
 
-        process_events(game, event);
+        process_events(event);
 
         // If the close button was pressed...
         if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
@@ -214,7 +209,6 @@ int main(int argc, char **argv)
             }
 
             // F4 key will change between screen modes
-            // (Inspired by Game Maker's functionality)
             if (event.keyboard.keycode == ALLEGRO_KEY_F4)
             {
                 if (AL_USE_FULLSCREEN)
@@ -232,7 +226,7 @@ int main(int argc, char **argv)
         }
         else if (event.type == ALLEGRO_EVENT_TIMER)
         {
-            update_game(game);
+            update_game();
             redraw = true;
         }
 
@@ -244,7 +238,7 @@ int main(int argc, char **argv)
 
             al_clear_to_color(al_map_rgb(192, 192, 192));
 
-            render_game(game);
+            render_game();
 
             al_set_target_backbuffer(game.display);
 
@@ -254,13 +248,9 @@ int main(int argc, char **argv)
         }
     }
 
-    al_destroy_display(game.display);
-    al_destroy_bitmap(game.buffer);
-    al_destroy_timer(game.timer);
-    al_destroy_event_queue(game.event_queue);
-    al_destroy_font(game.font);
-
     shutdown_game();
+
+    unload_resources();
 
     return 0;
 }
