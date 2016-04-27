@@ -105,8 +105,8 @@ int game_init(struct Game_Config* config)
     set_close_button_callback(close_button_handler);
 #endif // ALLEGRO_DOS
 
-    is_running = 1;
-    game.initialized = 1;
+    is_running = TRUE;
+    game.initialized = TRUE;
     game_config = config;
 
     return 1;
@@ -115,7 +115,7 @@ int game_init(struct Game_Config* config)
 // Game loop
 void game_run()
 {
-    int i, redraw = 0;
+    int i, redraw = FALSE;
 
     if (!states[current_state])
     {
@@ -145,17 +145,17 @@ void game_run()
 
                 if (key[KEY_ESC])
                 {
-                    is_running = 0;
+                    is_running = FALSE;
                     break;
                 }
 
                 states[current_state]->update();
-                redraw = 1;
+                redraw = TRUE;
             }
 
             if (is_running && redraw)
             {
-                redraw = 0;
+                redraw = FALSE;
 
                 clear_to_color(game.buffer, game.bg_color);
 
@@ -190,7 +190,7 @@ void game_run()
 // Ends the game
 void game_over()
 {
-    is_running = 0;
+    is_running = FALSE;
 }
 
 void set_bg_color(int color)

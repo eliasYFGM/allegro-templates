@@ -24,8 +24,8 @@ game =
     { 0, 0, 0, 0 }
 };
 
-struct Game_Config* game_config = NULL;
-ALLEGRO_FONT* font;
+struct Game_Config* default_config = NULL;
+ALLEGRO_FONT* font = NULL;
 
 #define MAX_STATES  8
 static struct State* states[MAX_STATES];
@@ -124,7 +124,7 @@ int game_init(struct Game_Config* config)
 
     font = al_create_builtin_font();
 
-    game_config = config;
+    default_config = config;
     aspect_ratio_transform();
 
     al_add_new_bitmap_flag(ALLEGRO_MAG_LINEAR);
@@ -134,8 +134,8 @@ int game_init(struct Game_Config* config)
     game.event_queue = al_create_event_queue();
 
     game.bg_color = al_map_rgb(192, 192, 192);
-    game.initialized = 1;
-    game.is_running = 1;
+    game.initialized = TRUE;
+    game.is_running = TRUE;
 
     return 1;
 }
@@ -174,7 +174,7 @@ void game_run()
         // If the close button was pressed...
         if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
         {
-            game.is_running = 0;
+            game.is_running = FALSE;
             break;
         }
         else if (event.type == ALLEGRO_EVENT_KEY_DOWN)
@@ -182,7 +182,7 @@ void game_run()
             // Escape key will end the game
             if (event.keyboard.keycode == ALLEGRO_KEY_ESCAPE)
             {
-                game.is_running = 0;
+                game.is_running = FALSE;
                 break;
             }
 
@@ -205,12 +205,12 @@ void game_run()
         else if (event.type == ALLEGRO_EVENT_TIMER)
         {
             states[current_state]->update();
-            redraw = 1;
+            redraw = TRUE;
         }
 
         if (redraw && al_event_queue_is_empty(game.event_queue))
         {
-            redraw = 0;
+            redraw = FALSE;
 
             al_set_target_bitmap(game.buffer);
 
@@ -245,7 +245,7 @@ void game_run()
 
 void game_over()
 {
-    game.is_running = 0;
+    game.is_running = FALSE;
 }
 
 void set_bg_color(ALLEGRO_COLOR color)

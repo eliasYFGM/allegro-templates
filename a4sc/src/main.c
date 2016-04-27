@@ -14,9 +14,9 @@ int main(int argc, char* argv[])
         // Color depth (8, 15, 16, 24, 32)
         8,
         // Want full-screen?
-        0,
+        FALSE,
         // Want audio module?
-        0
+        FALSE
     };
 
     if (game_init(&config))

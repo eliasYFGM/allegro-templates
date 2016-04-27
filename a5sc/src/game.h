@@ -7,6 +7,11 @@
 #define C_BLACK     al_map_rgb(0, 0, 0)
 #define C_WHITE     al_map_rgb(255, 255, 255)
 
+#ifndef TRUE
+#define FALSE   0
+#define TRUE    -1
+#endif
+
 struct Game_Config
 {
     char *title;
@@ -18,10 +23,10 @@ struct Game_Config
 };
 
 // Pointer to the original settings (given in main.c)
-extern struct Game_Config* game_config;
+extern struct Game_Config* default_config;
 
-#define SCREEN_W    game_config->width
-#define SCREEN_H    game_config->height
+#define SCREEN_W    default_config->width
+#define SCREEN_H    default_config->height
 
 // Default fixed-width font
 extern ALLEGRO_FONT* font;

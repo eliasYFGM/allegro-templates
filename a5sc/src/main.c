@@ -14,9 +14,9 @@ int main(int argc, char* argv[])
         // Framerate (FPS)
         40,
         // Want full-screen?
-        0,
+        FALSE,
         // Want audio module?
-        0
+        FALSE
     };
 
     if (game_init(&config))
