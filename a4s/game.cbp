@@ -90,18 +90,16 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
-		<Unit filename="src/bitmap.cpp" />
-		<Unit filename="src/bitmap.h" />
-		<Unit filename="src/gameengine.cpp" />
-		<Unit filename="src/gameengine.h" />
-		<Unit filename="src/gamestate.cpp" />
-		<Unit filename="src/gamestate.h" />
-		<Unit filename="src/main.cpp" />
+		<Unit filename="src/Game.cpp" />
+		<Unit filename="src/Game.h" />
+		<Unit filename="src/GameState.cpp" />
+		<Unit filename="src/GameState.h" />
+		<Unit filename="src/Main.cpp" />
+		<Unit filename="src/State.h" />
 		<Unit filename="src/resource.rc">
 			<Option target="Release-mingw" />
 			<Option target="Release-mingw-static" />
 		</Unit>
-		<Unit filename="src/state.h" />
 		<Extensions>
 			<code_completion />
 			<debugger />
