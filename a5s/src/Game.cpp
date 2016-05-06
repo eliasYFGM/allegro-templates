@@ -9,8 +9,9 @@
 #include <allegro5/allegro_primitives.h>
 #include "Game.h"
 
-int SCREEN_W = 0;
-int SCREEN_H = 0;
+int Game::internal_w = 0;
+int Game::internal_h = 0;
+
 ALLEGRO_FONT* font = 0;
 
 static void aspect_ratio_transform(ALLEGRO_DISPLAY* display)
@@ -84,8 +85,8 @@ bool Game::Init(int width, int height, const char* title, bool fullscreen,
     return false;
   }
 
-  SCREEN_W = width;
-  SCREEN_H = height;
+  internal_w = width;
+  internal_h = height;
 
   aspect_ratio_transform(display);
   al_set_window_title(display, title);

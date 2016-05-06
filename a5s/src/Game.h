@@ -21,12 +21,21 @@ class Game
   std::stack<State*> states;
 
 public:
-  Game() : display(0), buffer(0), timer(0), event_queue(0), need_update(false),
-    is_running(false) {}
+  static int internal_w;
+  static int internal_h;
+
+public:
+  Game() : display(0), buffer(0), timer(0), event_queue(0)
+  {
+    need_update = false;
+    is_running = false;
+  }
+
   ~Game();
 
   bool Init(int width, int height, const char* title = "Allegro application",
             bool fullscreen = false, int rate = 40);
+
   void Handle_Events();
   void Update();
   void Draw();
@@ -51,8 +60,9 @@ public:
   void Pop_State();
 };
 
-extern int SCREEN_W;
-extern int SCREEN_H;
+#define SCREEN_W  Game::internal_w
+#define SCREEN_H  Game::internal_h
+
 extern ALLEGRO_FONT* font;
 
 #endif // GAME_H_INCLUDED
