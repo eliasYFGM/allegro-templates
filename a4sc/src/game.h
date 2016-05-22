@@ -16,7 +16,7 @@ struct Game_Config
 };
 
 // Pointer to the original settings (given in main.c)
-extern struct Game_Config* game_config;
+extern struct Game_Config* default_config;
 
 // FPS is updated each second
 extern volatile int fps;

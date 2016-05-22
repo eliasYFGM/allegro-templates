@@ -15,7 +15,7 @@ game =
     0, 0
 };
 
-struct Game_Config* game_config = NULL;
+struct Game_Config* default_config = NULL;
 
 static volatile int ticks = 0;
 
@@ -107,7 +107,7 @@ int game_init(struct Game_Config* config)
 
     is_running = TRUE;
     game.initialized = TRUE;
-    game_config = config;
+    default_config = config;
 
     return 1;
 }
@@ -126,7 +126,7 @@ void game_run()
     // Main game timer
     LOCK_VARIABLE(ticks);
     LOCK_FUNCTION(ticker);
-    install_int_ex(ticker, BPS_TO_TIMER(game_config->framerate));
+    install_int_ex(ticker, BPS_TO_TIMER(default_config->framerate));
 
     // FPS timer
     LOCK_VARIABLE(fps);
