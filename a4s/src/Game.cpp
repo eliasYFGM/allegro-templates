@@ -65,25 +65,36 @@ bool Game::Init(int width, int height, const char* title, bool fullscreen,
 
   buffer = create_bitmap(SCREEN_W, SCREEN_H);
 
+  framerate = rate;
+
   LOCK_FUNCTION(close_button_handler);
   set_close_button_callback(close_button_handler);
 
+  Set_BG_Color(DEFAULT_BG_COLOR);
+
+  srand(time(0));
+
+  return true;
+}
+
+void Game::Run()
+{
   LOCK_VARIABLE(ticks);
   LOCK_FUNCTION(ticker);
-  install_int_ex(ticker, BPS_TO_TIMER(rate));
+  install_int_ex(ticker, BPS_TO_TIMER(framerate));
 
   LOCK_VARIABLE(fps);
   LOCK_VARIABLE(fps_counter);
   LOCK_FUNCTION(update_fps);
   install_int(update_fps, 1000);
 
-  Set_BG_Color(makecol(192, 192, 192));
-
-  srand(time(0));
-
   is_running = true;
 
-  return true;
+  while(is_running)
+  {
+    Update();
+    Draw();
+  }
 }
 
 void Game::Update()
@@ -125,11 +136,6 @@ void Game::Draw()
 
     ++fps_counter;
   }
-}
-
-bool Game::Running()
-{
-  return is_running;
 }
 
 void Game::Game_Over()

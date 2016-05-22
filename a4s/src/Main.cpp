@@ -21,12 +21,7 @@ int main()
   if (result)
   {
     game.Change_State(new Game_State(&game));
-
-    while (game.Running())
-    {
-      game.Update();
-      game.Draw();
-    }
+    game.Run();
   }
 
   return 0;

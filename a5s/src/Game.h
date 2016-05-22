@@ -20,6 +20,10 @@ class Game
   bool is_running;
   std::stack<State*> states;
 
+  void Handle_Events();
+  void Update();
+  void Draw();
+
 public:
   static int internal_w;
   static int internal_h;
@@ -35,15 +39,7 @@ public:
 
   bool Init(int width, int height, const char* title = "Allegro application",
             bool fullscreen = false, int rate = 40);
-
-  void Handle_Events();
-  void Update();
-  void Draw();
-
-  bool Running()
-  {
-    return is_running;
-  }
+  void Run();
 
   void Game_Over()
   {

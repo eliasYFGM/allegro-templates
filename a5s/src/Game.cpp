@@ -103,11 +103,17 @@ bool Game::Init(int width, int height, const char* title, bool fullscreen,
 
   timer = al_create_timer(1.0 / rate);
   font = al_create_builtin_font();
+  event_queue = al_create_event_queue();
 
   Set_BG_Color(al_map_rgb(192, 192, 192));
+
   srand(time(0));
 
-  event_queue = al_create_event_queue();
+  return true;
+}
+
+void Game::Run()
+{
   al_register_event_source(event_queue, al_get_display_event_source(display));
   al_register_event_source(event_queue, al_get_keyboard_event_source());
   al_register_event_source(event_queue, al_get_timer_event_source(timer));
@@ -116,7 +122,12 @@ bool Game::Init(int width, int height, const char* title, bool fullscreen,
 
   is_running = true;
 
-  return true;
+  while (is_running)
+  {
+    Handle_Events();
+    Update();
+    Draw();
+  }
 }
 
 void Game::Handle_Events()
@@ -124,13 +135,13 @@ void Game::Handle_Events()
   ALLEGRO_EVENT event;
   al_wait_for_event(event_queue, &event);
 
-  switch (event.type)
+  if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
   {
-  case ALLEGRO_EVENT_DISPLAY_CLOSE:
     is_running = false;
-    break;
+  }
 
-  case ALLEGRO_EVENT_KEY_DOWN:
+  if (event.type == ALLEGRO_EVENT_KEY_DOWN)
+  {
     if (event.keyboard.keycode == ALLEGRO_KEY_F4)
     {
       if (al_get_display_flags(display) & ALLEGRO_FULLSCREEN_WINDOW)
@@ -144,11 +155,11 @@ void Game::Handle_Events()
 
       aspect_ratio_transform(display);
     }
-    break;
+  }
 
-  case ALLEGRO_EVENT_TIMER:
+  if (event.type == ALLEGRO_EVENT_TIMER)
+  {
     need_update = true;
-    break;
   }
 
   if (is_running)
