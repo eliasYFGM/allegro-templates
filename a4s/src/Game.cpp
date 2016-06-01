@@ -90,10 +90,16 @@ void Game::Run()
 
   is_running = true;
 
-  while(is_running)
+  while (is_running)
   {
     Update();
     Draw();
+  }
+
+  while (!states.empty())
+  {
+    delete states.top();
+    states.pop();
   }
 }
 

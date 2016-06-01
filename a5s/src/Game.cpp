@@ -128,6 +128,12 @@ void Game::Run()
     Update();
     Draw();
   }
+
+  while (!states.empty())
+  {
+    delete states.top();
+    states.pop();
+  }
 }
 
 void Game::Handle_Events()
