@@ -7,7 +7,7 @@ static void on_init(long param)
 {
 }
 
-static void on_end(int over)
+static void on_end(int is_over)
 {
 }
 
