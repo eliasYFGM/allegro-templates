@@ -150,6 +150,8 @@ void Game::Handle_Events()
   {
     if (event.keyboard.keycode == ALLEGRO_KEY_F4)
     {
+      al_stop_timer(timer);
+
       if (al_get_display_flags(display) & ALLEGRO_FULLSCREEN_WINDOW)
       {
         al_toggle_display_flag(display, ALLEGRO_FULLSCREEN_WINDOW, false);
@@ -160,6 +162,8 @@ void Game::Handle_Events()
       }
 
       aspect_ratio_transform(display);
+
+      al_start_timer(timer);
     }
   }
 

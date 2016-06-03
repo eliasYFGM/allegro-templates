@@ -106,7 +106,6 @@ int game_init(struct Game_Config* config)
   set_close_button_callback(close_button_handler);
 #endif // ALLEGRO_DOS
 
-  is_running = TRUE;
   game.initialized = TRUE;
   default_config = config;
 
@@ -134,6 +133,8 @@ void game_run()
   LOCK_VARIABLE(frame_counter);
   LOCK_FUNCTION(update_fps);
   install_int(update_fps, 1000);
+
+  is_running = TRUE;
 
   // Game loop
   while (is_running)

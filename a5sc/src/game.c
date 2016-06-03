@@ -188,6 +188,8 @@ void game_run()
       // A feature that is only available in Game Maker
       if (event.keyboard.keycode == ALLEGRO_KEY_F4)
       {
+        al_stop_timer(game.timer);
+
         if (al_get_display_flags(game.display) & ALLEGRO_FULLSCREEN_WINDOW)
         {
           al_toggle_display_flag(game.display, ALLEGRO_FULLSCREEN_WINDOW, 0);
@@ -198,6 +200,8 @@ void game_run()
         }
 
         aspect_ratio_transform();
+
+        al_start_timer(game.timer);
       }
     }
     else if (event.type == ALLEGRO_EVENT_TIMER)
