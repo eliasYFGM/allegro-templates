@@ -3,6 +3,8 @@
 #include "game.h"
 #include "state.h"
 
+struct Game_Config* default_config = NULL;
+
 static struct // Game data
 {
   BITMAP* buffer;
@@ -14,8 +16,6 @@ game =
   NULL,
   0, 0
 };
-
-struct Game_Config* default_config = NULL;
 
 static volatile int ticks = 0;
 
@@ -44,8 +44,6 @@ static void close_button_handler()
 }
 END_OF_FUNCTION(close_button_handler)
 #endif // ALLEGRO_DOS
-
-#define MAX_STATES  8
 
 // State data
 static struct State* states[MAX_STATES];

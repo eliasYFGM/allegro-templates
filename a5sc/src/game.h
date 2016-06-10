@@ -34,10 +34,12 @@ extern ALLEGRO_FONT* font;
 // Main game engine routines
 int game_init(struct Game_Config* config);
 void game_run();
-void game_over();
+void game_over(); // Only meant for states; NO need to call after "game_run"
 void set_bg_color(ALLEGRO_COLOR);
 
 struct State;
+
+#define MAX_STATES  8
 
 // State routines
 void change_state(struct State* state, long param);

@@ -36,12 +36,6 @@ static void aspect_ratio_transform(ALLEGRO_DISPLAY* display)
 
 Game::~Game()
 {
-  while (!states.empty())
-  {
-    delete states.top();
-    states.pop();
-  }
-
   al_destroy_display(display);
   al_destroy_bitmap(buffer);
   al_destroy_timer(timer);

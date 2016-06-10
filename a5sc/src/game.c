@@ -7,6 +7,8 @@
 #include "game.h"
 #include "state.h"
 
+struct Game_Config* default_config = NULL;
+
 static struct // Game data
 {
   ALLEGRO_DISPLAY* display;
@@ -24,10 +26,8 @@ game =
   { 0, 0, 0, 0 }
 };
 
-struct Game_Config* default_config = NULL;
 ALLEGRO_FONT* font = NULL;
 
-#define MAX_STATES  8
 static struct State* states[MAX_STATES];
 static int current_state = 0;
 
