@@ -9,7 +9,7 @@ int main(int argc, char* argv[])
   {
     // Window title
     "Allegro application",
-    // Display resolution
+    // Internal resolution
     320, 200,
     // Scaling factor (<= 0 for auto)
     0,
