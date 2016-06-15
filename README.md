@@ -1,14 +1,16 @@
 # Allegro Project Templates
 I originally made these templates as part of my own projects. A Code::Blocks project file is included in every template.
 
-These were made under Linux, but they support mingw32 and DOS targets (Allegro 4 only). For a quick installation, you can just git-clone into your default CodeBlocks' UserTemplates folder (starting with 16.01, the folder is located in ~/.config/codeblocks under Linux).
+These were made under Linux, but they support targetting Windows and DOS (Allegro 4 only). For a quick installation, you can just git-clone into your default CodeBlocks' UserTemplates folder (starting with 16.01, the folder is located in ~/.config/codeblocks under Linux).
 
-## Names
+## Naming
 
-a(4/5): Basic template that provides init, update, draw and shutdown functions in the same "main" file.
+[a4]: Template for Allegro version 4.x (can target Linux, Windows and DOS).
 
-a(4/5)s: A more complete template that provides a game-state mechanism and a default Game_Engine class. States can be   interacted with change_state, push_state and pop_state functions.
+[a5]: Templates for Allegro 5.x (Linux and Windows).
 
-a(4/5)sc: C version of the above template. Provides the same functionality as the C++ version, but the code is entirely in C.
+[s]: These templates provide a basic state mechanism, with some global functions for manipulating them (C version) and a Game class (C++ version).
 
-a5scr: This is the same as the C template, but it's meant for retro-games in mind with a small resolution (default is 320x200). The screen is up-scaled automatically by default, depending on the monitor's resolution (minimum scaling factor is 2) and uses "nearest-neighbor" to scale plus linear interpolation. Full-screen not supported at the moment.
+[c]: Templates for the C language. They may be slightly more polished than C++ though.
+
+[r]: Template for retro-games in mind (small resolution). The game window is up-scaled automatically by default, depending on the monitor's resolution (minimum scaling factor is 2) and uses "nearest-neighbor" to scale plus linear interpolation. No full-screen at the moment.
