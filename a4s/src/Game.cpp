@@ -30,12 +30,6 @@ END_OF_FUNCTION(close_button_handler)
 
 Game::~Game()
 {
-  while (!states.empty())
-  {
-    delete states.top();
-    states.pop();
-  }
-
   if (buffer)
   {
     destroy_bitmap(buffer);
