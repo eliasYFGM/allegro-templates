@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <math.h>
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_image.h>
 #include <allegro5/allegro_font.h>
@@ -7,11 +8,12 @@
 #include "game.h"
 #include "state.h"
 
-struct Game_Config* default_config = NULL;
-
 // Used to simulate a slightly lower screen resolution
 // E.g. without the panels and stuff, lines 102-103
 #define SCREEN_RES_OVERRIDE   0.1
+
+struct Game_Config* default_config = NULL;
+ALLEGRO_FONT* font = NULL;
 
 static struct // Game data
 {
@@ -20,35 +22,32 @@ static struct // Game data
   ALLEGRO_BITMAP* scale_buffer;
   ALLEGRO_TIMER* timer;
   ALLEGRO_EVENT_QUEUE* event_queue;
+  ALLEGRO_COLOR bg_color;
   int initialized;
   int is_running;
-  ALLEGRO_COLOR bg_color;
+  struct State* states[MAX_STATES];
 }
 game =
 {
-  NULL, NULL, NULL, NULL, NULL,
-  0, 0,
-  { 0, 0, 0, 0 }
+  .display      = NULL,
+  .buffer       = NULL,
+  .scale_buffer = NULL,
+  .timer        = NULL,
+  .event_queue  = NULL,
+  .bg_color     = { 0 },
+  .initialized  = FALSE,
+  .is_running   = FALSE,
+  .states = { NULL }
 };
 
-ALLEGRO_FONT* font = NULL;
-
-static struct State* states[MAX_STATES];
 static int current_state = 0;
 
 int game_init(struct Game_Config* config)
 {
-  int i;
-
   if (game.initialized)
   {
     puts("WARNING: Game already initialized");
     return 1;
-  }
-
-  for (i=0; i<MAX_STATES; ++i)
-  {
-    states[current_state] = NULL;
   }
 
   // Initialize Allegro and stuff
@@ -144,13 +143,14 @@ int game_init(struct Game_Config* config)
 
   al_add_new_bitmap_flag(ALLEGRO_MAG_LINEAR);
 
-  game.scale_buffer = al_create_bitmap(config->width * 2, config->height * 2);
+  game.scale_buffer = al_create_bitmap(config->width * config->scale,
+                                       config->height * config->scale);
   game.timer = al_create_timer(1.0 / config->framerate);
   game.event_queue = al_create_event_queue();
 
   default_config = config;
+  set_bg_color(al_map_rgb(192, 192, 192));
 
-  game.bg_color = al_map_rgb(192, 192, 192);
   game.initialized = TRUE;
 
   return 1;
@@ -184,7 +184,7 @@ void game_run()
     al_wait_for_event(game.event_queue, &event);
 
     // Event processing
-    states[current_state]->events(&event);
+    game.states[current_state]->events(&event);
 
     // If the close button was pressed...
     if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
@@ -203,7 +203,7 @@ void game_run()
     }
     else if (event.type == ALLEGRO_EVENT_TIMER)
     {
-      states[current_state]->update();
+      game.states[current_state]->update();
       redraw = TRUE;
     }
 
@@ -215,7 +215,7 @@ void game_run()
 
       al_clear_to_color(game.bg_color);
 
-      states[current_state]->draw();
+      game.states[current_state]->draw();
 
       al_set_target_bitmap(game.scale_buffer);
 
@@ -245,9 +245,9 @@ void game_run()
 
   for (i=0; i<MAX_STATES; ++i)
   {
-    if (states[i] != NULL)
+    if (game.states[i] != NULL)
     {
-      states[i]->end(TRUE);
+      game.states[i]->end(TRUE);
     }
   }
 
@@ -271,26 +271,26 @@ void set_bg_color(ALLEGRO_COLOR color)
 
 void change_state(struct State* state, long param)
 {
-  if (states[current_state] != NULL)
+  if (game.states[current_state] != NULL)
   {
-    states[current_state]->end(FALSE);
+    game.states[current_state]->end(FALSE);
   }
 
-  states[current_state] = state;
-  state->init(param);
+  game.states[current_state] = state;
+  game.states[current_state]->init(param);
 }
 
 void push_state(struct State* state, long param)
 {
   if (current_state < (MAX_STATES - 1))
   {
-    if (states[current_state] != NULL)
+    if (game.states[current_state] != NULL)
     {
-      states[current_state]->pause();
+      game.states[current_state]->pause();
     }
 
-    states[++current_state] = state;
-    state->init(param);
+    game.states[++current_state] = state;
+    game.states[current_state]->init(param);
   }
   else
   {
@@ -302,9 +302,9 @@ void pop_state()
 {
   if (current_state > 0)
   {
-    states[current_state]->end(FALSE);
-    states[current_state] = NULL;
-    states[--current_state]->resume();
+    game.states[current_state]->end(FALSE);
+    game.states[current_state] = NULL;
+    game.states[--current_state]->resume();
   }
   else
   {

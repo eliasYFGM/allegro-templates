@@ -5,17 +5,22 @@
 
 struct Game_Config* default_config = NULL;
 
-static struct // Game data
+static struct // Game variables
 {
   BITMAP* buffer;
   int initialized;
   int bg_color;
+  struct State* states[MAX_STATES];
 }
 game =
 {
-  NULL,
-  0, 0
+  .buffer       = NULL,
+  .initialized  = FALSE,
+  .bg_color     = 0,
+  .states       = { NULL }
 };
+
+static int current_state = 0;
 
 static volatile int ticks = 0;
 
@@ -45,24 +50,13 @@ static void close_button_handler()
 END_OF_FUNCTION(close_button_handler)
 #endif // ALLEGRO_DOS
 
-// State data
-static struct State* states[MAX_STATES];
-static int current_state = 0;
-
 // Main game initialization
 int game_init(struct Game_Config* config)
 {
-  int i;
-
   if (game.initialized)
   {
     puts("WARNING: Game already initialized");
     return 0;
-  }
-
-  for (i=0; i<MAX_STATES; ++i)
-  {
-    states[i] = NULL;
   }
 
   allegro_init();
@@ -115,7 +109,7 @@ void game_run()
 {
   int i, redraw = FALSE;
 
-  if (!states[current_state])
+  if (!game.states[current_state])
   {
     puts("ERROR: change_state was not called");
     return;
@@ -149,7 +143,7 @@ void game_run()
           break;
         }
 
-        states[current_state]->update();
+        game.states[current_state]->update();
         redraw = TRUE;
       }
 
@@ -159,7 +153,7 @@ void game_run()
 
         clear_to_color(game.buffer, game.bg_color);
 
-        states[current_state]->draw(game.buffer);
+        game.states[current_state]->draw(game.buffer);
 
         show_mouse(game.buffer);
         blit(game.buffer, screen, 0, 0, 0, 0, SCREEN_W, SCREEN_H);
@@ -178,9 +172,9 @@ void game_run()
 
   for (i=0; i<MAX_STATES; ++i)
   {
-    if (states[i] != NULL)
+    if (game.states[i] != NULL)
     {
-      states[i]->end(TRUE);
+      game.states[i]->end(TRUE);
     }
   }
 
@@ -201,13 +195,13 @@ void set_bg_color(int color)
 // Changes the state directly to another
 void change_state(struct State* state, long param)
 {
-  if (states[current_state] != NULL)
+  if (game.states[current_state] != NULL)
   {
-    states[current_state]->end(FALSE);
+    game.states[current_state]->end(FALSE);
   }
 
-  states[current_state] = state;
-  state->init(param);
+  game.states[current_state] = state;
+  game.states[current_state]->init(param);
 }
 
 // Pushes a new state onto the stack (previous one is 'paused')
@@ -215,13 +209,13 @@ void push_state(struct State* state, long param)
 {
   if (current_state < (MAX_STATES - 1))
   {
-    if (states[current_state] != NULL)
+    if (game.states[current_state] != NULL)
     {
-      states[current_state]->pause();
+      game.states[current_state]->pause();
     }
 
-    states[++current_state] = state;
-    state->init(param);
+    game.states[++current_state] = state;
+    game.states[current_state]->init(param);
   }
   else
   {
@@ -234,9 +228,9 @@ void pop_state()
 {
   if (current_state > 0)
   {
-    states[current_state]->end(FALSE);
-    states[current_state] = NULL;
-    states[--current_state]->resume();
+    game.states[current_state]->end(FALSE);
+    game.states[current_state] = NULL;
+    game.states[--current_state]->resume();
   }
   else
   {
