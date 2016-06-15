@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <allegro.h>
 #include "game.h"
 #include "gamestate.h"
