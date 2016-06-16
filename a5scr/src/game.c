@@ -8,9 +8,9 @@
 #include "game.h"
 #include "state.h"
 
-// Used to simulate a slightly lower screen resolution
-// E.g. without the panels and stuff, lines 102-103
 #define SCREEN_RES_OVERRIDE   0.1
+// Used to simulate a slightly lower screen resolution
+// E.g. without the panels and stuff
 
 struct Game_Config* default_config = NULL;
 ALLEGRO_FONT* font = NULL;
@@ -41,6 +41,7 @@ game =
 };
 
 static int current_state = 0;
+static float scale_buffer_factor = 2;
 
 int game_init(struct Game_Config* config)
 {
@@ -101,16 +102,13 @@ int game_init(struct Game_Config* config)
     float new_monitor_w = (monitor_w - (monitor_w * SCREEN_RES_OVERRIDE));
     float new_monitor_h = (monitor_h - (monitor_h * SCREEN_RES_OVERRIDE));
 
-    int scale_w = 0;
-    int scale_h = 0;
-
     config->scale = 2;
 
-    // Keep scaling until a more suitable scale factor is found
+    // Keep scaling until a suitable scale factor is found
     while (1)
     {
-      scale_w = config->width * config->scale;
-      scale_h = config->height * config->scale;
+      int scale_w = config->width * config->scale;
+      int scale_h = config->height * config->scale;
 
       if (scale_w > new_monitor_w || scale_h > new_monitor_h)
       {
@@ -143,8 +141,17 @@ int game_init(struct Game_Config* config)
 
   al_add_new_bitmap_flag(ALLEGRO_MAG_LINEAR);
 
-  game.scale_buffer = al_create_bitmap(config->width * config->scale,
-                                       config->height * config->scale);
+  scale_buffer_factor = floor(config->scale / 2.0);
+
+  // Always try to keep scale_buffer at least 2x the original buffer
+  if (scale_buffer_factor < 2)
+  {
+    scale_buffer_factor = 2;
+  }
+
+  game.scale_buffer = al_create_bitmap(config->width * scale_buffer_factor,
+                                       config->height * scale_buffer_factor);
+
   game.timer = al_create_timer(1.0 / config->framerate);
   game.event_queue = al_create_event_queue();
 
@@ -224,16 +231,16 @@ void game_run()
                             default_config->width,
                             default_config->height,
                             0, 0,
-                            default_config->width * 2,
-                            default_config->height * 2,
+                            default_config->width * scale_buffer_factor,
+                            default_config->height * scale_buffer_factor,
                             0);
 
       al_set_target_backbuffer(game.display);
 
       al_draw_scaled_bitmap(game.scale_buffer,
                             0, 0,
-                            default_config->width * 2,
-                            default_config->height * 2,
+                            default_config->width * scale_buffer_factor,
+                            default_config->height * scale_buffer_factor,
                             0, 0,
                             default_config->width * default_config->scale,
                             default_config->height * default_config->scale,

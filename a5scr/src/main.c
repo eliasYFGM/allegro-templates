@@ -13,7 +13,7 @@ int main(int argc, char* argv[])
     320, 200,
     // Scaling factor (<= 0 for auto)
     0,
-    // Framerate (FPS)
+    // Frame-rate (FPS)
     40,
     // Want audio module?
     FALSE
