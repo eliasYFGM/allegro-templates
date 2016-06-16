@@ -13,4 +13,4 @@ These were made under Linux, but they support targetting Windows and DOS (Allegr
 
 [c]: Templates for the C language. They may be slightly more polished than C++ though.
 
-[r]: Template for retro-games in mind (small resolution). The game window is up-scaled automatically by default, depending on the monitor's resolution (minimum scaling factor is 2) and uses "nearest-neighbor" to scale plus linear interpolation. No full-screen at the moment.
+[r]: Template for retro-games in mind (small resolution). The game window is up-scaled automatically by default, depending on the monitor's resolution, and uses "nearest-neighbor" to scale plus linear interpolation (except for Allegro 4). No full-screen at the moment.
