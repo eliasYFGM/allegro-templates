@@ -107,7 +107,7 @@ int game_init(struct Game_Config* config)
 // Game loop
 void game_run()
 {
-  int i, redraw = FALSE;
+  int redraw = FALSE;
 
   if (!game.states[current_state])
   {
@@ -170,6 +170,7 @@ void game_run()
 #endif // ALLEGRO_DOS
   }
 
+  int i;
   for (i=0; i<MAX_STATES; ++i)
   {
     if (game.states[i] != NULL)

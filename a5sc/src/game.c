@@ -141,7 +141,7 @@ int game_init(struct Game_Config* config)
 
 void game_run()
 {
-  int i, redraw = 0;
+  int redraw = 0;
 
   // Generate display events
   al_register_event_source(game.event_queue,
@@ -184,7 +184,7 @@ void game_run()
         break;
       }
 
-      // The F4 key will switch between screen modes (maintaining aspect ratio)
+      // The F4 key will switch between screen modes (maintaining aspect ratio) 
       // A feature that is only available in Game Maker
       if (event.keyboard.keycode == ALLEGRO_KEY_F4)
       {
@@ -230,6 +230,7 @@ void game_run()
     }
   }
 
+  int i;
   for (i=0; i<MAX_STATES; ++i)
   {
     if (game.states[i] != NULL)
