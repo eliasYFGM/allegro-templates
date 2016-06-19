@@ -18,8 +18,6 @@ ALLEGRO_FONT* font = NULL;
 static struct // Game data
 {
   ALLEGRO_DISPLAY* display;
-  ALLEGRO_BITMAP* buffer;
-  ALLEGRO_BITMAP* scale_buffer;
   ALLEGRO_TIMER* timer;
   ALLEGRO_EVENT_QUEUE* event_queue;
   ALLEGRO_COLOR bg_color;
@@ -30,8 +28,6 @@ static struct // Game data
 game =
 {
   .display      = NULL,
-  .buffer       = NULL,
-  .scale_buffer = NULL,
   .timer        = NULL,
   .event_queue  = NULL,
   .bg_color     = { 0 },
@@ -41,7 +37,6 @@ game =
 };
 
 static int current_state = 0;
-static float scale_buffer_factor = 2;
 
 int game_init(struct Game_Config* config)
 {
@@ -137,26 +132,16 @@ int game_init(struct Game_Config* config)
 
   font = al_create_builtin_font();
 
-  game.buffer = al_create_bitmap(config->width, config->height);
-
-  al_add_new_bitmap_flag(ALLEGRO_MAG_LINEAR);
-
-  scale_buffer_factor = floor(config->scale / 2.0);
-
-  // Always try to keep scale_buffer at least 2x the original buffer
-  if (scale_buffer_factor < 2)
-  {
-    scale_buffer_factor = 2;
-  }
-
-  game.scale_buffer = al_create_bitmap(config->width * scale_buffer_factor,
-                                       config->height * scale_buffer_factor);
-
   game.timer = al_create_timer(1.0 / config->framerate);
   game.event_queue = al_create_event_queue();
 
   default_config = config;
   set_bg_color(al_map_rgb(192, 192, 192));
+
+  ALLEGRO_TRANSFORM trans;
+  al_identity_transform(&trans);
+  al_scale_transform(&trans, config->scale, config->scale);
+  al_use_transform(&trans);
 
   game.initialized = TRUE;
 
@@ -165,7 +150,7 @@ int game_init(struct Game_Config* config)
 
 void game_run()
 {
-  int i, redraw = 0;
+  int redraw = FALSE;
 
   // Generate display events
   al_register_event_source(game.event_queue,
@@ -218,38 +203,17 @@ void game_run()
     {
       redraw = FALSE;
 
-      al_set_target_bitmap(game.buffer);
+      al_set_target_backbuffer(game.display);
 
       al_clear_to_color(game.bg_color);
 
       game.states[current_state]->draw();
 
-      al_set_target_bitmap(game.scale_buffer);
-
-      al_draw_scaled_bitmap(game.buffer,
-                            0, 0,
-                            default_config->width,
-                            default_config->height,
-                            0, 0,
-                            default_config->width * scale_buffer_factor,
-                            default_config->height * scale_buffer_factor,
-                            0);
-
-      al_set_target_backbuffer(game.display);
-
-      al_draw_scaled_bitmap(game.scale_buffer,
-                            0, 0,
-                            default_config->width * scale_buffer_factor,
-                            default_config->height * scale_buffer_factor,
-                            0, 0,
-                            default_config->width * default_config->scale,
-                            default_config->height * default_config->scale,
-                            0);
-
       al_flip_display();
     }
   }
 
+  int i;
   for (i=0; i<MAX_STATES; ++i)
   {
     if (game.states[i] != NULL)
@@ -259,8 +223,6 @@ void game_run()
   }
 
   al_destroy_display(game.display);
-  al_destroy_bitmap(game.buffer);
-  al_destroy_bitmap(game.scale_buffer);
   al_destroy_timer(game.timer);
   al_destroy_event_queue(game.event_queue);
   al_destroy_font(font);
