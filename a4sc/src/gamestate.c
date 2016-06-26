@@ -2,27 +2,27 @@
 #include "game.h"
 #include "gamestate.h"
 
-static void on_init(long param)
+static void game_state_init(long param)
 {
 }
 
-static void on_end(int is_over)
+static void game_state_end(int is_over)
 {
 }
 
-static void on_pause()
+static void game_state_pause()
 {
 }
 
-static void on_resume()
+static void game_state_resume()
 {
 }
 
-static void on_update()
+static void game_state_update()
 {
 }
 
-static void on_draw(BITMAP* bmp)
+static void game_state_draw(BITMAP* bmp)
 {
 }
 
@@ -30,12 +30,12 @@ struct State* get_game_state()
 {
   static struct State state =
   {
-    on_init,
-    on_end,
-    on_pause,
-    on_resume,
-    on_update,
-    on_draw
+    game_state_init,
+    game_state_end,
+    game_state_pause,
+    game_state_resume,
+    game_state_update,
+    game_state_draw
   };
 
   return &state;

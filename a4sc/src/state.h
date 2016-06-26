@@ -6,14 +6,14 @@
 // Main state structure
 struct State
 {
-  void (*init)(long);
-  void (*end)(int);
+  void (*_init)(long);
+  void (*_end)(int);
 
-  void (*pause)();
-  void (*resume)();
+  void (*_pause)();
+  void (*_resume)();
 
-  void (*update)();
-  void (*draw)(BITMAP*);
+  void (*_update)();
+  void (*_draw)(BITMAP*);
 };
 
 #endif // STATE_H_INCLUDED

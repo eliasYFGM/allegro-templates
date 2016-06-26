@@ -89,17 +89,14 @@ int game_init(struct Game_Config* config)
 
 #ifndef ALLEGRO_DOS
   set_window_title(config->title);
+  set_close_button_callback(close_button_handler);
 #endif // ALLEGRO_DOS
 
   game.buffer = create_bitmap(SCREEN_W, SCREEN_H);
   game.bg_color = makecol(192, 192, 192);
-
-#ifndef ALLEGRO_DOS
-  set_close_button_callback(close_button_handler);
-#endif // ALLEGRO_DOS
+  default_config = config;
 
   game.initialized = TRUE;
-  default_config = config;
 
   return 1;
 }
@@ -143,7 +140,7 @@ void game_run()
           break;
         }
 
-        game.states[current_state]->update();
+        game.states[current_state]->_update();
         redraw = TRUE;
       }
 
@@ -153,7 +150,7 @@ void game_run()
 
         clear_to_color(game.buffer, game.bg_color);
 
-        game.states[current_state]->draw(game.buffer);
+        game.states[current_state]->_draw(game.buffer);
 
         show_mouse(game.buffer);
         blit(game.buffer, screen, 0, 0, 0, 0, SCREEN_W, SCREEN_H);
@@ -175,7 +172,8 @@ void game_run()
   {
     if (game.states[i] != NULL)
     {
-      game.states[i]->end(TRUE);
+      // Always pass TRUE to let the state know that the game is closing
+      game.states[i]->_end(TRUE);
     }
   }
 
@@ -198,11 +196,11 @@ void change_state(struct State* state, long param)
 {
   if (game.states[current_state] != NULL)
   {
-    game.states[current_state]->end(FALSE);
+    game.states[current_state]->_end(FALSE);
   }
 
   game.states[current_state] = state;
-  game.states[current_state]->init(param);
+  game.states[current_state]->_init(param);
 }
 
 // Pushes a new state onto the stack (previous one is 'paused')
@@ -212,11 +210,11 @@ void push_state(struct State* state, long param)
   {
     if (game.states[current_state] != NULL)
     {
-      game.states[current_state]->pause();
+      game.states[current_state]->_pause();
     }
 
     game.states[++current_state] = state;
-    game.states[current_state]->init(param);
+    game.states[current_state]->_init(param);
   }
   else
   {
@@ -229,9 +227,9 @@ void pop_state()
 {
   if (current_state > 0)
   {
-    game.states[current_state]->end(FALSE);
+    game.states[current_state]->_end(FALSE);
     game.states[current_state] = NULL;
-    game.states[--current_state]->resume();
+    game.states[--current_state]->_resume();
   }
   else
   {

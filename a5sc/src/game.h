@@ -25,8 +25,8 @@ struct Game_Config
 // Pointer to the original settings (given in main.c)
 extern struct Game_Config* default_config;
 
-#define SCREEN_W    default_config->width
-#define SCREEN_H    default_config->height
+#define GAME_W    default_config->width
+#define GAME_H    default_config->height
 
 // Default fixed-width font
 extern ALLEGRO_FONT* font;
