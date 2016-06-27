@@ -6,15 +6,15 @@
 // Main state structure
 struct State
 {
-  void (*init)(long);
-  void (*end)(int);
+  void (*_init)(long);
+  void (*_end)(int);
 
-  void (*pause)();
-  void (*resume)();
+  void (*_pause)();
+  void (*_resume)();
 
-  void (*events)(ALLEGRO_EVENT*);
-  void (*update)();
-  void (*draw)();
+  void (*_events)(ALLEGRO_EVENT*);
+  void (*_update)();
+  void (*_draw)();
 };
 
 #endif // STATE_H_INCLUDED

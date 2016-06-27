@@ -176,7 +176,7 @@ void game_run()
     al_wait_for_event(game.event_queue, &event);
 
     // Event processing
-    game.states[current_state]->events(&event);
+    game.states[current_state]->_events(&event);
 
     // If the close button was pressed...
     if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
@@ -195,7 +195,7 @@ void game_run()
     }
     else if (event.type == ALLEGRO_EVENT_TIMER)
     {
-      game.states[current_state]->update();
+      game.states[current_state]->_update();
       redraw = TRUE;
     }
 
@@ -207,7 +207,7 @@ void game_run()
 
       al_clear_to_color(game.bg_color);
 
-      game.states[current_state]->draw();
+      game.states[current_state]->_draw();
 
       al_flip_display();
     }
@@ -218,7 +218,7 @@ void game_run()
   {
     if (game.states[i] != NULL)
     {
-      game.states[i]->end(TRUE);
+      game.states[i]->_end(TRUE);
     }
   }
 
@@ -242,11 +242,11 @@ void change_state(struct State* state, long param)
 {
   if (game.states[current_state] != NULL)
   {
-    game.states[current_state]->end(FALSE);
+    game.states[current_state]->_end(FALSE);
   }
 
   game.states[current_state] = state;
-  game.states[current_state]->init(param);
+  game.states[current_state]->_init(param);
 }
 
 void push_state(struct State* state, long param)
@@ -255,11 +255,11 @@ void push_state(struct State* state, long param)
   {
     if (game.states[current_state] != NULL)
     {
-      game.states[current_state]->pause();
+      game.states[current_state]->_pause();
     }
 
     game.states[++current_state] = state;
-    game.states[current_state]->init(param);
+    game.states[current_state]->_init(param);
   }
   else
   {
@@ -271,9 +271,9 @@ void pop_state()
 {
   if (current_state > 0)
   {
-    game.states[current_state]->end(FALSE);
+    game.states[current_state]->_end(FALSE);
     game.states[current_state] = NULL;
-    game.states[--current_state]->resume();
+    game.states[--current_state]->_resume();
   }
   else
   {

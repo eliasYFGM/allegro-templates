@@ -168,7 +168,7 @@ void game_run()
           break;
         }
 
-        game.states[current_state]->update();
+        game.states[current_state]->_update();
         redraw = TRUE;
       }
 
@@ -178,7 +178,7 @@ void game_run()
 
         clear_to_color(game.buffer, game.bg_color);
 
-        game.states[current_state]->draw(game.buffer);
+        game.states[current_state]->_draw(game.buffer);
 
         stretch_blit(game.buffer, screen,
                      0, 0, default_config->width, default_config->height,
@@ -198,7 +198,7 @@ void game_run()
   {
     if (game.states[i] != NULL)
     {
-      game.states[i]->end(TRUE);
+      game.states[i]->_end(TRUE);
     }
   }
 
@@ -221,11 +221,11 @@ void change_state(struct State* state, long param)
 {
   if (game.states[current_state] != NULL)
   {
-    game.states[current_state]->end(FALSE);
+    game.states[current_state]->_end(FALSE);
   }
 
   game.states[current_state] = state;
-  game.states[current_state]->init(param);
+  game.states[current_state]->_init(param);
 }
 
 // Pushes a new state onto the stack (previous one is 'paused')
@@ -235,11 +235,11 @@ void push_state(struct State* state, long param)
   {
     if (game.states[current_state] != NULL)
     {
-      game.states[current_state]->pause();
+      game.states[current_state]->_pause();
     }
 
     game.states[++current_state] = state;
-    game.states[current_state]->init(param);
+    game.states[current_state]->_init(param);
   }
   else
   {
@@ -252,9 +252,9 @@ void pop_state()
 {
   if (current_state > 0)
   {
-    game.states[current_state]->end(FALSE);
+    game.states[current_state]->_end(FALSE);
     game.states[current_state] = NULL;
-    game.states[--current_state]->resume();
+    game.states[--current_state]->_resume();
   }
   else
   {

@@ -43,12 +43,12 @@ static void aspect_ratio_transform()
   int window_w = al_get_display_width(game.display);
   int window_h = al_get_display_height(game.display);
 
-  float sw = (window_w / (float) SCREEN_W);
-  float sh = (window_h / (float) SCREEN_H);
+  float sw = (window_w / (float) GAME_W);
+  float sh = (window_h / (float) GAME_H);
   float scale = (sw < sh ? sw : sh);
 
-  float scale_w = ((float) SCREEN_W * scale);
-  float scale_h = ((float) SCREEN_H * scale);
+  float scale_w = ((float) GAME_W * scale);
+  float scale_h = ((float) GAME_H * scale);
   int scale_x_pos = (window_w - scale_w) / 2;
   int scale_y_pos = (window_h - scale_h) / 2;
 
@@ -167,7 +167,7 @@ void game_run()
     al_wait_for_event(game.event_queue, &event);
 
     // Event processing
-    game.states[current_state]->events(&event);
+    game.states[current_state]->_events(&event);
 
     // If the close button was pressed...
     if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
@@ -184,7 +184,7 @@ void game_run()
         break;
       }
 
-      // The F4 key will switch between screen modes (maintaining aspect ratio) 
+      // The F4 key will switch between screen modes (maintaining aspect ratio)
       // A feature that is only available in Game Maker
       if (event.keyboard.keycode == ALLEGRO_KEY_F4)
       {
@@ -206,7 +206,7 @@ void game_run()
     }
     else if (event.type == ALLEGRO_EVENT_TIMER)
     {
-      game.states[current_state]->update();
+      game.states[current_state]->_update();
       redraw = TRUE;
     }
 
@@ -218,7 +218,7 @@ void game_run()
 
       al_clear_to_color(game.bg_color);
 
-      game.states[current_state]->draw();
+      game.states[current_state]->_draw();
 
       al_set_target_backbuffer(game.display);
 
@@ -235,7 +235,7 @@ void game_run()
   {
     if (game.states[i] != NULL)
     {
-      game.states[i]->end(TRUE);
+      game.states[i]->_end(TRUE);
     }
   }
 
@@ -260,11 +260,11 @@ void change_state(struct State* state, long param)
 {
   if (game.states[current_state] != NULL)
   {
-    game.states[current_state]->end(FALSE);
+    game.states[current_state]->_end(FALSE);
   }
 
   game.states[current_state] = state;
-  game.states[current_state]->init(param);
+  game.states[current_state]->_init(param);
 }
 
 void push_state(struct State* state, long param)
@@ -273,11 +273,11 @@ void push_state(struct State* state, long param)
   {
     if (game.states[current_state] != NULL)
     {
-      game.states[current_state]->pause();
+      game.states[current_state]->_pause();
     }
 
     game.states[++current_state] = state;
-    game.states[current_state]->init(param);
+    game.states[current_state]->_init(param);
   }
   else
   {
@@ -289,9 +289,9 @@ void pop_state()
 {
   if (current_state > 0)
   {
-    game.states[current_state]->end(FALSE);
+    game.states[current_state]->_end(FALSE);
     game.states[current_state] = NULL;
-    game.states[--current_state]->resume();
+    game.states[--current_state]->_resume();
   }
   else
   {
