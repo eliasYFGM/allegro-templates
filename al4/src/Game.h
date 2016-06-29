@@ -11,35 +11,29 @@
 
 class Game
 {
-  BITMAP* buffer;
-  bool need_redraw;
-  int bg_color;
-  int framerate;
-  std::stack<State*> states;
+  struct Game_Internal;
+  Game_Internal* intern;
 
   void Update();
   void Draw();
 
 public:
-  Game() : buffer(0), need_redraw(false) {}
+  Game();
   ~Game();
 
   bool Init(int width, int height, const char* title = "Allegro application",
             bool fullscreen = false, int rate = 40, int depth = 32);
   void Run();
+  void Game_Over(); // Only meant for states; NO need to call after Run()
+  void Set_BG_Color(int color);
 
-  void Game_Over();
-
-  void Set_BG_Color(int color)
-  {
-    bg_color = color;
-  }
-
+  // State manipulation
   void Change_State(State* state);
   void Push_State(State* state);
   void Pop_State();
 };
 
+// Accessible from anywhere
 extern volatile int fps;
 
 #endif // GAME_H_INCLUDED

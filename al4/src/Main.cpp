@@ -9,7 +9,7 @@ int main()
     // Screen size
     640, 480,
     // Window title
-    "Game",
+    "Allegro application",
     // Full-screen
     false,
     // Fixed rate (FPS)

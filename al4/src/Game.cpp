@@ -28,16 +28,35 @@ static void close_button_handler()
 }
 END_OF_FUNCTION(close_button_handler)
 
+struct Game::Game_Internal
+{
+  BITMAP* buffer;
+  bool need_redraw;
+  int bg_color;
+  int framerate;
+  bool fullscreen;
+  std::stack<State*> states;
+};
+
+Game::Game()
+{
+  intern = new Game_Internal();
+  intern->buffer = 0;
+  intern->need_redraw = false;
+}
+
 Game::~Game()
 {
-  if (buffer)
+  if (intern->buffer)
   {
-    destroy_bitmap(buffer);
+    destroy_bitmap(intern->buffer);
   }
+
+  delete intern;
 }
 
 bool Game::Init(int width, int height, const char* title, bool fullscreen,
-  int rate, int depth)
+                int rate, int depth)
 {
   allegro_init();
   install_keyboard();
@@ -57,9 +76,9 @@ bool Game::Init(int width, int height, const char* title, bool fullscreen,
 
   set_window_title(title);
 
-  buffer = create_bitmap(SCREEN_W, SCREEN_H);
-
-  framerate = rate;
+  intern->buffer = create_bitmap(SCREEN_W, SCREEN_H);
+  intern->framerate = rate;
+  intern->fullscreen = fullscreen;
 
   LOCK_FUNCTION(close_button_handler);
   set_close_button_callback(close_button_handler);
@@ -75,7 +94,7 @@ void Game::Run()
 {
   LOCK_VARIABLE(ticks);
   LOCK_FUNCTION(ticker);
-  install_int_ex(ticker, BPS_TO_TIMER(framerate));
+  install_int_ex(ticker, BPS_TO_TIMER(intern->framerate));
 
   LOCK_VARIABLE(fps);
   LOCK_VARIABLE(fps_counter);
@@ -90,10 +109,10 @@ void Game::Run()
     Draw();
   }
 
-  while (!states.empty())
+  while (!intern->states.empty())
   {
-    delete states.top();
-    states.pop();
+    delete intern->states.top();
+    intern->states.pop();
   }
 }
 
@@ -104,12 +123,22 @@ void Game::Update()
     while (ticks)
     {
       --ticks;
-      states.top()->Update(this);
+
+      // Escape key will close the game in full-screen
+      if (intern->fullscreen)
+      {
+        if (key[KEY_ESC])
+        {
+          Game_Over();
+        }
+      }
+
+      intern->states.top()->Update(this);
     }
 
     if (is_running)
     {
-      need_redraw = true;
+      intern->need_redraw = true;
     }
   }
   else
@@ -120,18 +149,15 @@ void Game::Update()
 
 void Game::Draw()
 {
-  if (need_redraw)
+  if (intern->need_redraw)
   {
-    need_redraw = false;
+    intern->need_redraw = false;
+    clear_to_color(intern->buffer, intern->bg_color);
 
-    clear_to_color(buffer, bg_color);
+    intern->states.top()->Draw(this, intern->buffer);
 
-    states.top()->Draw(this, buffer);
-
-    show_mouse(buffer);
-
-    blit(buffer, screen, 0, 0, 0, 0, SCREEN_W, SCREEN_H);
-
+    show_mouse(intern->buffer);
+    blit(intern->buffer, screen, 0, 0, 0, 0, SCREEN_W, SCREEN_H);
     show_mouse(0);
 
     ++fps_counter;
@@ -143,38 +169,43 @@ void Game::Game_Over()
   is_running = false;
 }
 
+void Game::Set_BG_Color(int color)
+{
+  intern->bg_color = color;
+}
+
 void Game::Change_State(State* state)
 {
-  if (!states.empty())
+  if (!intern->states.empty())
   {
-    delete states.top();
-    states.pop();
+    delete intern->states.top();
+    intern->states.pop();
   }
 
-  states.push(state);
+  intern->states.push(state);
 }
 
 void Game::Push_State(State* state)
 {
-  if (!states.empty())
+  if (!intern->states.empty())
   {
-    states.top()->Pause(this);
+    intern->states.top()->Pause(this);
   }
 
-  states.push(state);
+  intern->states.push(state);
 }
 
 void Game::Pop_State()
 {
-  if (!states.empty())
+  if (!intern->states.empty())
   {
-    delete states.top();
-    states.pop();
+    delete intern->states.top();
+    intern->states.pop();
   }
 
-  if (!states.empty())
+  if (!intern->states.empty())
   {
-    states.top()->Resume(this);
+    intern->states.top()->Resume(this);
   }
   else
   {
