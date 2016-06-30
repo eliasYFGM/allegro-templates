@@ -1,6 +1,6 @@
 #include <allegro.h>
 #include "game.h"
-#include "gamestate.h"
+#include "game_state.h"
 
 static void game_state_init(long param)
 {

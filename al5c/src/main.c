@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "game.h"
-#include "gamestate.h"
+#include "game_state.h"
 
 int main(int argc, char* argv[])
 {
