@@ -9,22 +9,19 @@
 #include <allegro5/allegro_primitives.h>
 #include "Game.h"
 
-int Game::internal_w = 0;
-int Game::internal_h = 0;
-
 ALLEGRO_FONT* font = 0;
 
-static void aspect_ratio_transform(ALLEGRO_DISPLAY* display)
+static void aspect_ratio_transform(ALLEGRO_DISPLAY* display, int w, int h)
 {
   int window_w = al_get_display_width(display);
   int window_h = al_get_display_height(display);
 
-  float sw = (window_w / (float)(GAME_W));
-  float sh = (window_h / (float)(GAME_H));
+  float sw = (window_w / (float)(w));
+  float sh = (window_h / (float)(h));
   float scale = std::min(sw, sh);
 
-  float scale_w = (GAME_W * scale);
-  float scale_h = (GAME_H * scale);
+  float scale_w = (w * scale);
+  float scale_h = (h * scale);
   int scale_x_pos = (window_w - scale_w) / 2;
   int scale_y_pos = (window_h - scale_h) / 2;
 
@@ -43,6 +40,7 @@ struct Game::Game_Internal
   ALLEGRO_COLOR bg_color;
   bool need_update;
   bool is_running;
+  int width, height;
   std::stack<State*> states;
 };
 
@@ -100,10 +98,8 @@ bool Game::Init(int width, int height, const char* title, bool fullscreen,
     return false;
   }
 
-  internal_w = width;
-  internal_h = height;
+  aspect_ratio_transform(intern->display, width, height);
 
-  aspect_ratio_transform(intern->display);
   al_set_window_title(intern->display, title);
 
   al_add_new_bitmap_flag(ALLEGRO_MAG_LINEAR);
@@ -118,6 +114,9 @@ bool Game::Init(int width, int height, const char* title, bool fullscreen,
 
   intern->timer = al_create_timer(1.0 / rate);
   intern->event_queue = al_create_event_queue();
+  intern->width = width;
+  intern->height = height;
+
   font = al_create_builtin_font();
 
   Set_BG_Color(al_map_rgb(192, 192, 192));
@@ -181,7 +180,7 @@ void Game::Handle_Events()
                                true);
       }
 
-      aspect_ratio_transform(intern->display);
+      aspect_ratio_transform(intern->display, intern->width, intern->height);
 
       al_start_timer(intern->timer);
     }
@@ -233,6 +232,12 @@ void Game::Game_Over()
 void Game::Set_BG_Color(ALLEGRO_COLOR color)
 {
   intern->bg_color = color;
+}
+
+void Game::Get_Original_Res(int& w, int& h)
+{
+  w = intern->width;
+  h = intern->height;
 }
 
 void Game::Change_State(State* state)

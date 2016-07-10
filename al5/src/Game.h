@@ -19,10 +19,6 @@ class Game
   void Draw();
 
 public:
-  static int internal_w;
-  static int internal_h;
-
-public:
   Game();
   ~Game();
 
@@ -31,14 +27,12 @@ public:
   void Run();
   void Game_Over();
   void Set_BG_Color(ALLEGRO_COLOR color);
+  void Get_Original_Res(int& w, int& h);
 
   void Change_State(State* state);
   void Push_State(State* state);
   void Pop_State();
 };
-
-#define GAME_W  Game::internal_w
-#define GAME_H  Game::internal_h
 
 extern ALLEGRO_FONT* font;
 
