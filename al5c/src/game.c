@@ -14,7 +14,6 @@ static struct // Game variables
 {
   ALLEGRO_DISPLAY* display;
   ALLEGRO_BITMAP* buffer;
-  ALLEGRO_BITMAP* scale_buffer;
   ALLEGRO_TIMER* timer;
   ALLEGRO_EVENT_QUEUE* event_queue;
   ALLEGRO_COLOR bg_color;
@@ -26,7 +25,6 @@ game =
 {
   .display      = NULL,
   .buffer       = NULL,
-  .scale_buffer = NULL,
   .timer        = NULL,
   .event_queue  = NULL,
   .bg_color     = { 0 },
