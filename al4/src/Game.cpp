@@ -38,9 +38,8 @@ struct Game::Game_Internal
   std::stack<State*> states;
 };
 
-Game::Game()
+Game::Game() : intern(new Game_Internal())
 {
-  intern = new Game_Internal();
   intern->buffer = 0;
   intern->need_redraw = false;
 }
@@ -118,9 +117,9 @@ void Game::Run()
 
 void Game::Update()
 {
-  if (ticks)
+  if (ticks > 0)
   {
-    while (ticks)
+    while (ticks > 0)
     {
       --ticks;
 

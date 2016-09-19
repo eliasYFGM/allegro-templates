@@ -44,9 +44,8 @@ struct Game::Game_Internal
   std::stack<State*> states;
 };
 
-Game::Game()
+Game::Game() : intern(new Game_Internal())
 {
-  intern = new Game_Internal();
   intern->need_update = false;
   intern->is_running = false;
 }

@@ -1,5 +1,5 @@
-#ifndef GAME_H_INCLUDED
-#define GAME_H_INCLUDED
+#ifndef CORE_H_INCLUDED
+#define CORE_H_INCLUDED
 
 #include <allegro5/allegro_font.h>
 
@@ -11,6 +11,9 @@
 #define FALSE   0
 #define TRUE    -1
 #endif
+
+// Max states to allocate
+#define MAX_STATES  8
 
 struct Game_Config
 {
@@ -24,6 +27,9 @@ struct Game_Config
 
 // Pointer to the original settings (given in main.c)
 extern struct Game_Config* default_config;
+
+// Array to hold pressed keys
+extern int keys[ALLEGRO_KEY_MAX];
 
 #define GAME_W    default_config->width
 #define GAME_H    default_config->height
@@ -39,8 +45,6 @@ void set_bg_color(ALLEGRO_COLOR);
 
 struct State;
 
-#define MAX_STATES  8
-
 // State routines
 void change_state(struct State* state, long param);
 void push_state(struct State* state, long param);
@@ -51,4 +55,4 @@ void pop_state();
   (!( ((x1)>=(x2)+(w2)) || ((x2)>=(x1)+(w1)) || \
       ((y1)>=(y2)+(h2)) || ((y2)>=(y1)+(h1)) ))
 
-#endif // GAME_H_INCLUDED
+#endif // CORE_H_INCLUDED

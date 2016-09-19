@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "game.h"
+#include "core.h"
 #include "game_state.h"
 
 int main(int argc, char* argv[])
@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
   if (game_init(&config))
   {
     // Starting state
-    // Second argument is a value that can be passed to the init() function
+    // Second argument is a value that can be passed to the *_init() function
     // of the state (long)
     change_state(GAME_STATE, 0);
 

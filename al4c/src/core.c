@@ -1,9 +1,10 @@
 #include <stdio.h>
 #include <allegro.h>
-#include "game.h"
+#include "core.h"
 #include "state.h"
 
-struct Game_Config* default_config = NULL;
+struct Game_Config* default_config;
+static int current_state;
 
 static struct // Game variables
 {
@@ -20,9 +21,7 @@ game =
   .states       = { NULL }
 };
 
-static int current_state = 0;
-
-static volatile int ticks = 0;
+static volatile unsigned int ticks = 0;
 
 static void ticker()
 {
@@ -128,9 +127,9 @@ void game_run()
   // Game loop
   while (is_running)
   {
-    if (ticks)
+    if (ticks > 0)
     {
-      while (ticks)
+      while (ticks > 0)
       {
         --ticks;
 
