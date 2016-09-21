@@ -9,7 +9,8 @@
 #include <allegro5/allegro_primitives.h>
 #include "Game.h"
 
-ALLEGRO_FONT* font = 0;
+ALLEGRO_FONT* font;
+bool keys[ALLEGRO_KEY_MAX];
 
 static void aspect_ratio_transform(ALLEGRO_DISPLAY* display, int w, int h)
 {
@@ -46,6 +47,7 @@ struct Game::Game_Internal
 
 Game::Game() : intern(new Game_Internal())
 {
+  intern->buffer = 0;
   intern->need_update = false;
   intern->is_running = false;
 }
@@ -61,30 +63,33 @@ Game::~Game()
   delete intern;
 }
 
-bool Game::Init(int width, int height, const char* title, bool fullscreen,
-                int rate)
+bool Game::Init(const char* title, int width, int height, int rate, bool want_fs,
+                bool want_audio, bool want_bb)
 {
   al_init();
   al_install_keyboard();
   al_install_mouse();
   al_init_image_addon();
 
-  if (al_install_audio())
+  if (want_audio)
   {
-    if (!al_init_acodec_addon())
+    if (al_install_audio())
     {
-      std::cout << "WARNING: Could not init acodec addon" << std::endl;
+      if (!al_init_acodec_addon())
+      {
+        std::cout << "WARNING: Could not init acodec addon" << std::endl;
+      }
     }
-  }
-  else
-  {
-    std::cout << "WARNING: Could not init audio" << std::endl;
+    else
+    {
+      std::cout << "WARNING: Could not init audio" << std::endl;
+    }
   }
 
   al_init_font_addon();
   al_init_primitives_addon();
 
-  if (fullscreen)
+  if (want_fs)
   {
     al_set_new_display_flags(ALLEGRO_FULLSCREEN);
   }
@@ -103,12 +108,17 @@ bool Game::Init(int width, int height, const char* title, bool fullscreen,
 
   al_add_new_bitmap_flag(ALLEGRO_MAG_LINEAR);
 
-  intern->buffer = al_create_bitmap(width, height);
-
-  if (!intern->buffer)
+  if (want_bb)
   {
-    std::cout << "ERROR: Could not create a buffer" << std::endl;
-    return false;
+    intern->buffer = al_create_bitmap(width, height);
+
+    if (!intern->buffer)
+    {
+      std::cout << "ERROR: Could not create a buffer" << std::endl;
+      return false;
+    }
+
+    al_set_new_bitmap_flags(0);
   }
 
   intern->timer = al_create_timer(1.0 / rate);
@@ -161,9 +171,15 @@ void Game::Handle_Events()
   {
     intern->is_running = false;
   }
-
-  if (event.type == ALLEGRO_EVENT_KEY_DOWN)
+  else if (event.type == ALLEGRO_EVENT_KEY_DOWN)
   {
+    keys[event.keyboard.keycode] = true;
+
+    if (event.keyboard.keycode == ALLEGRO_KEY_ESCAPE)
+    {
+      Game_Over();
+    }
+
     if (event.keyboard.keycode == ALLEGRO_KEY_F4)
     {
       al_stop_timer(intern->timer);
@@ -175,8 +191,8 @@ void Game::Handle_Events()
       }
       else
       {
-        al_toggle_display_flag(intern->display, ALLEGRO_FULLSCREEN_WINDOW,
-                               true);
+        al_toggle_display_flag(intern->display,
+                               ALLEGRO_FULLSCREEN_WINDOW, true);
       }
 
       aspect_ratio_transform(intern->display, intern->width, intern->height);
@@ -184,8 +200,11 @@ void Game::Handle_Events()
       al_start_timer(intern->timer);
     }
   }
-
-  if (event.type == ALLEGRO_EVENT_TIMER)
+  else if (event.type == ALLEGRO_EVENT_KEY_UP)
+  {
+    keys[event.keyboard.keycode] = false;
+  }
+  else if (event.type == ALLEGRO_EVENT_TIMER)
   {
     intern->need_update = true;
   }
@@ -209,15 +228,25 @@ void Game::Draw()
 {
   if (intern->is_running && al_event_queue_is_empty(intern->event_queue))
   {
-    al_set_target_bitmap(intern->buffer);
+    if (intern->buffer)
+    {
+      al_set_target_bitmap(intern->buffer);
+    }
+    else
+    {
+      al_set_target_backbuffer(intern->display);
+    }
+
     al_clear_to_color(intern->bg_color);
 
     intern->states.top()->Draw(this);
 
-    al_set_target_backbuffer(intern->display);
-    al_clear_to_color(C_BLACK);
-
-    al_draw_bitmap(intern->buffer, 0, 0, 0);
+    if (intern->buffer)
+    {
+      al_set_target_backbuffer(intern->display);
+      al_clear_to_color(C_BLACK);
+      al_draw_bitmap(intern->buffer, 0, 0, 0);
+    }
 
     al_flip_display();
   }

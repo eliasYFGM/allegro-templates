@@ -6,14 +6,18 @@ int main()
   Game game;
 
   bool result = game.Init(
+    // Window title
+    "Allegro application",
     // Screen size
     640, 480,
-    // Window title
-    "Game",
-    // Full-screen
+    // Frame-rate (FPS)
+    40,
+    // Want full-screen?
     false,
-    // Fixed rate (FPS)
-    40
+    // Want sound?
+    false,
+    // Want additional back-buffer? (adds black bars)
+    false
   );
 
   if (result)

@@ -22,8 +22,8 @@ public:
   Game();
   ~Game();
 
-  bool Init(int width, int height, const char* title = "Allegro application",
-            bool fullscreen = false, int rate = 40);
+  bool Init(const char* title, int width, int height, int rate, bool want_fs,
+            bool want_audio, bool want_bb);
   void Run();
   void Game_Over();
   void Set_BG_Color(ALLEGRO_COLOR color);
@@ -35,5 +35,6 @@ public:
 };
 
 extern ALLEGRO_FONT* font;
+extern bool keys[ALLEGRO_KEY_MAX];
 
 #endif // GAME_H_INCLUDED

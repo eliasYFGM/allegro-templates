@@ -1,3 +1,5 @@
+#include <iostream>
+#include <stack>
 #include <cstdlib>
 #include <ctime>
 #include "Game.h"
@@ -34,7 +36,6 @@ struct Game::Game_Internal
   bool need_redraw;
   int bg_color;
   int framerate;
-  bool fullscreen;
   std::stack<State*> states;
 };
 
@@ -54,18 +55,26 @@ Game::~Game()
   delete intern;
 }
 
-bool Game::Init(int width, int height, const char* title, bool fullscreen,
-                int rate, int depth)
+bool Game::Init(const char* title, int width, int height, int rate, int depth,
+                bool want_fs, bool want_audio)
 {
   allegro_init();
   install_keyboard();
   install_mouse();
   install_timer();
 
+  if (want_audio)
+  {
+    if (install_sound(DIGI_AUTODETECT, MIDI_NONE, 0))
+    {
+      std::cout << "WARNING: Could not initialize audio" << std::endl;
+    }
+  }
+
   set_color_depth(depth);
 
   if (set_gfx_mode(
-    fullscreen ? GFX_AUTODETECT_FULLSCREEN : GFX_AUTODETECT_WINDOWED,
+    want_fs ? GFX_AUTODETECT_FULLSCREEN : GFX_AUTODETECT_WINDOWED,
     width, height, 0, 0))
   {
     set_gfx_mode(GFX_TEXT, 0, 0, 0, 0);
@@ -77,7 +86,6 @@ bool Game::Init(int width, int height, const char* title, bool fullscreen,
 
   intern->buffer = create_bitmap(SCREEN_W, SCREEN_H);
   intern->framerate = rate;
-  intern->fullscreen = fullscreen;
 
   LOCK_FUNCTION(close_button_handler);
   set_close_button_callback(close_button_handler);
@@ -124,12 +132,10 @@ void Game::Update()
       --ticks;
 
       // Escape key will close the game in full-screen
-      if (intern->fullscreen)
+      if (key[KEY_ESC])
       {
-        if (key[KEY_ESC])
-        {
-          Game_Over();
-        }
+        Game_Over();
+        break;
       }
 
       intern->states.top()->Update(this);

@@ -1,4 +1,3 @@
-#include <allegro5/allegro_primitives.h>
 #include "GameState.h"
 #include "Game.h"
 
