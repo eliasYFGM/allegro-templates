@@ -17,13 +17,7 @@ static struct // Game variables
   int bg_color;
   struct State* states[MAX_STATES];
 }
-game =
-{
-  .buffer       = NULL,
-  .initialized  = FALSE,
-  .bg_color     = 0,
-  .states       = { NULL }
-};
+game;
 
 static volatile unsigned int ticks = 0;
 

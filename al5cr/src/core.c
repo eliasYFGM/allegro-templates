@@ -30,16 +30,7 @@ static struct // Game data
   int is_running;
   struct State* states[MAX_STATES];
 }
-game =
-{
-  .display      = NULL,
-  .timer        = NULL,
-  .event_queue  = NULL,
-  .bg_color     = { 0 },
-  .initialized  = FALSE,
-  .is_running   = FALSE,
-  .states = { NULL }
-};
+game;
 
 int game_init(struct Game_Config* config)
 {

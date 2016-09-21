@@ -13,13 +13,7 @@ static struct // Game variables
   int bg_color;
   struct State* states[MAX_STATES];
 }
-game =
-{
-  .buffer       = NULL,
-  .initialized  = FALSE,
-  .bg_color     = 0,
-  .states       = { NULL }
-};
+game;
 
 static volatile unsigned int ticks = 0;
 
@@ -171,7 +165,7 @@ void game_run()
   {
     if (game.states[i] != NULL)
     {
-      // Always pass TRUE to let the state know that the game is closing
+      // Always pass TRUE to let the state know that the game is exiting
       game.states[i]->_end(TRUE);
     }
   }
