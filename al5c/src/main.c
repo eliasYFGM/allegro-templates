@@ -16,6 +16,8 @@ int main(int argc, char* argv[])
     // Want full-screen?
     FALSE,
     // Want audio module?
+    FALSE,
+    // Use additional back-buffer? (adds black bars)
     FALSE
   };
 

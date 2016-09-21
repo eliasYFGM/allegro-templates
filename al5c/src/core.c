@@ -26,17 +26,7 @@ static struct // Game variables
   int is_running;
   struct State* states[MAX_STATES];
 }
-game =
-{
-  .display      = NULL,
-  .buffer       = NULL,
-  .timer        = NULL,
-  .event_queue  = NULL,
-  .bg_color     = { 0 },
-  .initialized  = FALSE,
-  .is_running   = FALSE,
-  .states = { NULL }
-};
+game;
 
 // Updates the aspect ratio when going full-screen or windowed
 static void aspect_ratio_transform()
@@ -122,14 +112,19 @@ int game_init(struct Game_Config* config)
 
   al_set_window_title(game.display, config->title);
 
-  font = al_create_builtin_font();
-
   default_config = config;
   aspect_ratio_transform();
 
   al_add_new_bitmap_flag(ALLEGRO_MAG_LINEAR);
 
-  game.buffer = al_create_bitmap(config->width, config->height);
+  if (config->buffer)
+  {
+    game.buffer = al_create_bitmap(config->width, config->height);
+    al_set_new_bitmap_flags(0);
+  }
+
+  font = al_create_builtin_font();
+
   game.timer = al_create_timer(1.0 / config->framerate);
   game.event_queue = al_create_event_queue();
 
@@ -220,17 +215,25 @@ void game_run()
     {
       redraw = FALSE;
 
-      al_set_target_bitmap(game.buffer);
+      if (default_config->buffer)
+      {
+        al_set_target_bitmap(game.buffer);
+      }
+      else
+      {
+        al_set_target_backbuffer(game.display);
+      }
 
       al_clear_to_color(game.bg_color);
 
       game.states[current_state]->_draw();
 
-      al_set_target_backbuffer(game.display);
-
-      al_clear_to_color(C_BLACK);
-
-      al_draw_bitmap(game.buffer, 0, 0, 0);
+      if (default_config->buffer)
+      {
+        al_set_target_backbuffer(game.display);
+        al_clear_to_color(C_BLACK);
+        al_draw_bitmap(game.buffer, 0, 0, 0);
+      }
 
       al_flip_display();
     }
@@ -246,10 +249,14 @@ void game_run()
   }
 
   al_destroy_display(game.display);
-  al_destroy_bitmap(game.buffer);
   al_destroy_timer(game.timer);
   al_destroy_event_queue(game.event_queue);
   al_destroy_font(font);
+
+  if (default_config->buffer)
+  {
+    al_destroy_bitmap(game.buffer);
+  }
 }
 
 void game_over()

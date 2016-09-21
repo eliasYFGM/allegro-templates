@@ -23,6 +23,7 @@ struct Game_Config
   int framerate;
   int fullscreen;
   int audio;
+  int buffer;
 };
 
 // Pointer to the original settings (given in main.c)
