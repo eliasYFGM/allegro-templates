@@ -35,9 +35,6 @@ extern struct Game_Config* default_config;
 // Default fixed-width font
 extern ALLEGRO_FONT* font;
 
-// Array to hold pressed keys
-extern int keys[ALLEGRO_KEY_MAX];
-
 // Main game engine routines
 int game_init(struct Game_Config* config);
 void game_run();

@@ -10,7 +10,6 @@
 #include "Game.h"
 
 ALLEGRO_FONT* font;
-bool keys[ALLEGRO_KEY_MAX];
 
 static void aspect_ratio_transform(ALLEGRO_DISPLAY* display, int w, int h)
 {
@@ -173,8 +172,6 @@ void Game::Handle_Events()
   }
   else if (event.type == ALLEGRO_EVENT_KEY_DOWN)
   {
-    keys[event.keyboard.keycode] = true;
-
     if (event.keyboard.keycode == ALLEGRO_KEY_ESCAPE)
     {
       Game_Over();
@@ -199,10 +196,6 @@ void Game::Handle_Events()
 
       al_start_timer(intern->timer);
     }
-  }
-  else if (event.type == ALLEGRO_EVENT_KEY_UP)
-  {
-    keys[event.keyboard.keycode] = false;
   }
   else if (event.type == ALLEGRO_EVENT_TIMER)
   {

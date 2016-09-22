@@ -35,6 +35,5 @@ public:
 };
 
 extern ALLEGRO_FONT* font;
-extern bool keys[ALLEGRO_KEY_MAX];
 
 #endif // GAME_H_INCLUDED

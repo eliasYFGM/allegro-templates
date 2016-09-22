@@ -28,9 +28,6 @@ struct Game_Config
 // Pointer to the original settings (given in main.c)
 extern struct Game_Config* default_config;
 
-// Array to hold pressed keys
-extern int keys[ALLEGRO_KEY_MAX];
-
 #define GAME_W    default_config->width
 #define GAME_H    default_config->height
 
