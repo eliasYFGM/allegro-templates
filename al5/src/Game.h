@@ -34,6 +34,10 @@ public:
   void Pop_State();
 };
 
+// Default fixed-width font
 extern ALLEGRO_FONT* font;
+
+// Array holding key presses, only for the state's Update() function
+extern bool keys[ALLEGRO_KEY_MAX];
 
 #endif // GAME_H_INCLUDED

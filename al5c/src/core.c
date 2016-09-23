@@ -10,6 +10,7 @@
 // Globals
 struct Game_Config* default_config;
 ALLEGRO_FONT* font;
+int keys[ALLEGRO_KEY_MAX];
 
 // The state that is currently updating
 static int current_state;
@@ -172,6 +173,8 @@ void game_run()
     }
     else if (event.type == ALLEGRO_EVENT_KEY_DOWN)
     {
+      keys[event.keyboard.keycode] = TRUE;
+
       // Escape key will end the game
       if (event.keyboard.keycode == ALLEGRO_KEY_ESCAPE)
       {
@@ -197,6 +200,10 @@ void game_run()
 
         al_start_timer(game.timer);
       }
+    }
+    else if (event.type == ALLEGRO_EVENT_KEY_UP)
+    {
+      keys[event.keyboard.keycode] = FALSE;
     }
     else if (event.type == ALLEGRO_EVENT_TIMER)
     {
