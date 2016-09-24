@@ -210,7 +210,7 @@ void set_bg_color(int color)
 }
 
 // Changes the state directly to another
-void change_state(struct State* state, long param)
+void change_state(struct State* state, void* param)
 {
   if (game.states[current_state] != NULL)
   {
@@ -222,7 +222,7 @@ void change_state(struct State* state, long param)
 }
 
 // Pushes a new state onto the stack (previous one is 'paused')
-void push_state(struct State* state, long param)
+void push_state(struct State* state, void* param)
 {
   if (current_state < (MAX_STATES - 1))
   {

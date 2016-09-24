@@ -238,7 +238,7 @@ void set_bg_color(ALLEGRO_COLOR color)
   game.bg_color = color;
 }
 
-void change_state(struct State* state, long param)
+void change_state(struct State* state, void* param)
 {
   if (game.states[current_state] != NULL)
   {
@@ -249,7 +249,7 @@ void change_state(struct State* state, long param)
   game.states[current_state]->_init(param);
 }
 
-void push_state(struct State* state, long param)
+void push_state(struct State* state, void* param)
 {
   if (current_state < (MAX_STATES - 1))
   {

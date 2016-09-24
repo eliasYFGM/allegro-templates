@@ -37,8 +37,8 @@ void set_bg_color(int color);
 struct State;
 
 // State routines
-void change_state(struct State* state, long param);
-void push_state(struct State* state, long param);
+void change_state(struct State* state, void* param);
+void push_state(struct State* state, void* param);
 void pop_state();
 
 // Bounding box collision (taken from Alex4)

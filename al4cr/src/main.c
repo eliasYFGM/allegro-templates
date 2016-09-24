@@ -22,9 +22,7 @@ int main(int argc, char* argv[])
   if (game_init(&config))
   {
     // Starting state
-    // Second argument is a value that can be passed to the init() function
-    // of the state (long)
-    change_state(GAME_STATE, 0);
+    change_state(GAME_STATE, NULL);
 
     // Run the game
     game_run();

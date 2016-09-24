@@ -2,7 +2,7 @@
 #include "core.h"
 #include "game_state.h"
 
-static void game_state_init(long param)
+static void game_state_init(void* param)
 {
 }
 

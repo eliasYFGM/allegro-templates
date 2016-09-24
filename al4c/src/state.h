@@ -6,7 +6,7 @@
 // Main state structure
 struct State
 {
-  void (*_init)(long);
+  void (*_init)(void*);
   void (*_end)(int);
 
   void (*_pause)();

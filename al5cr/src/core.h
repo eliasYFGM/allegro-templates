@@ -46,8 +46,8 @@ void set_bg_color(ALLEGRO_COLOR);
 struct State;
 
 // State routines
-void change_state(struct State* state, long param);
-void push_state(struct State* state, long param);
+void change_state(struct State* state, void* param);
+void push_state(struct State* state, void* param);
 void pop_state();
 
 // Simple bounding box collision checking (taken from Alex4 source)
