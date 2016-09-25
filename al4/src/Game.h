@@ -2,6 +2,7 @@
 #define GAME_H_INCLUDED
 
 #include <allegro.h>
+#include <memory>
 #include "State.h"
 
 #define C_BLACK   makecol(0, 0, 0)
@@ -12,7 +13,7 @@
 class Game
 {
   struct Game_Internal;
-  Game_Internal* intern;
+  std::unique_ptr<Game_Internal> intern;
 
   void Update();
   void Draw();

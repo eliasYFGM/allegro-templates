@@ -51,8 +51,6 @@ Game::~Game()
   {
     destroy_bitmap(intern->buffer);
   }
-
-  delete intern;
 }
 
 bool Game::Init(const char* title, int width, int height, int rate, int depth,

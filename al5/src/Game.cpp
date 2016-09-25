@@ -59,8 +59,6 @@ Game::~Game()
   al_destroy_timer(intern->timer);
   al_destroy_event_queue(intern->event_queue);
   al_destroy_font(font);
-
-  delete intern;
 }
 
 bool Game::Init(const char* title, int width, int height, int rate, bool want_fs,

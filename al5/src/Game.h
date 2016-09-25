@@ -4,6 +4,7 @@
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_font.h>
 #include <stack>
+#include <memory>
 #include "State.h"
 
 #define C_BLACK   al_map_rgb(0, 0, 0)
@@ -12,7 +13,7 @@
 class Game
 {
   struct Game_Internal;
-  Game_Internal* intern;
+  std::unique_ptr<Game_Internal> intern;
 
   void Handle_Events();
   void Update();
