@@ -13,7 +13,7 @@
 // E.g. without the panels and stuff
 
 // Globals
-struct Game_Config* default_config;
+struct Game_Config* main_config;
 ALLEGRO_FONT* font;
 int keys[ALLEGRO_KEY_MAX];
 
@@ -129,8 +129,8 @@ int game_init(struct Game_Config* config)
   game.timer = al_create_timer(1.0 / config->framerate);
   game.event_queue = al_create_event_queue();
 
-  default_config = config;
-  set_bg_color(al_map_rgb(192, 192, 192));
+  main_config = config;
+  set_bg_color(BG_COLOR_DEFAULT);
 
   ALLEGRO_TRANSFORM trans;
   al_identity_transform(&trans);

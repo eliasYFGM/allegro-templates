@@ -1,7 +1,7 @@
 #include "core.h"
 #include "game_state.h"
 
-int main(int argc, char* argv[])
+int main(int argc, char** argv)
 {
   struct Game_Config config =
   {
@@ -16,7 +16,9 @@ int main(int argc, char* argv[])
     // Want full-screen?
     FALSE,
     // Want audio module?
-    FALSE
+    FALSE,
+    // Default argument list
+    { argc, argv }
   };
 
   if (game_init(&config))

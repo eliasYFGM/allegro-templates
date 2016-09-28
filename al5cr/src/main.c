@@ -16,7 +16,9 @@ int main(int argc, char* argv[])
     // Frame-rate (FPS)
     40,
     // Want audio module?
-    FALSE
+    FALSE,
+    // Argument list
+    { argc, argv }
   };
 
   if (game_init(&config))

@@ -5,28 +5,34 @@
 #define C_WHITE   makecol(255, 255, 255)
 #define C_TRANS   makecol(255, 0, 255)
 
+#define BG_COLOR_DEFAULT  makecol(192, 192, 192)
+
 // Max states to allocate
 #define MAX_STATES  8
 
 struct Game_Config
 {
-  char *title;
+  char* title;
   int width;
   int height;
   int framerate;
   int depth;
   int fullscreen;
   int audio;
+  struct {
+    int c;
+    char** v;
+  } args;
 };
 
-// Pointer to the original settings (given in main.c)
-extern struct Game_Config* default_config;
+// Pointer to the original settings (in main.c)
+extern struct Game_Config* main_config;
 
 // FPS is updated each second
 extern volatile int fps;
 
 // Main game engine routines
-int game_init(struct Game_Config* config);
+int game_init(struct Game_Config*);
 void game_run();
 void game_over(); // Only meant for states; NO need to call after "game_run"
 void set_bg_color(int color);
@@ -34,8 +40,8 @@ void set_bg_color(int color);
 struct State;
 
 // State routines
-void change_state(struct State* state, void* param);
-void push_state(struct State* state, void* param);
+void change_state(struct State*, void* param);
+void push_state(struct State*, void* param);
 void pop_state();
 
 // Bounding box collision (taken from Alex4)

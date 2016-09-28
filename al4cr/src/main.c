@@ -1,7 +1,7 @@
 #include "core.h"
 #include "game_state.h"
 
-int main(int argc, char* argv[])
+int main(int argc, char** argv)
 {
   struct Game_Config config =
   {
@@ -16,7 +16,9 @@ int main(int argc, char* argv[])
     // Color depth (8, 15, 16, 24, 32)
     8,
     // Want audio module?
-    FALSE
+    FALSE,
+    // Argument list
+    { argc, argv }
   };
 
   if (game_init(&config))

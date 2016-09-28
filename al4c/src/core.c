@@ -3,7 +3,7 @@
 #include "core.h"
 #include "state.h"
 
-struct Game_Config* default_config;
+struct Game_Config* main_config;
 static int current_state;
 
 static struct // Game variables
@@ -86,8 +86,8 @@ int game_init(struct Game_Config* config)
 #endif // ALLEGRO_DOS
 
   game.buffer = create_bitmap(SCREEN_W, SCREEN_H);
-  game.bg_color = makecol(192, 192, 192);
-  default_config = config;
+  game.bg_color = BG_COLOR_DEFAULT;
+  main_config = config;
 
   game.initialized = TRUE;
 
@@ -108,7 +108,7 @@ void game_run()
   // Main game timer
   LOCK_VARIABLE(ticks);
   LOCK_FUNCTION(ticker);
-  install_int_ex(ticker, BPS_TO_TIMER(default_config->framerate));
+  install_int_ex(ticker, BPS_TO_TIMER(main_config->framerate));
 
   // FPS timer
   LOCK_VARIABLE(fps);

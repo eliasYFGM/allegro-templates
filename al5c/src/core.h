@@ -7,6 +7,8 @@
 #define C_BLACK     al_map_rgb(0, 0, 0)
 #define C_WHITE     al_map_rgb(255, 255, 255)
 
+#define BG_COLOR_DEFAULT  al_map_rgb(192, 192, 192)
+
 // Max states to allocate
 #define MAX_STATES  8
 
@@ -24,13 +26,17 @@ struct Game_Config
   int fullscreen;
   int audio;
   int buffer;
+  struct {
+    int c;
+    char** v;
+  } args;
 };
 
-// Pointer to the original settings (given in main.c)
-extern struct Game_Config* default_config;
+// Pointer to the original settings (in main.c)
+extern struct Game_Config* main_config;
 
-#define GAME_W    default_config->width
-#define GAME_H    default_config->height
+#define GAME_W    main_config->width
+#define GAME_H    main_config->height
 
 // Default fixed-width font
 extern ALLEGRO_FONT* font;
@@ -39,7 +45,7 @@ extern ALLEGRO_FONT* font;
 extern int keys[ALLEGRO_KEY_MAX];
 
 // Main game engine routines
-int game_init(struct Game_Config* config);
+int game_init(struct Game_Config*);
 void game_run();
 void game_over(); // Only meant for states; NO need to call after "game_run"
 void set_bg_color(ALLEGRO_COLOR);
@@ -47,8 +53,8 @@ void set_bg_color(ALLEGRO_COLOR);
 struct State;
 
 // State routines
-void change_state(struct State* state, void* param);
-void push_state(struct State* state, void* param);
+void change_state(struct State*, void* param);
+void push_state(struct State*, void* param);
 void pop_state();
 
 // Simple bounding box collision checking (taken from Alex4 source)

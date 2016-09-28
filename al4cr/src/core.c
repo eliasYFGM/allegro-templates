@@ -3,7 +3,7 @@
 #include "core.h"
 #include "state.h"
 
-struct Game_Config* default_config;
+struct Game_Config* main_config;
 static int current_state;
 
 #define SCREEN_RES_OVERRIDE   0.1
@@ -113,9 +113,9 @@ int game_init(struct Game_Config* config)
   game.buffer = create_bitmap(config->width, config->height);
 
   set_close_button_callback(close_button_handler);
-  set_bg_color(makecol(192, 192, 192));
+  set_bg_color(BG_COLOR_DEFAULT);
 
-  default_config = config;
+  main_config = config;
 
   game.initialized = TRUE;
 
@@ -136,7 +136,7 @@ void game_run()
   // Main game timer
   LOCK_VARIABLE(ticks);
   LOCK_FUNCTION(ticker);
-  install_int_ex(ticker, BPS_TO_TIMER(default_config->framerate));
+  install_int_ex(ticker, BPS_TO_TIMER(main_config->framerate));
 
   // FPS timer
   LOCK_VARIABLE(fps);
@@ -174,8 +174,7 @@ void game_run()
         game.states[current_state]->_draw(game.buffer);
 
         stretch_blit(game.buffer, screen,
-                     0, 0, default_config->width, default_config->height,
-                     0, 0, SCREEN_W, SCREEN_H);
+                     0, 0, GAME_W, GAME_H, 0, 0, SCREEN_W, SCREEN_H);
 
         ++frame_counter;
       }

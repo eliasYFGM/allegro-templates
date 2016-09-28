@@ -8,7 +8,7 @@
 #include "state.h"
 
 // Globals
-struct Game_Config* default_config;
+struct Game_Config* main_config;
 ALLEGRO_FONT* font;
 int keys[ALLEGRO_KEY_MAX];
 
@@ -112,7 +112,7 @@ int game_init(struct Game_Config* config)
 
   al_set_window_title(game.display, config->title);
 
-  default_config = config;
+  main_config = config;
   aspect_ratio_transform();
 
   al_add_new_bitmap_flag(ALLEGRO_MAG_LINEAR);
@@ -128,7 +128,7 @@ int game_init(struct Game_Config* config)
   game.timer = al_create_timer(1.0 / config->framerate);
   game.event_queue = al_create_event_queue();
 
-  set_bg_color(al_map_rgb(192, 192, 192));
+  set_bg_color(BG_COLOR_DEFAULT);
 
   game.initialized = TRUE;
 
@@ -215,7 +215,7 @@ void game_run()
     {
       redraw = FALSE;
 
-      if (default_config->buffer)
+      if (main_config->buffer)
       {
         al_set_target_bitmap(game.buffer);
       }
@@ -228,7 +228,7 @@ void game_run()
 
       game.states[current_state]->_draw();
 
-      if (default_config->buffer)
+      if (main_config->buffer)
       {
         al_set_target_backbuffer(game.display);
         al_clear_to_color(C_BLACK);
@@ -253,7 +253,7 @@ void game_run()
   al_destroy_event_queue(game.event_queue);
   al_destroy_font(font);
 
-  if (default_config->buffer)
+  if (main_config->buffer)
   {
     al_destroy_bitmap(game.buffer);
   }
