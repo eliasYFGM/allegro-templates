@@ -1,13 +1,13 @@
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
-#include <allegro5/allegro.h>
+#include <stack>
 #include <allegro5/allegro_image.h>
 #include <allegro5/allegro_audio.h>
 #include <allegro5/allegro_acodec.h>
-#include <allegro5/allegro_font.h>
 #include <allegro5/allegro_primitives.h>
 #include "Game.h"
+#include "State.h"
 
 ALLEGRO_FONT* font;
 bool keys[ALLEGRO_KEY_MAX];
@@ -39,31 +39,31 @@ struct Game::Game_Internal
   ALLEGRO_TIMER* timer;
   ALLEGRO_EVENT_QUEUE* event_queue;
   ALLEGRO_COLOR bg_color;
-  bool need_update;
+  bool redraw;
   bool is_running;
   int width, height;
-  std::stack<State*> states;
+  std::stack<State_Object*> states;
 };
 
-Game::Game() : intern(new Game_Internal())
+Game::Game_Internal* Game::intern = 0;
+
+bool Game::Init(const char* title, int width, int height, int rate,
+                bool want_fs, bool want_audio, bool want_bb)
 {
+  if (!intern)
+  {
+    intern = new Game_Internal();
+  }
+  else
+  {
+    std::cout << "WARNING: Calling Game::Init() more than once" << std::endl;
+    return true;
+  }
+
   intern->buffer = 0;
-  intern->need_update = false;
+  intern->redraw = false;
   intern->is_running = false;
-}
 
-Game::~Game()
-{
-  al_destroy_display(intern->display);
-  al_destroy_bitmap(intern->buffer);
-  al_destroy_timer(intern->timer);
-  al_destroy_event_queue(intern->event_queue);
-  al_destroy_font(font);
-}
-
-bool Game::Init(const char* title, int width, int height, int rate, bool want_fs,
-                bool want_audio, bool want_bb)
-{
   al_init();
   al_install_keyboard();
   al_install_mouse();
@@ -97,6 +97,7 @@ bool Game::Init(const char* title, int width, int height, int rate, bool want_fs
   if (!intern->display)
   {
     std::cout << "ERROR: Could not create a display" << std::endl;
+    delete intern;
     return false;
   }
 
@@ -113,6 +114,7 @@ bool Game::Init(const char* title, int width, int height, int rate, bool want_fs
     if (!intern->buffer)
     {
       std::cout << "ERROR: Could not create a buffer" << std::endl;
+      delete intern;
       return false;
     }
 
@@ -126,7 +128,7 @@ bool Game::Init(const char* title, int width, int height, int rate, bool want_fs
 
   font = al_create_builtin_font();
 
-  Set_BG_Color(al_map_rgb(192, 192, 192));
+  Set_BG_Color(BG_COLOR_DEFAULT);
 
   srand(time(0));
 
@@ -135,6 +137,12 @@ bool Game::Init(const char* title, int width, int height, int rate, bool want_fs
 
 void Game::Run()
 {
+  if (intern->is_running)
+  {
+    std::cout << "WARNING: Calling Game::Run() more than once" << std::endl;
+    return;
+  }
+
   al_register_event_source(intern->event_queue,
                            al_get_display_event_source(intern->display));
   al_register_event_source(intern->event_queue,
@@ -148,9 +156,82 @@ void Game::Run()
 
   while (intern->is_running)
   {
-    Handle_Events();
-    Update();
-    Draw();
+    ALLEGRO_EVENT event;
+    al_wait_for_event(intern->event_queue, &event);
+
+    intern->states.top()->Events(event);
+
+    if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
+    {
+      intern->is_running = false;
+      break;
+    }
+    else if (event.type == ALLEGRO_EVENT_KEY_DOWN)
+    {
+      keys[event.keyboard.keycode] = true;
+
+      if (event.keyboard.keycode == ALLEGRO_KEY_ESCAPE)
+      {
+        intern->is_running = false;
+        break;
+      }
+
+      if (event.keyboard.keycode == ALLEGRO_KEY_F4)
+      {
+        al_stop_timer(intern->timer);
+
+        if (al_get_display_flags(intern->display) & ALLEGRO_FULLSCREEN_WINDOW)
+        {
+          al_toggle_display_flag(intern->display,
+                                 ALLEGRO_FULLSCREEN_WINDOW, false);
+        }
+        else
+        {
+          al_toggle_display_flag(intern->display,
+                                 ALLEGRO_FULLSCREEN_WINDOW, true);
+        }
+
+        aspect_ratio_transform(intern->display, intern->width, intern->height);
+
+        al_start_timer(intern->timer);
+      }
+    }
+    else if (event.type == ALLEGRO_EVENT_KEY_UP)
+    {
+      keys[event.keyboard.keycode] = false;
+    }
+    else if (event.type == ALLEGRO_EVENT_TIMER)
+    {
+      intern->states.top()->Update();
+      intern->redraw = true;
+    }
+
+    if (intern->redraw && al_event_queue_is_empty(intern->event_queue))
+    {
+      intern->redraw = false;
+
+      if (intern->buffer)
+      {
+        al_set_target_bitmap(intern->buffer);
+      }
+      else
+      {
+        al_set_target_backbuffer(intern->display);
+      }
+
+      al_clear_to_color(intern->bg_color);
+
+      intern->states.top()->Draw();
+
+      if (intern->buffer)
+      {
+        al_set_target_backbuffer(intern->display);
+        al_clear_to_color(C_BLACK);
+        al_draw_bitmap(intern->buffer, 0, 0, 0);
+      }
+
+      al_flip_display();
+    }
   }
 
   while (!intern->states.empty())
@@ -158,96 +239,12 @@ void Game::Run()
     delete intern->states.top();
     intern->states.pop();
   }
-}
 
-void Game::Handle_Events()
-{
-  ALLEGRO_EVENT event;
-  al_wait_for_event(intern->event_queue, &event);
-
-  if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
-  {
-    intern->is_running = false;
-  }
-  else if (event.type == ALLEGRO_EVENT_KEY_DOWN)
-  {
-    keys[event.keyboard.keycode] = true;
-
-    if (event.keyboard.keycode == ALLEGRO_KEY_ESCAPE)
-    {
-      Game_Over();
-    }
-
-    if (event.keyboard.keycode == ALLEGRO_KEY_F4)
-    {
-      al_stop_timer(intern->timer);
-
-      if (al_get_display_flags(intern->display) & ALLEGRO_FULLSCREEN_WINDOW)
-      {
-        al_toggle_display_flag(intern->display,
-                               ALLEGRO_FULLSCREEN_WINDOW, false);
-      }
-      else
-      {
-        al_toggle_display_flag(intern->display,
-                               ALLEGRO_FULLSCREEN_WINDOW, true);
-      }
-
-      aspect_ratio_transform(intern->display, intern->width, intern->height);
-
-      al_start_timer(intern->timer);
-    }
-  }
-  else if (event.type == ALLEGRO_EVENT_KEY_UP)
-  {
-    keys[event.keyboard.keycode] = false;
-  }
-  else if (event.type == ALLEGRO_EVENT_TIMER)
-  {
-    intern->need_update = true;
-  }
-
-  if (intern->is_running)
-  {
-    intern->states.top()->Handle_Events(this, event);
-  }
-}
-
-void Game::Update()
-{
-  if (intern->need_update && intern->is_running)
-  {
-    intern->need_update = false;
-    intern->states.top()->Update(this);
-  }
-}
-
-void Game::Draw()
-{
-  if (intern->is_running && al_event_queue_is_empty(intern->event_queue))
-  {
-    if (intern->buffer)
-    {
-      al_set_target_bitmap(intern->buffer);
-    }
-    else
-    {
-      al_set_target_backbuffer(intern->display);
-    }
-
-    al_clear_to_color(intern->bg_color);
-
-    intern->states.top()->Draw(this);
-
-    if (intern->buffer)
-    {
-      al_set_target_backbuffer(intern->display);
-      al_clear_to_color(C_BLACK);
-      al_draw_bitmap(intern->buffer, 0, 0, 0);
-    }
-
-    al_flip_display();
-  }
+  al_destroy_display(intern->display);
+  al_destroy_bitmap(intern->buffer);
+  al_destroy_timer(intern->timer);
+  al_destroy_event_queue(intern->event_queue);
+  al_destroy_font(font);
 }
 
 void Game::Game_Over()
@@ -260,13 +257,13 @@ void Game::Set_BG_Color(ALLEGRO_COLOR color)
   intern->bg_color = color;
 }
 
-void Game::Get_Original_Res(int& w, int& h)
+void Game::Get_Internal_Res(int& w, int& h)
 {
   w = intern->width;
   h = intern->height;
 }
 
-void Game::Change_State(State* state)
+void Game::Change_State(State_Object* state)
 {
   if (!intern->states.empty())
   {
@@ -277,11 +274,11 @@ void Game::Change_State(State* state)
   intern->states.push(state);
 }
 
-void Game::Push_State(State* state)
+void Game::Push_State(State_Object* state)
 {
   if (!intern->states.empty())
   {
-    intern->states.top()->Pause(this);
+    intern->states.top()->Pause();
   }
 
   intern->states.push(state);
@@ -297,7 +294,7 @@ void Game::Pop_State()
 
   if (!intern->states.empty())
   {
-    intern->states.top()->Resume(this);
+    intern->states.top()->Resume();
   }
   else
   {

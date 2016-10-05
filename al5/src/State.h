@@ -3,19 +3,17 @@
 
 #include <allegro5/allegro.h>
 
-class Game;
-
-class State
+class State_Object
 {
 public:
-  virtual ~State() {}
+  virtual ~State_Object() {}
 
-  virtual void Pause(Game*) = 0;
-  virtual void Resume(Game*) = 0;
+  virtual void Pause() = 0;
+  virtual void Resume() = 0;
 
-  virtual void Handle_Events(Game*, ALLEGRO_EVENT&) = 0;
-  virtual void Update(Game*) = 0;
-  virtual void Draw(Game*) = 0;
+  virtual void Events(ALLEGRO_EVENT&) = 0;
+  virtual void Update() = 0;
+  virtual void Draw() = 0;
 };
 
 #endif // STATE_H_INCLUDED

@@ -3,35 +3,32 @@
 
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_font.h>
-#include <stack>
-#include <memory>
-#include "State.h"
 
 #define C_BLACK   al_map_rgb(0, 0, 0)
 #define C_WHITE   al_map_rgb(255, 255, 255)
 
+#define BG_COLOR_DEFAULT  al_map_rgb(192, 192, 192)
+
+class State_Object;
+
 class Game
 {
   struct Game_Internal;
-  std::unique_ptr<Game_Internal> intern;
-
-  void Handle_Events();
-  void Update();
-  void Draw();
+  static Game_Internal* intern;
 
 public:
-  Game();
-  ~Game();
-
-  bool Init(const char* title, int width, int height, int rate, bool want_fs,
-            bool want_audio, bool want_bb);
+  // These won't do anything outside of the main() function
+  bool Init(const char* title, int width, int height, int rate,
+            bool want_fs, bool want_audio, bool want_bb);
   void Run();
+
+public:
   void Game_Over();
-  void Set_BG_Color(ALLEGRO_COLOR color);
+  void Set_BG_Color(ALLEGRO_COLOR);
   void Get_Original_Res(int& w, int& h);
 
-  void Change_State(State* state);
-  void Push_State(State* state);
+  void Change_State(State_Object*);
+  void Push_State(State_Object*);
   void Pop_State();
 };
 
