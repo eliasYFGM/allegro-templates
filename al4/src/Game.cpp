@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <ctime>
 #include "Game.h"
+#include "State.h"
 
 static volatile unsigned int ticks = 0;
 
@@ -36,26 +37,26 @@ struct Game::Game_Internal
   bool need_redraw;
   int bg_color;
   int framerate;
-  std::stack<State*> states;
+  std::stack<State_Object*> states;
 };
 
-Game::Game() : intern(new Game_Internal())
-{
-  intern->buffer = 0;
-  intern->need_redraw = false;
-}
-
-Game::~Game()
-{
-  if (intern->buffer)
-  {
-    destroy_bitmap(intern->buffer);
-  }
-}
+Game::Game_Internal* Game::intern = 0;
 
 bool Game::Init(const char* title, int width, int height, int rate, int depth,
                 bool want_fs, bool want_audio)
 {
+  if (!intern)
+  {
+    intern = new Game_Internal();
+  }
+  else
+  {
+    std::cout << "WARNING: Calling Game::Init() more than once" << std::endl;
+    return true;
+  }
+
+  intern->need_redraw = false;
+
   allegro_init();
   install_keyboard();
   install_mouse();
@@ -97,6 +98,12 @@ bool Game::Init(const char* title, int width, int height, int rate, int depth,
 
 void Game::Run()
 {
+  if (is_running)
+  {
+    std::cout << "WARNING: Calling Game::Run() more than once" << std::endl;
+    return;
+  }
+
   LOCK_VARIABLE(ticks);
   LOCK_FUNCTION(ticker);
   install_int_ex(ticker, BPS_TO_TIMER(intern->framerate));
@@ -110,8 +117,43 @@ void Game::Run()
 
   while (is_running)
   {
-    Update();
-    Draw();
+    if (ticks > 0)
+    {
+      while (ticks > 0)
+      {
+        --ticks;
+
+        if (key[KEY_ESC])
+        {
+          Game_Over();
+          break;
+        }
+
+        if (is_running)
+        {
+          intern->states.top()->Update();
+          intern->need_redraw = true;
+        }
+      }
+
+      if (intern->need_redraw && is_running)
+      {
+        intern->need_redraw = false;
+        clear_to_color(intern->buffer, intern->bg_color);
+
+        intern->states.top()->Draw(intern->buffer);
+
+        show_mouse(intern->buffer);
+        blit(intern->buffer, screen, 0, 0, 0, 0, SCREEN_W, SCREEN_H);
+        show_mouse(0);
+
+        ++fps_counter;
+      }
+    }
+    else
+    {
+      rest(1);
+    }
   }
 
   while (!intern->states.empty())
@@ -119,52 +161,8 @@ void Game::Run()
     delete intern->states.top();
     intern->states.pop();
   }
-}
 
-void Game::Update()
-{
-  if (ticks > 0)
-  {
-    while (ticks > 0)
-    {
-      --ticks;
-
-      // Escape key will close the game in full-screen
-      if (key[KEY_ESC])
-      {
-        Game_Over();
-        break;
-      }
-
-      intern->states.top()->Update(this);
-    }
-
-    if (is_running)
-    {
-      intern->need_redraw = true;
-    }
-  }
-  else
-  {
-    rest(1);
-  }
-}
-
-void Game::Draw()
-{
-  if (intern->need_redraw)
-  {
-    intern->need_redraw = false;
-    clear_to_color(intern->buffer, intern->bg_color);
-
-    intern->states.top()->Draw(this, intern->buffer);
-
-    show_mouse(intern->buffer);
-    blit(intern->buffer, screen, 0, 0, 0, 0, SCREEN_W, SCREEN_H);
-    show_mouse(0);
-
-    ++fps_counter;
-  }
+  destroy_bitmap(intern->buffer);
 }
 
 void Game::Game_Over()
@@ -177,7 +175,7 @@ void Game::Set_BG_Color(int color)
   intern->bg_color = color;
 }
 
-void Game::Change_State(State* state)
+void Game::Change_State(State_Object* state)
 {
   if (!intern->states.empty())
   {
@@ -188,11 +186,11 @@ void Game::Change_State(State* state)
   intern->states.push(state);
 }
 
-void Game::Push_State(State* state)
+void Game::Push_State(State_Object* state)
 {
   if (!intern->states.empty())
   {
-    intern->states.top()->Pause(this);
+    intern->states.top()->Pause();
   }
 
   intern->states.push(state);
@@ -208,7 +206,7 @@ void Game::Pop_State()
 
   if (!intern->states.empty())
   {
-    intern->states.top()->Resume(this);
+    intern->states.top()->Resume();
   }
   else
   {

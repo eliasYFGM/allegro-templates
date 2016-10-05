@@ -1,4 +1,3 @@
-#include "Game.h"
 #include "GameState.h"
 
 int main()
@@ -22,7 +21,7 @@ int main()
 
   if (result)
   {
-    game.Change_State(new Game_State(&game));
+    game.Change_State(new Game_State());
     game.Run();
   }
 

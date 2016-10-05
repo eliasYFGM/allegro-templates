@@ -2,20 +2,19 @@
 #define GAMESTATE_H_INCLUDED
 
 #include "State.h"
+#include "Game.h"
 
-class Game;
-
-class Game_State : public State
+class Game_State : public State_Object, public Game
 {
 public:
-  Game_State(Game*);
+  Game_State();
   ~Game_State();
 
-  void Pause(Game*);
-  void Resume(Game*);
+  void Pause();
+  void Resume();
 
-  void Update(Game*);
-  void Draw(Game*, BITMAP*);
+  void Update();
+  void Draw(BITMAP*);
 };
 
 #endif // GAMESTATE_H_INCLUDED

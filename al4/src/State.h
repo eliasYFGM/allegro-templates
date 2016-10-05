@@ -3,18 +3,16 @@
 
 #include <allegro.h>
 
-class Game;
-
-class State
+class State_Object
 {
 public:
-  virtual ~State() {}
+  virtual ~State_Object() {}
 
-  virtual void Pause(Game*) = 0;
-  virtual void Resume(Game*) = 0;
+  virtual void Pause() = 0;
+  virtual void Resume() = 0;
 
-  virtual void Update(Game*) = 0;
-  virtual void Draw(Game*, BITMAP*) = 0;
+  virtual void Update() = 0;
+  virtual void Draw(BITMAP*) = 0;
 };
 
 #endif // STATE_H_INCLUDED
