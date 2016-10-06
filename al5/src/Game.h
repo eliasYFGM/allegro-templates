@@ -20,12 +20,12 @@ public:
   // These won't do anything outside of the main() function
   bool Init(const char* title, int width, int height, int rate,
             bool want_fs, bool want_audio, bool want_bb);
-  void Run();
+  void Run(State_Object* start_state = 0);
 
-public:
+protected:
   void Game_Over();
   void Set_BG_Color(ALLEGRO_COLOR);
-  void Get_Original_Res(int& w, int& h);
+  void Get_Internal_Res(int& w, int& h);
 
   void Change_State(State_Object*);
   void Push_State(State_Object*);

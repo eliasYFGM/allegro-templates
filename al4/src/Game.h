@@ -17,9 +17,9 @@ public:
   // These won't do anything outside of main()
   bool Init(const char* title, int width, int height, int rate, int depth,
             bool want_fs, bool want_audio);
-  void Run();
+  void Run(State_Object* start_state = 0);
 
-public:
+protected:
   void Game_Over();
   void Set_BG_Color(int color);
 

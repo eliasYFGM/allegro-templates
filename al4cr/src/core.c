@@ -50,8 +50,8 @@ int game_init(struct Game_Config* config)
 {
   if (game.initialized)
   {
-    puts("WARNING: Game already initialized");
-    return 0;
+    puts("WARNING: Calling game_init() more than once");
+    return 1;
   }
 
   allegro_init();
@@ -123,15 +123,17 @@ int game_init(struct Game_Config* config)
 }
 
 // Game loop
-void game_run()
+void game_run(struct State* state)
 {
   int redraw = FALSE;
 
-  if (!game.states[current_state])
+  if (is_running)
   {
-    puts("ERROR: change_state was not called");
+    puts("WARNING: Calling game_run() more than once");
     return;
   }
+
+  change_state(state, NULL);
 
   // Main game timer
   LOCK_VARIABLE(ticks);

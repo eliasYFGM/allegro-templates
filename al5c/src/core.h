@@ -17,6 +17,9 @@
 #define TRUE    -1
 #endif
 
+// Defined in state.h
+struct State;
+
 struct Game_Config
 {
   char *title;
@@ -32,11 +35,16 @@ struct Game_Config
   } args;
 };
 
-// Pointer to the original settings (in main.c)
-extern struct Game_Config* main_config;
+// Main game engine routines
+int game_init(struct Game_Config*);
+void game_run(struct State*);
+void game_over();
+void set_bg_color(ALLEGRO_COLOR);
 
-#define GAME_W    main_config->width
-#define GAME_H    main_config->height
+// State routines
+void change_state(struct State*, void* param);
+void push_state(struct State*, void* param);
+void pop_state();
 
 // Default fixed-width font
 extern ALLEGRO_FONT* font;
@@ -44,18 +52,11 @@ extern ALLEGRO_FONT* font;
 // Array holding key presses, only for the state's _update() function
 extern int keys[ALLEGRO_KEY_MAX];
 
-// Main game engine routines
-int game_init(struct Game_Config*);
-void game_run();
-void game_over(); // Only meant for states; NO need to call after "game_run"
-void set_bg_color(ALLEGRO_COLOR);
+// Pointer to the original settings (in main.c)
+extern struct Game_Config* main_config;
 
-struct State;
-
-// State routines
-void change_state(struct State*, void* param);
-void push_state(struct State*, void* param);
-void pop_state();
+#define GAME_W    main_config->width
+#define GAME_H    main_config->height
 
 // Simple bounding box collision checking (taken from Alex4 source)
 #define check_bb_collision(x1,y1,w1,h1,x2,y2,w2,h2) \

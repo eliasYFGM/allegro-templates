@@ -1,8 +1,6 @@
 #include <stdio.h>
-#include <math.h>
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_image.h>
-#include <allegro5/allegro_font.h>
 #include <allegro5/allegro_audio.h>
 #include <allegro5/allegro_acodec.h>
 #include "core.h"
@@ -36,7 +34,7 @@ int game_init(struct Game_Config* config)
 {
   if (game.initialized)
   {
-    puts("WARNING: Game already initialized");
+    puts("WARNING: Calling game_init() more than once");
     return 1;
   }
 
@@ -142,9 +140,17 @@ int game_init(struct Game_Config* config)
   return 1;
 }
 
-void game_run()
+void game_run(struct State* state)
 {
   int redraw = FALSE;
+
+  if (game.is_running)
+  {
+    puts("WARNING: Calling game_run() more than once");
+    return;
+  }
+
+  change_state(state, NULL);
 
   // Generate display events
   al_register_event_source(game.event_queue,

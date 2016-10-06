@@ -21,8 +21,8 @@ int main()
 
   if (result)
   {
-    game.Change_State(new Game_State());
-    game.Run();
+    // Run the game with a default "starting state"
+    game.Run(new Game_State());
   }
 
   return 0;

@@ -1,4 +1,3 @@
-#include <iostream>
 #include "GameState.h"
 
 Game_State::Game_State()

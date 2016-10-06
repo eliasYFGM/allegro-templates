@@ -135,11 +135,17 @@ bool Game::Init(const char* title, int width, int height, int rate,
   return true;
 }
 
-void Game::Run()
+void Game::Run(State_Object* start_state)
 {
   if (intern->is_running)
   {
     std::cout << "WARNING: Calling Game::Run() more than once" << std::endl;
+
+    if (start_state)
+    {
+      delete start_state;
+    }
+
     return;
   }
 
@@ -151,6 +157,8 @@ void Game::Run()
                            al_get_timer_event_source(intern->timer));
 
   al_start_timer(intern->timer);
+
+  Change_State(start_state);
 
   intern->is_running = true;
 

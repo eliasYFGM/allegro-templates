@@ -10,6 +10,9 @@
 // Max states to allocate
 #define MAX_STATES  8
 
+// Defined in state.h
+struct State;
+
 struct Game_Config
 {
   char* title;
@@ -25,24 +28,22 @@ struct Game_Config
   } args;
 };
 
-// Pointer to the original settings (in main.c)
-extern struct Game_Config* main_config;
+// Main game engine routines
+int game_init(struct Game_Config*);
+void game_run(struct State*);
+void game_over();
+void set_bg_color(int color);
+
+// State manipulation
+void change_state(struct State*, void* param);
+void push_state(struct State*, void* param);
+void pop_state();
 
 // FPS is updated each second
 extern volatile int fps;
 
-// Main game engine routines
-int game_init(struct Game_Config*);
-void game_run();
-void game_over(); // Only meant for states; NO need to call after "game_run"
-void set_bg_color(int color);
-
-struct State;
-
-// State routines
-void change_state(struct State*, void* param);
-void push_state(struct State*, void* param);
-void pop_state();
+// Pointer to the original settings (in main.c)
+extern struct Game_Config* main_config;
 
 // Bounding box collision (taken from Alex4)
 #define check_bb_collision(x1,y1,w1,h1,x2,y2,w2,h2) \

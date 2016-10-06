@@ -96,11 +96,17 @@ bool Game::Init(const char* title, int width, int height, int rate, int depth,
   return true;
 }
 
-void Game::Run()
+void Game::Run(State_Object* start_state)
 {
   if (is_running)
   {
     std::cout << "WARNING: Calling Game::Run() more than once" << std::endl;
+
+    if (start_state)
+    {
+      delete start_state;
+    }
+
     return;
   }
 
@@ -112,6 +118,8 @@ void Game::Run()
   LOCK_VARIABLE(fps_counter);
   LOCK_FUNCTION(update_fps);
   install_int(update_fps, 1000);
+
+  Change_State(start_state);
 
   is_running = true;
 
