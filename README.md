@@ -1,12 +1,29 @@
 # Allegro Game Templates
 
-These templates implement a basic game-state pattern with global functions, in C, and a "Game" class in C++.
+These templates implement a basic game-state pattern with global functions in C, and classes in C++ in which states can be derived.
+
+## Features:
+
+* Fixed-rate and automatic frame skipping
+* Checks return value for each module initialization
+* Basic state change/push/pop implementation with a stack
+* A default "Game State" already created
+* Toggle between full-screen and window mode with F4 key (Allegro 5 only)
+* Code::Blocks project files
+* Supports Linux, Windows and DOS (as targets)
+* DOS support is Allegro 4 only
+
+The main() function has the basic options that you can change quickly, and there's no need to modify the core game files (Game.cpp or core.c), unless you wish to add more stuff as engine-level.
+
+## Install
+
+For basic install on Linux, just git-clone into the default "UserTemplates" folder in ~/.codeblocks/ (or ~/.config/codeblocks/ since 16.01).
 
 ## Naming
 
-[al4~]: Default C++ templates for Allegro 4.x (Linux, Windows and DOS).
+[al4]: Default C++ templates for Allegro 4.x (Linux, Windows and DOS).
 
-[al5~]: Default C++ templates for Allegro 5.x (Linux and Windows).
+[al5]: Default C++ templates for Allegro 5.x (Linux and Windows).
 
 [~c]: Templates in pure C. These require a C99 compiler or GNU GCC.
 
