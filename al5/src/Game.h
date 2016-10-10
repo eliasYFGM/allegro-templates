@@ -14,7 +14,7 @@ class State_Object;
 class Game
 {
   struct Game_Internal;
-  static Game_Internal* intern;
+  static Game_Internal* pimpl;
 
 public:
   // These won't do anything outside of the main() function
@@ -30,12 +30,13 @@ protected:
   void Change_State(State_Object*);
   void Push_State(State_Object*);
   void Pop_State();
+
+protected:
+  // Default fixed-width font
+  static ALLEGRO_FONT* font;
+
+  // Array holding key presses, only for the state's Update() function
+  static bool keys[ALLEGRO_KEY_MAX];
 };
-
-// Default fixed-width font
-extern ALLEGRO_FONT* font;
-
-// Array holding key presses, only for the state's Update() function
-extern bool keys[ALLEGRO_KEY_MAX];
 
 #endif // GAME_H_INCLUDED

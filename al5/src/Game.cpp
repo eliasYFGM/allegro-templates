@@ -9,9 +9,6 @@
 #include "Game.h"
 #include "State.h"
 
-ALLEGRO_FONT* font;
-bool keys[ALLEGRO_KEY_MAX];
-
 static void aspect_ratio_transform(ALLEGRO_DISPLAY* display, int w, int h)
 {
   int window_w = al_get_display_width(display);
@@ -45,14 +42,16 @@ struct Game::Game_Internal
   std::stack<State_Object*> states;
 };
 
-Game::Game_Internal* Game::intern = 0;
+Game::Game_Internal* Game::pimpl;
+ALLEGRO_FONT* Game::font;
+bool Game::keys[ALLEGRO_KEY_MAX];
 
 bool Game::Init(const char* title, int width, int height, int rate,
                 bool want_fs, bool want_audio, bool want_bb)
 {
-  if (!intern)
+  if (!pimpl)
   {
-    intern = new Game_Internal();
+    pimpl = new Game_Internal();
   }
   else
   {
@@ -60,9 +59,9 @@ bool Game::Init(const char* title, int width, int height, int rate,
     return true;
   }
 
-  intern->buffer = 0;
-  intern->redraw = false;
-  intern->is_running = false;
+  pimpl->buffer = 0;
+  pimpl->redraw = false;
+  pimpl->is_running = false;
 
   al_init();
   al_install_keyboard();
@@ -92,39 +91,39 @@ bool Game::Init(const char* title, int width, int height, int rate,
     al_set_new_display_flags(ALLEGRO_FULLSCREEN);
   }
 
-  intern->display = al_create_display(width, height);
+  pimpl->display = al_create_display(width, height);
 
-  if (!intern->display)
+  if (!pimpl->display)
   {
     std::cout << "ERROR: Could not create a display" << std::endl;
-    delete intern;
+    delete pimpl;
     return false;
   }
 
-  aspect_ratio_transform(intern->display, width, height);
+  aspect_ratio_transform(pimpl->display, width, height);
 
-  al_set_window_title(intern->display, title);
+  al_set_window_title(pimpl->display, title);
 
   al_add_new_bitmap_flag(ALLEGRO_MAG_LINEAR);
 
   if (want_bb)
   {
-    intern->buffer = al_create_bitmap(width, height);
+    pimpl->buffer = al_create_bitmap(width, height);
 
-    if (!intern->buffer)
+    if (!pimpl->buffer)
     {
       std::cout << "ERROR: Could not create a buffer" << std::endl;
-      delete intern;
+      delete pimpl;
       return false;
     }
 
     al_set_new_bitmap_flags(0);
   }
 
-  intern->timer = al_create_timer(1.0 / rate);
-  intern->event_queue = al_create_event_queue();
-  intern->width = width;
-  intern->height = height;
+  pimpl->timer = al_create_timer(1.0 / rate);
+  pimpl->event_queue = al_create_event_queue();
+  pimpl->width = width;
+  pimpl->height = height;
 
   font = al_create_builtin_font();
 
@@ -137,7 +136,7 @@ bool Game::Init(const char* title, int width, int height, int rate,
 
 void Game::Run(State_Object* start_state)
 {
-  if (intern->is_running)
+  if (pimpl->is_running)
   {
     std::cout << "WARNING: Calling Game::Run() more than once" << std::endl;
 
@@ -149,29 +148,29 @@ void Game::Run(State_Object* start_state)
     return;
   }
 
-  al_register_event_source(intern->event_queue,
-                           al_get_display_event_source(intern->display));
-  al_register_event_source(intern->event_queue,
+  al_register_event_source(pimpl->event_queue,
+                           al_get_display_event_source(pimpl->display));
+  al_register_event_source(pimpl->event_queue,
                            al_get_keyboard_event_source());
-  al_register_event_source(intern->event_queue,
-                           al_get_timer_event_source(intern->timer));
+  al_register_event_source(pimpl->event_queue,
+                           al_get_timer_event_source(pimpl->timer));
 
-  al_start_timer(intern->timer);
+  al_start_timer(pimpl->timer);
 
   Change_State(start_state);
 
-  intern->is_running = true;
+  pimpl->is_running = true;
 
-  while (intern->is_running)
+  while (pimpl->is_running)
   {
     ALLEGRO_EVENT event;
-    al_wait_for_event(intern->event_queue, &event);
+    al_wait_for_event(pimpl->event_queue, &event);
 
-    intern->states.top()->Events(event);
+    pimpl->states.top()->Events(event);
 
     if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
     {
-      intern->is_running = false;
+      pimpl->is_running = false;
       break;
     }
     else if (event.type == ALLEGRO_EVENT_KEY_DOWN)
@@ -180,28 +179,28 @@ void Game::Run(State_Object* start_state)
 
       if (event.keyboard.keycode == ALLEGRO_KEY_ESCAPE)
       {
-        intern->is_running = false;
+        pimpl->is_running = false;
         break;
       }
 
       if (event.keyboard.keycode == ALLEGRO_KEY_F4)
       {
-        al_stop_timer(intern->timer);
+        al_stop_timer(pimpl->timer);
 
-        if (al_get_display_flags(intern->display) & ALLEGRO_FULLSCREEN_WINDOW)
+        if (al_get_display_flags(pimpl->display) & ALLEGRO_FULLSCREEN_WINDOW)
         {
-          al_toggle_display_flag(intern->display,
+          al_toggle_display_flag(pimpl->display,
                                  ALLEGRO_FULLSCREEN_WINDOW, false);
         }
         else
         {
-          al_toggle_display_flag(intern->display,
+          al_toggle_display_flag(pimpl->display,
                                  ALLEGRO_FULLSCREEN_WINDOW, true);
         }
 
-        aspect_ratio_transform(intern->display, intern->width, intern->height);
+        aspect_ratio_transform(pimpl->display, pimpl->width, pimpl->height);
 
-        al_start_timer(intern->timer);
+        al_start_timer(pimpl->timer);
       }
     }
     else if (event.type == ALLEGRO_EVENT_KEY_UP)
@@ -210,102 +209,102 @@ void Game::Run(State_Object* start_state)
     }
     else if (event.type == ALLEGRO_EVENT_TIMER)
     {
-      intern->states.top()->Update();
-      intern->redraw = true;
+      pimpl->states.top()->Update();
+      pimpl->redraw = true;
     }
 
-    if (intern->redraw && al_event_queue_is_empty(intern->event_queue))
+    if (pimpl->redraw && al_event_queue_is_empty(pimpl->event_queue))
     {
-      intern->redraw = false;
+      pimpl->redraw = false;
 
-      if (intern->buffer)
+      if (pimpl->buffer)
       {
-        al_set_target_bitmap(intern->buffer);
+        al_set_target_bitmap(pimpl->buffer);
       }
       else
       {
-        al_set_target_backbuffer(intern->display);
+        al_set_target_backbuffer(pimpl->display);
       }
 
-      al_clear_to_color(intern->bg_color);
+      al_clear_to_color(pimpl->bg_color);
 
-      intern->states.top()->Draw();
+      pimpl->states.top()->Draw();
 
-      if (intern->buffer)
+      if (pimpl->buffer)
       {
-        al_set_target_backbuffer(intern->display);
+        al_set_target_backbuffer(pimpl->display);
         al_clear_to_color(C_BLACK);
-        al_draw_bitmap(intern->buffer, 0, 0, 0);
+        al_draw_bitmap(pimpl->buffer, 0, 0, 0);
       }
 
       al_flip_display();
     }
   }
 
-  while (!intern->states.empty())
+  while (!pimpl->states.empty())
   {
-    delete intern->states.top();
-    intern->states.pop();
+    delete pimpl->states.top();
+    pimpl->states.pop();
   }
 
-  al_destroy_display(intern->display);
-  al_destroy_bitmap(intern->buffer);
-  al_destroy_timer(intern->timer);
-  al_destroy_event_queue(intern->event_queue);
+  al_destroy_display(pimpl->display);
+  al_destroy_bitmap(pimpl->buffer);
+  al_destroy_timer(pimpl->timer);
+  al_destroy_event_queue(pimpl->event_queue);
   al_destroy_font(font);
 }
 
 void Game::Game_Over()
 {
-  intern->is_running = false;
+  pimpl->is_running = false;
 }
 
 void Game::Set_BG_Color(ALLEGRO_COLOR color)
 {
-  intern->bg_color = color;
+  pimpl->bg_color = color;
 }
 
 void Game::Get_Internal_Res(int& w, int& h)
 {
-  w = intern->width;
-  h = intern->height;
+  w = pimpl->width;
+  h = pimpl->height;
 }
 
 void Game::Change_State(State_Object* state)
 {
-  if (!intern->states.empty())
+  if (!pimpl->states.empty())
   {
-    delete intern->states.top();
-    intern->states.pop();
+    delete pimpl->states.top();
+    pimpl->states.pop();
   }
 
-  intern->states.push(state);
+  pimpl->states.push(state);
 }
 
 void Game::Push_State(State_Object* state)
 {
-  if (!intern->states.empty())
+  if (!pimpl->states.empty())
   {
-    intern->states.top()->Pause();
+    pimpl->states.top()->Pause();
   }
 
-  intern->states.push(state);
+  pimpl->states.push(state);
 }
 
 void Game::Pop_State()
 {
-  if (!intern->states.empty())
+  if (!pimpl->states.empty())
   {
-    delete intern->states.top();
-    intern->states.pop();
+    delete pimpl->states.top();
+    pimpl->states.pop();
   }
 
-  if (!intern->states.empty())
+  if (!pimpl->states.empty())
   {
-    intern->states.top()->Resume();
+    pimpl->states.top()->Resume();
   }
   else
   {
-    intern->is_running = false;
+    pimpl->is_running = false;
   }
 }
