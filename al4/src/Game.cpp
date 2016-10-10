@@ -25,11 +25,13 @@ END_OF_FUNCTION(update_fps)
 
 static volatile bool is_running = false;
 
+#ifndef ALLEGRO_DOS
 static void close_button_handler()
 {
   is_running = false;
 }
 END_OF_FUNCTION(close_button_handler)
+#endif
 
 struct Game::Game_Internal
 {
@@ -72,22 +74,28 @@ bool Game::Init(const char* title, int width, int height, int rate, int depth,
 
   set_color_depth(depth);
 
+#ifdef ALLEGRO_DOS
+  if (set_gfx_mode(GFX_AUTODETECT, width, height, 0, 0))
+#else
   if (set_gfx_mode(
     want_fs ? GFX_AUTODETECT_FULLSCREEN : GFX_AUTODETECT_WINDOWED,
     width, height, 0, 0))
+#endif
   {
     set_gfx_mode(GFX_TEXT, 0, 0, 0, 0);
     allegro_message("%s\n", allegro_error);
     return false;
   }
 
-  set_window_title(title);
-
   intern->buffer = create_bitmap(SCREEN_W, SCREEN_H);
   intern->framerate = rate;
 
+#ifndef ALLEGRO_DOS
+  set_window_title(title);
+
   LOCK_FUNCTION(close_button_handler);
   set_close_button_callback(close_button_handler);
+#endif
 
   Set_BG_Color(DEFAULT_BG_COLOR);
 
@@ -158,10 +166,12 @@ void Game::Run(State_Object* start_state)
         ++fps_counter;
       }
     }
+#ifndef ALLEGRO_DOS
     else
     {
       rest(1);
     }
+#endif
   }
 
   while (!intern->states.empty())
