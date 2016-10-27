@@ -13,8 +13,6 @@ These templates implement a basic game-state pattern with global functions in C,
 * Supports Linux, Windows and DOS (as targets)
 * DOS support is Allegro 4 only
 
-The main() function has the basic options that you can change quickly, and there's no need to modify the core game files (Game.cpp or core.c), unless you wish to add more stuff as engine-level.
-
 ## Install
 
 For basic install on Linux, just git-clone into the default "UserTemplates" folder in ~/.codeblocks/ (or ~/.config/codeblocks/ since 16.01).
