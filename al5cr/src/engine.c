@@ -3,21 +3,24 @@
 #include <allegro5/allegro_image.h>
 #include <allegro5/allegro_audio.h>
 #include <allegro5/allegro_acodec.h>
-#include "core.h"
+#include "engine.h"
 #include "state.h"
 
+#define SCREEN_RES_OVERRIDE   0.1
+// Used to simulate a slightly lower screen resolution
+// E.g. without the panels and stuff
+
 // Globals
-struct Game_Config* main_config;
+const struct Game_Config* maincfg;
 ALLEGRO_FONT* font;
 int keys[ALLEGRO_KEY_MAX];
 
 // The state that is currently updating
 static int current_state;
 
-static struct // Game variables
+static struct // Game data
 {
   ALLEGRO_DISPLAY* display;
-  ALLEGRO_BITMAP* buffer;
   ALLEGRO_TIMER* timer;
   ALLEGRO_EVENT_QUEUE* event_queue;
   ALLEGRO_COLOR bg_color;
@@ -26,27 +29,6 @@ static struct // Game variables
   struct State* states[MAX_STATES];
 }
 game;
-
-// Updates the aspect ratio when going full-screen or windowed
-static void aspect_ratio_transform()
-{
-  int window_w = al_get_display_width(game.display);
-  int window_h = al_get_display_height(game.display);
-
-  float sw = (window_w / (float) GAME_W);
-  float sh = (window_h / (float) GAME_H);
-  float scale = (sw < sh ? sw : sh);
-
-  float scale_w = ((float) GAME_W * scale);
-  float scale_h = ((float) GAME_H * scale);
-  int scale_x_pos = (window_w - scale_w) / 2;
-  int scale_y_pos = (window_h - scale_h) / 2;
-
-  ALLEGRO_TRANSFORM trans;
-  al_identity_transform(&trans);
-  al_build_transform(&trans, scale_x_pos, scale_y_pos, scale, scale, 0);
-  al_use_transform(&trans);
-}
 
 int game_init(struct Game_Config* config)
 {
@@ -95,13 +77,42 @@ int game_init(struct Game_Config* config)
 
   al_init_font_addon();
 
-  if (config->fullscreen)
+  // Find how much the game will be scaled when config->scale <= 0
+  if (config->scale <= 0)
   {
-    al_set_new_display_flags(ALLEGRO_FULLSCREEN_WINDOW);
+    ALLEGRO_MONITOR_INFO info;
+    al_get_monitor_info(0, &info);
+
+    int monitor_w = info.x2 - info.x1;
+    int monitor_h = info.y2 - info.y1;
+
+    float new_monitor_w = (monitor_w - (monitor_w * SCREEN_RES_OVERRIDE));
+    float new_monitor_h = (monitor_h - (monitor_h * SCREEN_RES_OVERRIDE));
+
+    config->scale = 2;
+
+    // Keep scaling until a suitable scale factor is found
+    while (1)
+    {
+      int scale_w = config->width * config->scale;
+      int scale_h = config->height * config->scale;
+
+      if (scale_w > new_monitor_w || scale_h > new_monitor_h)
+      {
+        --config->scale;
+        break;
+      }
+
+      ++config->scale;
+    }
+  }
+  else if (config->scale < 2)
+  {
+    config->scale = 2;
   }
 
-  // Initialize variables...
-  game.display = al_create_display(config->width, config->height);
+  game.display = al_create_display(config->width * config->scale,
+                                   config->height * config->scale);
 
   if (!game.display)
   {
@@ -111,32 +122,27 @@ int game_init(struct Game_Config* config)
 
   al_set_window_title(game.display, config->title);
 
-  main_config = config;
-  aspect_ratio_transform();
-
-  al_add_new_bitmap_flag(ALLEGRO_MAG_LINEAR);
-
-  if (config->buffer)
-  {
-    game.buffer = al_create_bitmap(config->width, config->height);
-    al_set_new_bitmap_flags(0);
-  }
-
   font = al_create_builtin_font();
 
   game.timer = al_create_timer(1.0 / config->framerate);
   game.event_queue = al_create_event_queue();
 
+  maincfg = config;
   set_bg_color(BG_COLOR_DEFAULT);
+
+  ALLEGRO_TRANSFORM trans;
+  al_identity_transform(&trans);
+  al_scale_transform(&trans, config->scale, config->scale);
+  al_use_transform(&trans);
 
   game.initialized = TRUE;
 
   return 1;
 }
 
-void game_run(struct State* state)
+void game_run(struct State* state, void* param)
 {
-  int redraw = 0;
+  int redraw = FALSE;
 
   if (game.is_running)
   {
@@ -144,7 +150,7 @@ void game_run(struct State* state)
     return;
   }
 
-  change_state(state, NULL);
+  change_state(state, param);
 
   // Generate display events
   al_register_event_source(game.event_queue,
@@ -188,25 +194,6 @@ void game_run(struct State* state)
         game.is_running = FALSE;
         break;
       }
-
-      // F4 key will toggle full-screen (maintains aspect ratio)
-      if (event.keyboard.keycode == ALLEGRO_KEY_F4)
-      {
-        al_stop_timer(game.timer);
-
-        if (al_get_display_flags(game.display) & ALLEGRO_FULLSCREEN_WINDOW)
-        {
-          al_toggle_display_flag(game.display, ALLEGRO_FULLSCREEN_WINDOW, 0);
-        }
-        else
-        {
-          al_toggle_display_flag(game.display, ALLEGRO_FULLSCREEN_WINDOW, 1);
-        }
-
-        aspect_ratio_transform();
-
-        al_start_timer(game.timer);
-      }
     }
     else if (event.type == ALLEGRO_EVENT_KEY_UP)
     {
@@ -222,48 +209,25 @@ void game_run(struct State* state)
     {
       redraw = FALSE;
 
-      if (main_config->buffer)
-      {
-        al_set_target_bitmap(game.buffer);
-      }
-      else
-      {
-        al_set_target_backbuffer(game.display);
-      }
+      al_set_target_backbuffer(game.display);
 
       al_clear_to_color(game.bg_color);
 
       game.states[current_state]->_draw();
 
-      if (main_config->buffer)
-      {
-        al_set_target_backbuffer(game.display);
-        al_clear_to_color(C_BLACK);
-        al_draw_bitmap(game.buffer, 0, 0, 0);
-      }
-
       al_flip_display();
     }
   }
 
-  int i;
-  for (i=0; i<MAX_STATES; ++i)
+  while (current_state >= 0)
   {
-    if (game.states[i] != NULL)
-    {
-      game.states[i]->_end(TRUE);
-    }
+    game.states[current_state--]->_end(TRUE);
   }
 
   al_destroy_display(game.display);
   al_destroy_timer(game.timer);
   al_destroy_event_queue(game.event_queue);
   al_destroy_font(font);
-
-  if (main_config->buffer)
-  {
-    al_destroy_bitmap(game.buffer);
-  }
 }
 
 void game_over()

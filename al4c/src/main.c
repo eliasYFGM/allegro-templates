@@ -1,10 +1,13 @@
-#include "core.h"
+#include <allegro.h>
+#include "engine.h"
 #include "game_state.h"
 
 int main(int argc, char** argv)
 {
   struct Game_Config config =
   {
+    // Argument list
+    { argc, argv },
     // Window title
     "Allegro application",
     // Game resolution
@@ -15,16 +18,14 @@ int main(int argc, char** argv)
     8,
     // Want full-screen?
     FALSE,
-    // Want audio module?
-    FALSE,
-    // Default argument list
-    { argc, argv }
+    // Want audio?
+    FALSE
   };
 
   if (game_init(&config))
   {
     // Run the game with a default "starting state"
-    game_run(GAME_STATE);
+    game_run(GAME_STATE, NULL);
   }
 
   return 0;

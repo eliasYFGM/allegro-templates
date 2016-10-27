@@ -1,5 +1,5 @@
-#ifndef CORE_H_INCLUDED
-#define CORE_H_INCLUDED
+#ifndef ENGINE_H_INCLUDED
+#define ENGINE_H_INCLUDED
 
 #define C_BLACK   makecol(0, 0, 0)
 #define C_WHITE   makecol(255, 255, 255)
@@ -15,26 +15,29 @@ struct State;
 
 struct Game_Config
 {
-  char* title;
-  int width;
-  int height;
-  int framerate;
-  int depth;
-  int fullscreen;
-  int audio;
   struct {
     int c;
     char** v;
   } args;
+
+  char *title;
+  int width;
+  int height;
+  int scale;
+  int framerate;
+  int depth;
+  int audio;
 };
 
-// Main game engine routines
+// Main
 int game_init(struct Game_Config*);
-void game_run(struct State*);
+void game_run(struct State*, void* param);
+
+// Other
 void game_over();
 void set_bg_color(int color);
 
-// State manipulation
+// State routines
 void change_state(struct State*, void* param);
 void push_state(struct State*, void* param);
 void pop_state();
@@ -43,11 +46,14 @@ void pop_state();
 extern volatile int fps;
 
 // Pointer to the original settings (in main.c)
-extern struct Game_Config* main_config;
+extern const struct Game_Config* maincfg;
+
+#define GAME_W  maincfg->width  // Instead of SCREEN_W
+#define GAME_H  maincfg->height // Instead of SCREEN_H
 
 // Bounding box collision (taken from Alex4)
 #define check_bb_collision(x1,y1,w1,h1,x2,y2,w2,h2) \
   (!( ((x1)>=(x2)+(w2)) || ((x2)>=(x1)+(w1)) || \
       ((y1)>=(y2)+(h2)) || ((y2)>=(y1)+(h1)) ))
 
-#endif // CORE_H_INCLUDED
+#endif // ENGINE_H_INCLUDED

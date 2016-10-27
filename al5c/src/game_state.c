@@ -1,6 +1,6 @@
 #include <allegro5/allegro.h>
-#include "core.h"
 #include "game_state.h"
+#include "engine.h"
 
 static void state_init(void* param)
 {
@@ -18,7 +18,7 @@ static void state_resume()
 {
 }
 
-static void state_events(ALLEGRO_EVENT* event)
+static void state_events(ALLEGRO_EVENT* ev)
 {
 }
 

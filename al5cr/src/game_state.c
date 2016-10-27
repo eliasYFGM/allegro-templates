@@ -1,6 +1,6 @@
 #include <allegro5/allegro.h>
-#include "core.h"
 #include "game_state.h"
+#include "engine.h"
 
 static void state_init(void* param)
 {

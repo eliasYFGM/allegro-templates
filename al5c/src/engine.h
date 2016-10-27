@@ -1,5 +1,5 @@
-#ifndef CORE_H_INCLUDED
-#define CORE_H_INCLUDED
+#ifndef ENGINE_H_INCLUDED
+#define ENGINE_H_INCLUDED
 
 #include <allegro5/allegro_font.h>
 
@@ -22,6 +22,11 @@ struct State;
 
 struct Game_Config
 {
+  struct {
+    int c;
+    char** v;
+  } args;
+
   char *title;
   int width;
   int height;
@@ -29,15 +34,13 @@ struct Game_Config
   int fullscreen;
   int audio;
   int buffer;
-  struct {
-    int c;
-    char** v;
-  } args;
 };
 
-// Main game engine routines
+// Main
 int game_init(struct Game_Config*);
-void game_run(struct State*);
+void game_run(struct State*, void* param);
+
+// Other
 void game_over();
 void set_bg_color(ALLEGRO_COLOR);
 
@@ -53,14 +56,14 @@ extern ALLEGRO_FONT* font;
 extern int keys[ALLEGRO_KEY_MAX];
 
 // Pointer to the original settings (in main.c)
-extern struct Game_Config* main_config;
+extern const struct Game_Config* maincfg;
 
-#define GAME_W    main_config->width
-#define GAME_H    main_config->height
+#define GAME_W    maincfg->width
+#define GAME_H    maincfg->height
 
 // Simple bounding box collision checking (taken from Alex4 source)
 #define check_bb_collision(x1,y1,w1,h1,x2,y2,w2,h2) \
   (!( ((x1)>=(x2)+(w2)) || ((x2)>=(x1)+(w1)) || \
       ((y1)>=(y2)+(h2)) || ((y2)>=(y1)+(h1)) ))
 
-#endif // CORE_H_INCLUDED
+#endif // ENGINE_H_INCLUDED
