@@ -2,9 +2,9 @@
 #define GAMESTATE_H_INCLUDED
 
 #include "State.h"
-#include "Game.h"
+#include "Game_Engine.h"
 
-class Game_State : public State_Object, public Game
+class Game_State : public State, public Game_Engine
 {
 public:
   Game_State();
@@ -13,9 +13,8 @@ public:
   void Pause();
   void Resume();
 
-  void Events(ALLEGRO_EVENT&);
   void Update();
-  void Draw();
+  void Draw(BITMAP*);
 };
 
 #endif // GAMESTATE_H_INCLUDED

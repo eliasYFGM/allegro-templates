@@ -90,10 +90,10 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
-		<Unit filename="src/Game.cpp" />
-		<Unit filename="src/Game.h" />
-		<Unit filename="src/GameState.cpp" />
-		<Unit filename="src/GameState.h" />
+		<Unit filename="src/Game_Engine.cpp" />
+		<Unit filename="src/Game_Engine.h" />
+		<Unit filename="src/Game_State.cpp" />
+		<Unit filename="src/Game_State.h" />
 		<Unit filename="src/Main.cpp" />
 		<Unit filename="src/State.h" />
 		<Unit filename="src/resource.rc">

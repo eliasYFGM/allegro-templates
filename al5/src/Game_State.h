@@ -1,10 +1,11 @@
 #ifndef GAMESTATE_H_INCLUDED
 #define GAMESTATE_H_INCLUDED
 
+#include <allegro5/allegro.h>
 #include "State.h"
-#include "Game.h"
+#include "Game_Engine.h"
 
-class Game_State : public State_Object, public Game
+class Game_State : public State, public Game_Engine
 {
 public:
   Game_State();
@@ -13,8 +14,9 @@ public:
   void Pause();
   void Resume();
 
+  void Events(ALLEGRO_EVENT&);
   void Update();
-  void Draw(BITMAP*);
+  void Draw();
 };
 
 #endif // GAMESTATE_H_INCLUDED

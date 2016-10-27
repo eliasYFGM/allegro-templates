@@ -2,7 +2,8 @@
 #include <stack>
 #include <cstdlib>
 #include <ctime>
-#include "Game.h"
+#include <allegro.h>
+#include "Game_Engine.h"
 #include "State.h"
 
 static volatile unsigned int ticks = 0;
@@ -33,31 +34,40 @@ static void close_button_handler()
 END_OF_FUNCTION(close_button_handler)
 #endif
 
-struct Game::Game_Internal
+struct Game_Engine::Game_Internal
 {
   BITMAP* buffer;
+  bool initialized;
   bool need_redraw;
   int bg_color;
   int framerate;
-  std::stack<State_Object*> states;
+  std::stack<State*> states;
 };
 
-Game::Game_Internal* Game::intern = 0;
+Game_Engine::Game_Internal* Game_Engine::pimpl;
 
-bool Game::Init(const char* title, int width, int height, int rate, int depth,
-                bool want_fs, bool want_audio)
+int Game_Engine::argc;
+char** Game_Engine::argv;
+
+Game_Engine::Game_Engine()
 {
-  if (!intern)
+  if (!pimpl)
   {
-    intern = new Game_Internal();
+    pimpl = new Game_Internal();
+    pimpl->initialized = false;
+    pimpl->need_redraw = false;
   }
-  else
+}
+
+bool Game_Engine::Init(int _argc, char** _argv, const char* title, int width,
+                       int height, int rate, int depth, bool want_fs,
+                       bool want_audio)
+{
+  if (pimpl->initialized)
   {
-    std::cout << "WARNING: Calling Game::Init() more than once" << std::endl;
+    std::cout << "WARNING: Calling Game_Engine::Init() more than once\n";
     return true;
   }
-
-  intern->need_redraw = false;
 
   allegro_init();
   install_keyboard();
@@ -87,8 +97,8 @@ bool Game::Init(const char* title, int width, int height, int rate, int depth,
     return false;
   }
 
-  intern->buffer = create_bitmap(SCREEN_W, SCREEN_H);
-  intern->framerate = rate;
+  pimpl->buffer = create_bitmap(SCREEN_W, SCREEN_H);
+  pimpl->framerate = rate;
 
 #ifndef ALLEGRO_DOS
   set_window_title(title);
@@ -97,18 +107,29 @@ bool Game::Init(const char* title, int width, int height, int rate, int depth,
   set_close_button_callback(close_button_handler);
 #endif
 
-  Set_BG_Color(DEFAULT_BG_COLOR);
+  Set_BG_Color(BG_COLOR_DEFAULT);
+
+  argc = _argc;
+  argv = _argv;
 
   srand(time(0));
+
+  pimpl->initialized = true;
 
   return true;
 }
 
-void Game::Run(State_Object* start_state)
+void Game_Engine::Run(State* start_state)
 {
+  if (!pimpl->initialized)
+  {
+    std::cout << "ERROR: Game_Engine not yet initialized\n";
+    return;
+  }
+
   if (is_running)
   {
-    std::cout << "WARNING: Calling Game::Run() more than once" << std::endl;
+    std::cout << "WARNING: Calling Game_Engine::Run() more than once\n";
 
     if (start_state)
     {
@@ -120,7 +141,7 @@ void Game::Run(State_Object* start_state)
 
   LOCK_VARIABLE(ticks);
   LOCK_FUNCTION(ticker);
-  install_int_ex(ticker, BPS_TO_TIMER(intern->framerate));
+  install_int_ex(ticker, BPS_TO_TIMER(pimpl->framerate));
 
   LOCK_VARIABLE(fps);
   LOCK_VARIABLE(fps_counter);
@@ -147,20 +168,20 @@ void Game::Run(State_Object* start_state)
 
         if (is_running)
         {
-          intern->states.top()->Update();
-          intern->need_redraw = true;
+          pimpl->states.top()->Update();
+          pimpl->need_redraw = true;
         }
       }
 
-      if (intern->need_redraw && is_running)
+      if (pimpl->need_redraw && is_running)
       {
-        intern->need_redraw = false;
-        clear_to_color(intern->buffer, intern->bg_color);
+        pimpl->need_redraw = false;
+        clear_to_color(pimpl->buffer, pimpl->bg_color);
 
-        intern->states.top()->Draw(intern->buffer);
+        pimpl->states.top()->Draw(pimpl->buffer);
 
-        show_mouse(intern->buffer);
-        blit(intern->buffer, screen, 0, 0, 0, 0, SCREEN_W, SCREEN_H);
+        show_mouse(pimpl->buffer);
+        blit(pimpl->buffer, screen, 0, 0, 0, 0, SCREEN_W, SCREEN_H);
         show_mouse(0);
 
         ++fps_counter;
@@ -174,57 +195,59 @@ void Game::Run(State_Object* start_state)
 #endif
   }
 
-  while (!intern->states.empty())
+  while (!pimpl->states.empty())
   {
-    delete intern->states.top();
-    intern->states.pop();
+    delete pimpl->states.top();
+    pimpl->states.pop();
   }
 
-  destroy_bitmap(intern->buffer);
+  destroy_bitmap(pimpl->buffer);
+
+  delete pimpl;
 }
 
-void Game::Game_Over()
+void Game_Engine::Game_Over()
 {
   is_running = false;
 }
 
-void Game::Set_BG_Color(int color)
+void Game_Engine::Set_BG_Color(int color)
 {
-  intern->bg_color = color;
+  pimpl->bg_color = color;
 }
 
-void Game::Change_State(State_Object* state)
+void Game_Engine::Change_State(State* state)
 {
-  if (!intern->states.empty())
+  if (!pimpl->states.empty())
   {
-    delete intern->states.top();
-    intern->states.pop();
+    delete pimpl->states.top();
+    pimpl->states.pop();
   }
 
-  intern->states.push(state);
+  pimpl->states.push(state);
 }
 
-void Game::Push_State(State_Object* state)
+void Game_Engine::Push_State(State* state)
 {
-  if (!intern->states.empty())
+  if (!pimpl->states.empty())
   {
-    intern->states.top()->Pause();
+    pimpl->states.top()->Pause();
   }
 
-  intern->states.push(state);
+  pimpl->states.push(state);
 }
 
-void Game::Pop_State()
+void Game_Engine::Pop_State()
 {
-  if (!intern->states.empty())
+  if (!pimpl->states.empty())
   {
-    delete intern->states.top();
-    intern->states.pop();
+    delete pimpl->states.top();
+    pimpl->states.pop();
   }
 
-  if (!intern->states.empty())
+  if (!pimpl->states.empty())
   {
-    intern->states.top()->Resume();
+    pimpl->states.top()->Resume();
   }
   else
   {

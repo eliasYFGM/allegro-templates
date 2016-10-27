@@ -1,10 +1,13 @@
-#include "GameState.h"
+#include <allegro.h>
+#include "Game_State.h"
 
-int main()
+int main(int argc, char** argv)
 {
-  Game game;
+  Game_Engine game;
 
   bool result = game.Init(
+    // Argument list
+    argc, argv,
     // Window title
     "Allegro application",
     // Screen size
@@ -15,7 +18,7 @@ int main()
     8,
     // Want full-screen?
     false,
-    // Want sound?
+    // Want audio?
     false
   );
 

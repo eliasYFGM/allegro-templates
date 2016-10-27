@@ -1,12 +1,10 @@
 #ifndef STATE_H_INCLUDED
 #define STATE_H_INCLUDED
 
-#include <allegro5/allegro.h>
-
-class State_Object
+class State
 {
 public:
-  virtual ~State_Object() {}
+  virtual ~State() {}
 
   virtual void Pause() = 0;
   virtual void Resume() = 0;

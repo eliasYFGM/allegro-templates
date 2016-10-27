@@ -2,11 +2,12 @@
 #include <cstdlib>
 #include <ctime>
 #include <stack>
+#include <allegro5/allegro.h>
 #include <allegro5/allegro_image.h>
 #include <allegro5/allegro_audio.h>
 #include <allegro5/allegro_acodec.h>
 #include <allegro5/allegro_primitives.h>
-#include "Game.h"
+#include "Game_Engine.h"
 #include "State.h"
 
 static void aspect_ratio_transform(ALLEGRO_DISPLAY* display, int w, int h)
@@ -29,39 +30,49 @@ static void aspect_ratio_transform(ALLEGRO_DISPLAY* display, int w, int h)
   al_use_transform(&trans);
 }
 
-struct Game::Game_Internal
+struct Game_Engine::Game_Internal
 {
   ALLEGRO_DISPLAY* display;
   ALLEGRO_BITMAP* buffer;
   ALLEGRO_TIMER* timer;
   ALLEGRO_EVENT_QUEUE* event_queue;
   ALLEGRO_COLOR bg_color;
+  bool initialized;
   bool redraw;
   bool is_running;
   int width, height;
-  std::stack<State_Object*> states;
+  std::stack<State*> states;
 };
 
-Game::Game_Internal* Game::pimpl;
-ALLEGRO_FONT* Game::font;
-bool Game::keys[ALLEGRO_KEY_MAX];
+Game_Engine::Game_Internal* Game_Engine::pimpl;
 
-bool Game::Init(const char* title, int width, int height, int rate,
-                bool want_fs, bool want_audio, bool want_bb)
+int Game_Engine::argc;
+char** Game_Engine::argv;
+bool Game_Engine::key[ALLEGRO_KEY_MAX];
+ALLEGRO_FONT* Game_Engine::font;
+
+Game_Engine::Game_Engine()
 {
   if (!pimpl)
   {
     pimpl = new Game_Internal();
+
+    pimpl->initialized = false;
+    pimpl->buffer = 0;
+    pimpl->redraw = false;
+    pimpl->is_running = false;
   }
-  else
+}
+
+bool Game_Engine::Init(int _argc, char** _argv, const char* title, int width,
+                       int height, int rate, bool want_fs, bool want_audio,
+                       bool want_bb)
+{
+  if (pimpl->initialized)
   {
-    std::cout << "WARNING: Calling Game::Init() more than once" << std::endl;
+    std::cout << "WARNING: Calling Game_Engine::Init() more than once\n";
     return true;
   }
-
-  pimpl->buffer = 0;
-  pimpl->redraw = false;
-  pimpl->is_running = false;
 
   al_init();
   al_install_keyboard();
@@ -131,14 +142,25 @@ bool Game::Init(const char* title, int width, int height, int rate,
 
   srand(time(0));
 
+  argc = _argc;
+  argv = _argv;
+
+  pimpl->initialized = true;
+
   return true;
 }
 
-void Game::Run(State_Object* start_state)
+void Game_Engine::Run(State* start_state)
 {
+  if (!pimpl->initialized)
+  {
+    std::cout << "ERROR: Game_Engine not yet initialized" << std::endl;
+    return;
+  }
+
   if (pimpl->is_running)
   {
-    std::cout << "WARNING: Calling Game::Run() more than once" << std::endl;
+    std::cout << "WARNING: Calling Game_Engine::Run() more than once\n";
 
     if (start_state)
     {
@@ -175,7 +197,7 @@ void Game::Run(State_Object* start_state)
     }
     else if (event.type == ALLEGRO_EVENT_KEY_DOWN)
     {
-      keys[event.keyboard.keycode] = true;
+      key[event.keyboard.keycode] = true;
 
       if (event.keyboard.keycode == ALLEGRO_KEY_ESCAPE)
       {
@@ -205,7 +227,7 @@ void Game::Run(State_Object* start_state)
     }
     else if (event.type == ALLEGRO_EVENT_KEY_UP)
     {
-      keys[event.keyboard.keycode] = false;
+      key[event.keyboard.keycode] = false;
     }
     else if (event.type == ALLEGRO_EVENT_TIMER)
     {
@@ -252,25 +274,27 @@ void Game::Run(State_Object* start_state)
   al_destroy_timer(pimpl->timer);
   al_destroy_event_queue(pimpl->event_queue);
   al_destroy_font(font);
+
+  delete pimpl;
 }
 
-void Game::Game_Over()
+void Game_Engine::Game_Over()
 {
   pimpl->is_running = false;
 }
 
-void Game::Set_BG_Color(ALLEGRO_COLOR color)
+void Game_Engine::Set_BG_Color(ALLEGRO_COLOR color)
 {
   pimpl->bg_color = color;
 }
 
-void Game::Get_Internal_Res(int& w, int& h)
+void Game_Engine::Get_Internal_Res(int& w, int& h)
 {
   w = pimpl->width;
   h = pimpl->height;
 }
 
-void Game::Change_State(State_Object* state)
+void Game_Engine::Change_State(State* state)
 {
   if (!pimpl->states.empty())
   {
@@ -281,7 +305,7 @@ void Game::Change_State(State_Object* state)
   pimpl->states.push(state);
 }
 
-void Game::Push_State(State_Object* state)
+void Game_Engine::Push_State(State* state)
 {
   if (!pimpl->states.empty())
   {
@@ -291,7 +315,7 @@ void Game::Push_State(State_Object* state)
   pimpl->states.push(state);
 }
 
-void Game::Pop_State()
+void Game_Engine::Pop_State()
 {
   if (!pimpl->states.empty())
   {
