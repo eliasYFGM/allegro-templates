@@ -195,17 +195,6 @@ void game_run(struct State* state, void* param)
   destroy_bitmap(game.buffer);
 }
 
-// Ends the game
-void game_over()
-{
-  is_running = FALSE;
-}
-
-void set_bg_color(int color)
-{
-  game.bg_color = color;
-}
-
 // Changes the state directly to another
 void change_state(struct State* state, void* param)
 {
@@ -250,4 +239,15 @@ void pop_state()
   {
     puts("WARNING: Can't remove any more states (current_state = 0)");
   }
+}
+
+// Ends the game
+void game_over()
+{
+  is_running = FALSE;
+}
+
+void set_bg_color(int color)
+{
+  game.bg_color = color;
 }

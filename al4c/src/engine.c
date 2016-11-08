@@ -4,12 +4,14 @@
 #include "state.h"
 
 const struct Game_Config* maincfg;
+
 static int current_state;
 
 static struct // Game variables
 {
   BITMAP* buffer;
   int initialized;
+  int cursor;
   int bg_color;
   struct State* states[MAX_STATES];
 }
@@ -54,8 +56,12 @@ int game_init(struct Game_Config* config)
 
   allegro_init();
   install_keyboard();
-  install_mouse();
   install_timer();
+
+  if (config->mouse)
+  {
+    install_mouse();
+  }
 
   if (config->audio)
   {
@@ -87,6 +93,8 @@ int game_init(struct Game_Config* config)
 
   game.buffer = create_bitmap(SCREEN_W, SCREEN_H);
   game.bg_color = BG_COLOR_DEFAULT;
+  game.cursor = config->mouse;
+
   maincfg = config;
 
   game.initialized = TRUE;
@@ -147,9 +155,17 @@ void game_run(struct State* state, void* param)
 
         game.states[current_state]->_draw(game.buffer);
 
-        show_mouse(game.buffer);
+        if (maincfg->mouse && game.cursor)
+        {
+          show_mouse(game.buffer);
+        }
+
         blit(game.buffer, screen, 0, 0, 0, 0, SCREEN_W, SCREEN_H);
-        show_mouse(NULL);
+
+        if (maincfg->mouse && game.cursor)
+        {
+          show_mouse(NULL);
+        }
 
         ++frame_counter;
       }
@@ -169,17 +185,6 @@ void game_run(struct State* state, void* param)
   }
 
   destroy_bitmap(game.buffer);
-}
-
-// Ends the game
-void game_over()
-{
-  is_running = FALSE;
-}
-
-void set_bg_color(int color)
-{
-  game.bg_color = color;
 }
 
 // Changes the state directly to another
@@ -226,4 +231,20 @@ void pop_state()
   {
     puts("WARNING: Can't remove any more states (current_state = 0)");
   }
+}
+
+// Ends the game
+void game_over()
+{
+  is_running = FALSE;
+}
+
+void enable_cursor(int enable)
+{
+  game.cursor = enable;
+}
+
+void set_bg_color(int color)
+{
+  game.bg_color = color;
 }

@@ -7,7 +7,7 @@ int main(int argc, char** argv)
   struct Game_Config config =
   {
     // Argument list
-    { argc, argv },
+    argc, argv,
     // Window title
     "Allegro application",
     // Game resolution
@@ -17,6 +17,8 @@ int main(int argc, char** argv)
     // Color depth (8, 15, 16, 24, 32)
     8,
     // Want full-screen?
+    FALSE,
+    // Want mouse?
     FALSE,
     // Want audio?
     FALSE

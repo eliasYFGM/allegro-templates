@@ -47,12 +47,6 @@ int game_init(struct Game_Config* config)
     return 0;
   }
 
-  if (!al_install_mouse())
-  {
-    puts("ERROR: Could not initialize the mouse...");
-    return 0;
-  }
-
   if (config->audio)
   {
     if (!al_install_audio())
@@ -163,9 +157,6 @@ void game_run(struct State* state, void* param)
   // Keyboard events
   al_register_event_source(game.event_queue, al_get_keyboard_event_source());
 
-  // Mouse events
-  al_register_event_source(game.event_queue, al_get_mouse_event_source());
-
   al_start_timer(game.timer);
   game.is_running = TRUE;
 
@@ -230,16 +221,6 @@ void game_run(struct State* state, void* param)
   al_destroy_font(font);
 }
 
-void game_over()
-{
-  game.is_running = FALSE;
-}
-
-void set_bg_color(ALLEGRO_COLOR color)
-{
-  game.bg_color = color;
-}
-
 void change_state(struct State* state, void* param)
 {
   if (game.states[current_state] != NULL)
@@ -281,4 +262,14 @@ void pop_state()
   {
     puts("WARNING: Can't remove any more states (current_state = 0)");
   }
+}
+
+void game_over()
+{
+  game.is_running = FALSE;
+}
+
+void set_bg_color(ALLEGRO_COLOR color)
+{
+  game.bg_color = color;
 }

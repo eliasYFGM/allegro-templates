@@ -262,16 +262,6 @@ void game_run(struct State* state, void* param)
   }
 }
 
-void game_over()
-{
-  game.is_running = FALSE;
-}
-
-void set_bg_color(ALLEGRO_COLOR color)
-{
-  game.bg_color = color;
-}
-
 void change_state(struct State* state, void* param)
 {
   if (game.states[current_state] != NULL)
@@ -313,4 +303,14 @@ void pop_state()
   {
     puts("WARNING: Can't remove any more states (current_state = 0)");
   }
+}
+
+void game_over()
+{
+  game.is_running = FALSE;
+}
+
+void set_bg_color(ALLEGRO_COLOR color)
+{
+  game.bg_color = color;
 }

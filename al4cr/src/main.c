@@ -7,7 +7,7 @@ int main(int argc, char** argv)
   struct Game_Config config =
   {
     // Argument list
-    { argc, argv },
+    argc, argv,
     // Window title
     "Allegro application",
     // Game resolution

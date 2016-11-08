@@ -22,11 +22,11 @@ struct State;
 
 struct Game_Config
 {
-  struct {
-    int c;
-    char** v;
-  } args;
+  // Argument list
+  int argc;
+  char** argv;
 
+  // Other needed parameters
   char *title;
   int width;
   int height;
@@ -39,14 +39,14 @@ struct Game_Config
 int game_init(struct Game_Config*);
 void game_run(struct State*, void* param);
 
-// Other
-void game_over();
-void set_bg_color(ALLEGRO_COLOR);
-
 // State routines
 void change_state(struct State*, void* param);
 void push_state(struct State*, void* param);
 void pop_state();
+
+// Other
+void game_over();
+void set_bg_color(ALLEGRO_COLOR);
 
 // Default fixed-width font
 extern ALLEGRO_FONT* font;
