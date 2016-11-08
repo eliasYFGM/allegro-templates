@@ -11,35 +11,40 @@ class State;
 class Game_Engine
 {
   struct Game_Internal;
-  static Game_Internal* pimpl;
+  Game_Internal* pimpl;
 
 /******************************************************************************
   Variables
 *******************************************************************************/
-protected:
+public:
   // Argument list
-  static int argc;
-  static char** argv;
+  int argc; char** argv;
+
+  // Whether the game is exiting
+  bool exiting;
 
 /******************************************************************************
   Methods
 *******************************************************************************/
 public:
   Game_Engine();
+  ~Game_Engine();
 
-  // These won't do anything outside of main()!
+  // Main
   bool Init(int _argc, char** _argv, const char* title, int width, int height,
-            int rate, int depth, bool want_fs, bool want_audio);
+            int rate, bool want_fs, bool want_mouse, bool want_audio,
+            int depth = 32);
   void Run(State* start_state = 0);
-
-protected:
-  void Game_Over();
-  void Set_BG_Color(int color);
 
   // State manipulation
   void Change_State(State*);
   void Push_State(State*);
   void Pop_State();
+
+  // Other
+  void Game_Over();
+  void Enable_Cursor(bool enable);
+  void Set_BG_Color(int color);
 };
 
 // Accessible from anywhere

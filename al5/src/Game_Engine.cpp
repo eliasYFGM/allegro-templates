@@ -10,13 +10,16 @@
 #include "Game_Engine.h"
 #include "State.h"
 
+bool key[ALLEGRO_KEY_MAX];
+ALLEGRO_FONT* font;
+
 static void aspect_ratio_transform(ALLEGRO_DISPLAY* display, int w, int h)
 {
   int window_w = al_get_display_width(display);
   int window_h = al_get_display_height(display);
 
-  float sw = (window_w / (float)(w));
-  float sh = (window_h / (float)(h));
+  float sw = (window_w / (float) w);
+  float sh = (window_h / (float) h);
   float scale = std::min(sw, sh);
 
   float scale_w = (w * scale);
@@ -44,24 +47,17 @@ struct Game_Engine::Game_Internal
   std::stack<State*> states;
 };
 
-Game_Engine::Game_Internal* Game_Engine::pimpl;
-
-int Game_Engine::argc;
-char** Game_Engine::argv;
-bool Game_Engine::key[ALLEGRO_KEY_MAX];
-ALLEGRO_FONT* Game_Engine::font;
-
-Game_Engine::Game_Engine()
+Game_Engine::Game_Engine() : pimpl(new Game_Internal())
 {
-  if (!pimpl)
-  {
-    pimpl = new Game_Internal();
+  pimpl->initialized = false;
+  pimpl->buffer = 0;
+  pimpl->redraw = false;
+  pimpl->is_running = false;
+}
 
-    pimpl->initialized = false;
-    pimpl->buffer = 0;
-    pimpl->redraw = false;
-    pimpl->is_running = false;
-  }
+Game_Engine::~Game_Engine()
+{
+  delete pimpl;
 }
 
 bool Game_Engine::Init(int _argc, char** _argv, const char* title, int width,
@@ -107,7 +103,6 @@ bool Game_Engine::Init(int _argc, char** _argv, const char* title, int width,
   if (!pimpl->display)
   {
     std::cout << "ERROR: Could not create a display" << std::endl;
-    delete pimpl;
     return false;
   }
 
@@ -124,7 +119,6 @@ bool Game_Engine::Init(int _argc, char** _argv, const char* title, int width,
     if (!pimpl->buffer)
     {
       std::cout << "ERROR: Could not create a buffer" << std::endl;
-      delete pimpl;
       return false;
     }
 
@@ -140,10 +134,12 @@ bool Game_Engine::Init(int _argc, char** _argv, const char* title, int width,
 
   Set_BG_Color(BG_COLOR_DEFAULT);
 
-  srand(time(0));
-
-  argc = _argc;
   argv = _argv;
+  argc = _argc;
+
+  exiting = false;
+
+  srand(time(0));
 
   pimpl->initialized = true;
 
@@ -170,6 +166,8 @@ void Game_Engine::Run(State* start_state)
     return;
   }
 
+  Change_State(start_state);
+
   al_register_event_source(pimpl->event_queue,
                            al_get_display_event_source(pimpl->display));
   al_register_event_source(pimpl->event_queue,
@@ -178,8 +176,6 @@ void Game_Engine::Run(State* start_state)
                            al_get_timer_event_source(pimpl->timer));
 
   al_start_timer(pimpl->timer);
-
-  Change_State(start_state);
 
   pimpl->is_running = true;
 
@@ -263,6 +259,8 @@ void Game_Engine::Run(State* start_state)
     }
   }
 
+  exiting = true;
+
   while (!pimpl->states.empty())
   {
     delete pimpl->states.top();
@@ -274,24 +272,6 @@ void Game_Engine::Run(State* start_state)
   al_destroy_timer(pimpl->timer);
   al_destroy_event_queue(pimpl->event_queue);
   al_destroy_font(font);
-
-  delete pimpl;
-}
-
-void Game_Engine::Game_Over()
-{
-  pimpl->is_running = false;
-}
-
-void Game_Engine::Set_BG_Color(ALLEGRO_COLOR color)
-{
-  pimpl->bg_color = color;
-}
-
-void Game_Engine::Get_Internal_Res(int& w, int& h)
-{
-  w = pimpl->width;
-  h = pimpl->height;
 }
 
 void Game_Engine::Change_State(State* state)
@@ -331,4 +311,20 @@ void Game_Engine::Pop_State()
   {
     pimpl->is_running = false;
   }
+}
+
+void Game_Engine::Game_Over()
+{
+  pimpl->is_running = false;
+}
+
+void Game_Engine::Set_BG_Color(ALLEGRO_COLOR color)
+{
+  pimpl->bg_color = color;
+}
+
+void Game_Engine::Get_Internal_Res(int& w, int& h)
+{
+  w = pimpl->width;
+  h = pimpl->height;
 }

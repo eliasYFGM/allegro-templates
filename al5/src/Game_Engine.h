@@ -13,42 +13,45 @@ class State;
 class Game_Engine
 {
   struct Game_Internal;
-  static Game_Internal* pimpl;
+  Game_Internal* pimpl;
 
 /******************************************************************************
   Variables
 *******************************************************************************/
-protected:
+public:
   // Argument list
-  static int argc;
-  static char** argv;
+  int argc; char** argv;
 
-  // Array holding key presses
-  static bool key[ALLEGRO_KEY_MAX];
-
-  // Default fixed-width font
-  static ALLEGRO_FONT* font;
+  // Whether the game is exiting
+  bool exiting;
 
 /******************************************************************************
   Methods
 *******************************************************************************/
 public:
   Game_Engine();
+  ~Game_Engine();
 
-  // These won't do anything outside of main()!
+  // Main
   bool Init(int _argc, char** _argv, const char* title, int width, int height,
             int rate, bool want_fs, bool want_audio, bool want_bb);
   void Run(State* start_state = 0);
-
-protected:
-  void Game_Over();
-  void Set_BG_Color(ALLEGRO_COLOR);
-  void Get_Internal_Res(int& w, int& h);
 
   // State manipulation
   void Change_State(State*);
   void Push_State(State*);
   void Pop_State();
+
+  // Other
+  void Game_Over();
+  void Set_BG_Color(ALLEGRO_COLOR);
+  void Get_Internal_Res(int& w, int& h);
 };
+
+// Array holding key presses
+extern bool key[ALLEGRO_KEY_MAX];
+
+// Default fixed-width font
+extern ALLEGRO_FONT* font;
 
 #endif // GAME_ENGINE_H_INCLUDED

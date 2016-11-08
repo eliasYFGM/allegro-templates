@@ -1,13 +1,17 @@
 #ifndef GAMESTATE_H_INCLUDED
 #define GAMESTATE_H_INCLUDED
 
+#include <allegro.h>
 #include "State.h"
-#include "Game_Engine.h"
 
-class Game_State : public State, public Game_Engine
+class Game_Engine;
+
+class Game_State : public State
 {
+  Game_Engine* engine;
+
 public:
-  Game_State();
+  Game_State(Game_Engine*);
   ~Game_State();
 
   void Pause();

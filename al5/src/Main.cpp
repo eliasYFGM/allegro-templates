@@ -1,3 +1,4 @@
+#include "Game_Engine.h"
 #include "Game_State.h"
 
 int main(int argc, char** argv)
@@ -24,7 +25,7 @@ int main(int argc, char** argv)
   if (result)
   {
     // Run the game with a default "starting state"
-    game.Run(new Game_State());
+    game.Run(new Game_State(&game));
   }
 
   return 0;

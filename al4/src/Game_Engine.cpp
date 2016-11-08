@@ -39,29 +39,27 @@ struct Game_Engine::Game_Internal
   BITMAP* buffer;
   bool initialized;
   bool need_redraw;
+  bool mouse;
+  bool cursor;
   int bg_color;
   int framerate;
   std::stack<State*> states;
 };
 
-Game_Engine::Game_Internal* Game_Engine::pimpl;
-
-int Game_Engine::argc;
-char** Game_Engine::argv;
-
-Game_Engine::Game_Engine()
+Game_Engine::Game_Engine() : pimpl(new Game_Internal())
 {
-  if (!pimpl)
-  {
-    pimpl = new Game_Internal();
-    pimpl->initialized = false;
-    pimpl->need_redraw = false;
-  }
+  pimpl->initialized = false;
+  pimpl->need_redraw = false;
+}
+
+Game_Engine::~Game_Engine()
+{
+  delete pimpl;
 }
 
 bool Game_Engine::Init(int _argc, char** _argv, const char* title, int width,
-                       int height, int rate, int depth, bool want_fs,
-                       bool want_audio)
+                       int height, int rate, bool want_fs, bool want_mouse,
+                       bool want_audio, int depth)
 {
   if (pimpl->initialized)
   {
@@ -71,8 +69,12 @@ bool Game_Engine::Init(int _argc, char** _argv, const char* title, int width,
 
   allegro_init();
   install_keyboard();
-  install_mouse();
   install_timer();
+
+  if (want_mouse)
+  {
+    install_mouse();
+  }
 
   if (want_audio)
   {
@@ -99,6 +101,8 @@ bool Game_Engine::Init(int _argc, char** _argv, const char* title, int width,
 
   pimpl->buffer = create_bitmap(SCREEN_W, SCREEN_H);
   pimpl->framerate = rate;
+  pimpl->mouse = want_mouse;
+  pimpl->cursor = want_mouse;
 
 #ifndef ALLEGRO_DOS
   set_window_title(title);
@@ -111,6 +115,8 @@ bool Game_Engine::Init(int _argc, char** _argv, const char* title, int width,
 
   argc = _argc;
   argv = _argv;
+
+  exiting = false;
 
   srand(time(0));
 
@@ -139,6 +145,8 @@ void Game_Engine::Run(State* start_state)
     return;
   }
 
+  Change_State(start_state);
+
   LOCK_VARIABLE(ticks);
   LOCK_FUNCTION(ticker);
   install_int_ex(ticker, BPS_TO_TIMER(pimpl->framerate));
@@ -147,8 +155,6 @@ void Game_Engine::Run(State* start_state)
   LOCK_VARIABLE(fps_counter);
   LOCK_FUNCTION(update_fps);
   install_int(update_fps, 1000);
-
-  Change_State(start_state);
 
   is_running = true;
 
@@ -180,9 +186,17 @@ void Game_Engine::Run(State* start_state)
 
         pimpl->states.top()->Draw(pimpl->buffer);
 
-        show_mouse(pimpl->buffer);
+        if (pimpl->mouse && pimpl->cursor)
+        {
+          show_mouse(pimpl->buffer);
+        }
+
         blit(pimpl->buffer, screen, 0, 0, 0, 0, SCREEN_W, SCREEN_H);
-        show_mouse(0);
+
+        if (pimpl->mouse && pimpl->cursor)
+        {
+          show_mouse(0);
+        }
 
         ++fps_counter;
       }
@@ -195,6 +209,8 @@ void Game_Engine::Run(State* start_state)
 #endif
   }
 
+  exiting = true;
+
   while (!pimpl->states.empty())
   {
     delete pimpl->states.top();
@@ -202,18 +218,6 @@ void Game_Engine::Run(State* start_state)
   }
 
   destroy_bitmap(pimpl->buffer);
-
-  delete pimpl;
-}
-
-void Game_Engine::Game_Over()
-{
-  is_running = false;
-}
-
-void Game_Engine::Set_BG_Color(int color)
-{
-  pimpl->bg_color = color;
 }
 
 void Game_Engine::Change_State(State* state)
@@ -253,4 +257,19 @@ void Game_Engine::Pop_State()
   {
     is_running = false;
   }
+}
+
+void Game_Engine::Game_Over()
+{
+  is_running = false;
+}
+
+void Game_Engine::Enable_Cursor(bool enable)
+{
+  pimpl->cursor = enable;
+}
+
+void Game_Engine::Set_BG_Color(int color)
+{
+  pimpl->bg_color = color;
 }

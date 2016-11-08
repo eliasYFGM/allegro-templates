@@ -1,4 +1,4 @@
-#include <allegro.h>
+#include "Game_Engine.h"
 #include "Game_State.h"
 
 int main(int argc, char** argv)
@@ -14,9 +14,9 @@ int main(int argc, char** argv)
     640, 480,
     // Frame-rate (FPS)
     40,
-    // Depth (8, 15, 16, 24, 32)
-    8,
     // Want full-screen?
+    false,
+    // Want mouse?
     false,
     // Want audio?
     false
@@ -25,7 +25,7 @@ int main(int argc, char** argv)
   if (result)
   {
     // Run the game with a default "starting state"
-    game.Run(new Game_State());
+    game.Run(new Game_State(&game));
   }
 
   return 0;
