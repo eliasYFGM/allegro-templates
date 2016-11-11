@@ -3,7 +3,7 @@
 #include "engine.h"
 #include "state.h"
 
-const struct Game_Config* maincfg;
+const struct Game_Config *maincfg;
 static int current_state;
 
 #define SCREEN_RES_OVERRIDE   0.1
@@ -12,16 +12,16 @@ static int current_state;
 
 static struct // Game variables
 {
-  BITMAP* buffer;
+  BITMAP *buffer;
   int initialized;
   int bg_color;
-  struct State* states[MAX_STATES];
+  struct State *states[MAX_STATES];
 }
 game;
 
 static volatile unsigned int ticks = 0;
 
-static void ticker()
+static void ticker(void)
 {
   ++ticks;
 }
@@ -30,7 +30,7 @@ END_OF_FUNCTION(ticker)
 volatile int fps = 0;
 static volatile int frame_counter = 0;
 
-static void update_fps()
+static void update_fps(void)
 {
   fps = frame_counter;
   frame_counter = 0;
@@ -39,14 +39,14 @@ END_OF_FUNCTION(update_fps)
 
 static volatile int is_running;
 
-static void close_button_handler()
+static void close_button_handler(void)
 {
   is_running = 0;
 }
 END_OF_FUNCTION(close_button_handler)
 
 // Main game initialization
-int game_init(struct Game_Config* config)
+int game_init(struct Game_Config *cfg)
 {
   if (game.initialized)
   {
@@ -58,7 +58,7 @@ int game_init(struct Game_Config* config)
   install_keyboard();
   install_timer();
 
-  if (config->audio)
+  if (cfg->audio)
   {
     if (install_sound(DIGI_AUTODETECT, MIDI_NONE, 0))
     {
@@ -66,9 +66,9 @@ int game_init(struct Game_Config* config)
     }
   }
 
-  set_color_depth(config->depth);
+  set_color_depth(cfg->depth);
 
-  if (config->scale <= 0)
+  if (cfg->scale <= 0)
   {
     int w, h;
     get_desktop_resolution(&w, &h);
@@ -76,46 +76,44 @@ int game_init(struct Game_Config* config)
     float new_w = w - (w * SCREEN_RES_OVERRIDE);
     float new_h = h - (h * SCREEN_RES_OVERRIDE);
 
-    config->scale = 2;
+    cfg->scale = 2;
 
     // Keep scaling until a suitable scale factor is found
     while (1)
     {
-      int scale_w = config->width * config->scale;
-      int scale_h = config->height * config->scale;
+      int scale_w = cfg->width * cfg->scale;
+      int scale_h = cfg->height * cfg->scale;
 
       if (scale_w > new_w || scale_h > new_h)
       {
-        --config->scale;
+        --cfg->scale;
         break;
       }
 
-      ++config->scale;
+      ++cfg->scale;
     }
   }
-  else if (config->scale < 2)
+  else if (cfg->scale < 2)
   {
-    config->scale = 2;
+    cfg->scale = 2;
   }
 
-  if (set_gfx_mode(GFX_AUTODETECT_WINDOWED,
-                   config->width * config->scale,
-                   config->height * config->scale,
-                   0, 0))
+  if (set_gfx_mode(GFX_AUTODETECT_WINDOWED, cfg->width * cfg->scale,
+    cfg->height * cfg->scale, 0, 0))
   {
     set_gfx_mode(GFX_TEXT, 0, 0, 0, 0);
     allegro_message("ERROR: Could not create a window:\n%s", allegro_error);
     return 0;
   }
 
-  set_window_title(config->title);
+  set_window_title(cfg->title);
 
-  game.buffer = create_bitmap(config->width, config->height);
+  game.buffer = create_bitmap(cfg->width, cfg->height);
 
   set_close_button_callback(close_button_handler);
   set_bg_color(BG_COLOR_DEFAULT);
 
-  maincfg = config;
+  maincfg = cfg;
 
   game.initialized = TRUE;
 
@@ -123,7 +121,7 @@ int game_init(struct Game_Config* config)
 }
 
 // Game loop
-void game_run(struct State* state, void* param)
+void game_run(struct State *first, void *param)
 {
   int redraw = FALSE;
 
@@ -133,7 +131,7 @@ void game_run(struct State* state, void* param)
     return;
   }
 
-  change_state(state, param);
+  change_state(first, param);
 
   // Main game timer
   LOCK_VARIABLE(ticks);
@@ -176,7 +174,7 @@ void game_run(struct State* state, void* param)
         game.states[current_state]->_draw(game.buffer);
 
         stretch_blit(game.buffer, screen,
-                     0, 0, GAME_W, GAME_H, 0, 0, SCREEN_W, SCREEN_H);
+          0, 0, GAME_W, GAME_H, 0, 0, SCREEN_W, SCREEN_H);
 
         ++frame_counter;
       }
@@ -196,19 +194,19 @@ void game_run(struct State* state, void* param)
 }
 
 // Changes the state directly to another
-void change_state(struct State* state, void* param)
+void change_state(struct State *s, void *param)
 {
   if (game.states[current_state] != NULL)
   {
     game.states[current_state]->_end(FALSE);
   }
 
-  game.states[current_state] = state;
+  game.states[current_state] = s;
   game.states[current_state]->_init(param);
 }
 
 // Push a new state onto the stack (previous one is 'paused')
-void push_state(struct State* state, void* param)
+void push_state(struct State *s, void* param)
 {
   if (current_state < (MAX_STATES - 1))
   {
@@ -217,7 +215,7 @@ void push_state(struct State* state, void* param)
       game.states[current_state]->_pause();
     }
 
-    game.states[++current_state] = state;
+    game.states[++current_state] = s;
     game.states[current_state]->_init(param);
   }
   else
@@ -227,7 +225,7 @@ void push_state(struct State* state, void* param)
 }
 
 // Removes the last state added from the stack
-void pop_state()
+void pop_state(void)
 {
   if (current_state > 0)
   {
@@ -242,12 +240,12 @@ void pop_state()
 }
 
 // Ends the game
-void game_over()
+void game_over(void)
 {
   is_running = FALSE;
 }
 
-void set_bg_color(int color)
+void set_bg_color(int c)
 {
-  game.bg_color = color;
+  game.bg_color = c;
 }

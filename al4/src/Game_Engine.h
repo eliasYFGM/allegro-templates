@@ -11,14 +11,14 @@ class State;
 class Game_Engine
 {
   struct Game_Internal;
-  Game_Internal* pimpl;
+  Game_Internal *pimpl;
 
 /******************************************************************************
   Variables
 *******************************************************************************/
 public:
   // Argument list
-  int argc; char** argv;
+  int argc; char **argv;
 
   // Whether the game is exiting
   bool exiting;
@@ -31,14 +31,14 @@ public:
   ~Game_Engine();
 
   // Main
-  bool Init(int _argc, char** _argv, const char* title, int width, int height,
+  bool Init(int _argc, char **_argv, const char *title, int width, int height,
             int rate, bool want_fs, bool want_mouse, bool want_audio,
             int depth = 32);
-  void Run(State* start_state = 0);
+  void Run(State *first = 0);
 
   // State manipulation
-  void Change_State(State*);
-  void Push_State(State*);
+  void Change_State(State *s);
+  void Push_State(State *s);
   void Pop_State();
 
   // Other

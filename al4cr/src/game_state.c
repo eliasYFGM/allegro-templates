@@ -2,7 +2,7 @@
 #include "game_state.h"
 #include "engine.h"
 
-static void state_init(void* param)
+static void state_init(void *param)
 {
 }
 
@@ -10,23 +10,23 @@ static void state_end(int exiting)
 {
 }
 
-static void state_pause()
+static void state_pause(void)
 {
 }
 
-static void state_resume()
+static void state_resume(void)
 {
 }
 
-static void state_update()
+static void state_update(void)
 {
 }
 
-static void state_draw(BITMAP* bmp)
+static void state_draw(BITMAP *bmp)
 {
 }
 
-struct State* get_game_state()
+struct State *get_game_state(void)
 {
   static struct State state =
   {

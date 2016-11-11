@@ -3,23 +3,23 @@
 #include "engine.h"
 #include "state.h"
 
-const struct Game_Config* maincfg;
+const struct Game_Config *maincfg;
 
 static int current_state;
 
 static struct // Game variables
 {
-  BITMAP* buffer;
+  BITMAP *buffer;
   int initialized;
   int cursor;
   int bg_color;
-  struct State* states[MAX_STATES];
+  struct State *states[MAX_STATES];
 }
 game;
 
 static volatile unsigned int ticks = 0;
 
-static void ticker()
+static void ticker(void)
 {
   ++ticks;
 }
@@ -28,7 +28,7 @@ END_OF_FUNCTION(ticker)
 volatile int fps = 0;
 static volatile int frame_counter = 0;
 
-static void update_fps()
+static void update_fps(void)
 {
   fps = frame_counter;
   frame_counter = 0;
@@ -38,7 +38,7 @@ END_OF_FUNCTION(update_fps)
 static volatile int is_running;
 
 #ifndef ALLEGRO_DOS
-static void close_button_handler()
+static void close_button_handler(void)
 {
   is_running = 0;
 }
@@ -46,7 +46,7 @@ END_OF_FUNCTION(close_button_handler)
 #endif // ALLEGRO_DOS
 
 // Main game initialization
-int game_init(struct Game_Config* config)
+int game_init(struct Game_Config *cfg)
 {
   if (game.initialized)
   {
@@ -58,12 +58,12 @@ int game_init(struct Game_Config* config)
   install_keyboard();
   install_timer();
 
-  if (config->mouse)
+  if (cfg->mouse)
   {
     install_mouse();
   }
 
-  if (config->audio)
+  if (cfg->audio)
   {
     if (install_sound(DIGI_AUTODETECT, MIDI_NONE, 0))
     {
@@ -71,14 +71,14 @@ int game_init(struct Game_Config* config)
     }
   }
 
-  set_color_depth(config->depth);
+  set_color_depth(cfg->depth);
 
 #ifdef ALLEGRO_DOS
-  if (set_gfx_mode(GFX_AUTODETECT, config->width, config->height, 0, 0))
+  if (set_gfx_mode(GFX_AUTODETECT, cfg->width, cfg->height, 0, 0))
 #else
   if (set_gfx_mode(
-    config->fullscreen ? GFX_AUTODETECT_FULLSCREEN : GFX_AUTODETECT_WINDOWED,
-    config->width, config->height, 0, 0))
+    cfg->fullscreen ? GFX_AUTODETECT_FULLSCREEN : GFX_AUTODETECT_WINDOWED,
+    cfg->width, cfg->height, 0, 0))
 #endif
   {
     set_gfx_mode(GFX_TEXT, 0, 0, 0, 0);
@@ -87,15 +87,15 @@ int game_init(struct Game_Config* config)
   }
 
 #ifndef ALLEGRO_DOS
-  set_window_title(config->title);
+  set_window_title(cfg->title);
   set_close_button_callback(close_button_handler);
 #endif // ALLEGRO_DOS
 
   game.buffer = create_bitmap(SCREEN_W, SCREEN_H);
   game.bg_color = BG_COLOR_DEFAULT;
-  game.cursor = config->mouse;
+  game.cursor = cfg->mouse;
 
-  maincfg = config;
+  maincfg = cfg;
 
   game.initialized = TRUE;
 
@@ -103,7 +103,7 @@ int game_init(struct Game_Config* config)
 }
 
 // Game loop
-void game_run(struct State* state, void* param)
+void game_run(struct State *first, void *param)
 {
   int redraw = FALSE;
 
@@ -113,7 +113,7 @@ void game_run(struct State* state, void* param)
     return;
   }
 
-  change_state(state, param);
+  change_state(first, param);
 
   // Main game timer
   LOCK_VARIABLE(ticks);
@@ -188,19 +188,19 @@ void game_run(struct State* state, void* param)
 }
 
 // Changes the state directly to another
-void change_state(struct State* state, void* param)
+void change_state(struct State *s, void *param)
 {
   if (game.states[current_state] != NULL)
   {
     game.states[current_state]->_end(FALSE);
   }
 
-  game.states[current_state] = state;
+  game.states[current_state] = s;
   game.states[current_state]->_init(param);
 }
 
 // Push a new state onto the stack (previous one is 'paused')
-void push_state(struct State* state, void* param)
+void push_state(struct State *s, void *param)
 {
   if (current_state < (MAX_STATES - 1))
   {
@@ -209,7 +209,7 @@ void push_state(struct State* state, void* param)
       game.states[current_state]->_pause();
     }
 
-    game.states[++current_state] = state;
+    game.states[++current_state] = s;
     game.states[current_state]->_init(param);
   }
   else
@@ -219,7 +219,7 @@ void push_state(struct State* state, void* param)
 }
 
 // Removes the last state added from the stack
-void pop_state()
+void pop_state(void)
 {
   if (current_state > 0)
   {
@@ -234,7 +234,7 @@ void pop_state()
 }
 
 // Ends the game
-void game_over()
+void game_over(void)
 {
   is_running = FALSE;
 }
@@ -244,7 +244,7 @@ void enable_cursor(int enable)
   game.cursor = enable;
 }
 
-void set_bg_color(int color)
+void set_bg_color(int c)
 {
-  game.bg_color = color;
+  game.bg_color = c;
 }

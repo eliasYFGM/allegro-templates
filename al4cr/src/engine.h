@@ -17,7 +17,7 @@ struct Game_Config
 {
   // Argument list
   int argc;
-  char** argv;
+  char **argv;
 
   // Other needed parameters
   char *title;
@@ -30,23 +30,23 @@ struct Game_Config
 };
 
 // Main
-int game_init(struct Game_Config*);
-void game_run(struct State*, void* param);
+int game_init(struct Game_Config *cfg);
+void game_run(struct State *first, void *param);
 
 // State routines
-void change_state(struct State*, void* param);
-void push_state(struct State*, void* param);
-void pop_state();
+void change_state(struct State *s, void *param);
+void push_state(struct State *s, void *param);
+void pop_state(void);
 
 // Other
-void game_over();
-void set_bg_color(int color);
+void game_over(void);
+void set_bg_color(int c);
 
 // FPS is updated each second
 extern volatile int fps;
 
 // Pointer to the original settings (in main.c)
-extern const struct Game_Config* maincfg;
+extern const struct Game_Config *maincfg;
 
 #define GAME_W  maincfg->width  // Instead of SCREEN_W
 #define GAME_H  maincfg->height // Instead of SCREEN_H

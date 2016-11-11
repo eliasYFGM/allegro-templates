@@ -17,10 +17,10 @@ struct Game_Config
 {
   // Argument list
   int argc;
-  char** argv;
+  char **argv;
 
   // Other needed parameters
-  char* title;
+  char *title;
   int width;
   int height;
   int framerate;
@@ -31,24 +31,24 @@ struct Game_Config
 };
 
 // Main
-int game_init(struct Game_Config*);
-void game_run(struct State*, void* param);
+int game_init(struct Game_Config *cfg);
+void game_run(struct State *first, void *param);
 
 // State manipulation
-void change_state(struct State*, void* param);
-void push_state(struct State*, void* param);
-void pop_state();
+void change_state(struct State *s, void *param);
+void push_state(struct State *s, void *param);
+void pop_state(void);
 
 // Other
-void game_over();
+void game_over(void);
 void enable_cursor(int enable);
-void set_bg_color(int color);
+void set_bg_color(int c);
 
 // FPS is updated each second
 extern volatile int fps;
 
 // Pointer to the original settings (in main.c)
-extern const struct Game_Config* maincfg;
+extern const struct Game_Config *maincfg;
 
 // Bounding box collision (taken from Alex4)
 #define check_bb_collision(x1,y1,w1,h1,x2,y2,w2,h2) \

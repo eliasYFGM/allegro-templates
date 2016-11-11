@@ -10,7 +10,7 @@ public:
   virtual void Resume() = 0;
 
   virtual void Update() = 0;
-  virtual void Draw(BITMAP*) = 0;
+  virtual void Draw(BITMAP *bmp) = 0;
 };
 
 #endif // STATE_H_INCLUDED

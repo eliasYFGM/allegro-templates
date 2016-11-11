@@ -8,16 +8,16 @@ class Game_Engine;
 
 class Game_State : public State
 {
-  Game_Engine* engine;
+  Game_Engine *engine;
 
 public:
-  Game_State(Game_Engine*);
+  Game_State(Game_Engine *ge);
   ~Game_State();
 
   void Pause();
   void Resume();
 
-  void Events(ALLEGRO_EVENT&);
+  void Events(ALLEGRO_EVENT &ev);
   void Update();
   void Draw();
 };

@@ -1,7 +1,7 @@
 #include "Game_State.h"
 #include "Game_Engine.h"
 
-Game_State::Game_State(Game_Engine* eng) : engine(eng)
+Game_State::Game_State(Game_Engine *ge) : engine(ge)
 {
 }
 
@@ -21,6 +21,6 @@ void Game_State::Update()
 {
 }
 
-void Game_State::Draw(BITMAP* bmp)
+void Game_State::Draw(BITMAP *bmp)
 {
 }

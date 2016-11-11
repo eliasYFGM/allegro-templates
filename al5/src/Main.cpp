@@ -1,7 +1,7 @@
 #include "Game_Engine.h"
 #include "Game_State.h"
 
-int main(int argc, char** argv)
+int main(int argc, char **argv)
 {
   Game_Engine game;
 
@@ -14,17 +14,17 @@ int main(int argc, char** argv)
     640, 480,
     // Frame-rate (FPS)
     40,
-    // Want full-screen?
+    // Full-screen?
     false,
-    // Want audio?
+    // Enable audio module?
     false,
-    // Want additional back-buffer? (adds black bars on full-screen)
+    // Additional back-buffer? (adds black bars on full-screen)
     false
   );
 
   if (result)
   {
-    // Run the game with a default "starting state"
+    // Run the game, with a starting state
     game.Run(new Game_State(&game));
   }
 

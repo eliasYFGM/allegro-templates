@@ -1,6 +1,4 @@
 #include <iostream>
-#include <cstdlib>
-#include <ctime>
 #include <stack>
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_image.h>
@@ -11,9 +9,9 @@
 #include "State.h"
 
 bool key[ALLEGRO_KEY_MAX];
-ALLEGRO_FONT* font;
+ALLEGRO_FONT *font;
 
-static void aspect_ratio_transform(ALLEGRO_DISPLAY* display, int w, int h)
+static void aspect_ratio_transform(ALLEGRO_DISPLAY *display, int w, int h)
 {
   int window_w = al_get_display_width(display);
   int window_h = al_get_display_height(display);
@@ -35,15 +33,14 @@ static void aspect_ratio_transform(ALLEGRO_DISPLAY* display, int w, int h)
 
 struct Game_Engine::Game_Internal
 {
-  ALLEGRO_DISPLAY* display;
-  ALLEGRO_BITMAP* buffer;
-  ALLEGRO_TIMER* timer;
-  ALLEGRO_EVENT_QUEUE* event_queue;
+  ALLEGRO_DISPLAY *display;
+  ALLEGRO_BITMAP *buffer;
+  ALLEGRO_TIMER *timer;
+  ALLEGRO_EVENT_QUEUE *event_queue;
   ALLEGRO_COLOR bg_color;
   bool initialized;
   bool redraw;
   bool is_running;
-  int width, height;
   std::stack<State*> states;
 };
 
@@ -60,8 +57,8 @@ Game_Engine::~Game_Engine()
   delete pimpl;
 }
 
-bool Game_Engine::Init(int _argc, char** _argv, const char* title, int width,
-                       int height, int rate, bool want_fs, bool want_audio,
+bool Game_Engine::Init(int _argc, char** _argv, const char* title, int _width,
+                       int _height, int rate, bool want_fs, bool want_audio,
                        bool want_bb)
 {
   if (pimpl->initialized)
@@ -98,6 +95,9 @@ bool Game_Engine::Init(int _argc, char** _argv, const char* title, int width,
     al_set_new_display_flags(ALLEGRO_FULLSCREEN);
   }
 
+  width = _width;
+  height = _height;
+
   pimpl->display = al_create_display(width, height);
 
   if (!pimpl->display)
@@ -127,8 +127,6 @@ bool Game_Engine::Init(int _argc, char** _argv, const char* title, int width,
 
   pimpl->timer = al_create_timer(1.0 / rate);
   pimpl->event_queue = al_create_event_queue();
-  pimpl->width = width;
-  pimpl->height = height;
 
   font = al_create_builtin_font();
 
@@ -139,14 +137,12 @@ bool Game_Engine::Init(int _argc, char** _argv, const char* title, int width,
 
   exiting = false;
 
-  srand(time(0));
-
   pimpl->initialized = true;
 
   return true;
 }
 
-void Game_Engine::Run(State* start_state)
+void Game_Engine::Run(State *first)
 {
   if (!pimpl->initialized)
   {
@@ -158,22 +154,24 @@ void Game_Engine::Run(State* start_state)
   {
     std::cout << "WARNING: Calling Game_Engine::Run() more than once\n";
 
-    if (start_state)
+    if (first)
     {
-      delete start_state;
+      delete first;
     }
 
     return;
   }
 
-  Change_State(start_state);
+  Change_State(first);
 
   al_register_event_source(pimpl->event_queue,
-                           al_get_display_event_source(pimpl->display));
+    al_get_display_event_source(pimpl->display));
+
   al_register_event_source(pimpl->event_queue,
-                           al_get_keyboard_event_source());
+    al_get_keyboard_event_source());
+
   al_register_event_source(pimpl->event_queue,
-                           al_get_timer_event_source(pimpl->timer));
+    al_get_timer_event_source(pimpl->timer));
 
   al_start_timer(pimpl->timer);
 
@@ -208,15 +206,15 @@ void Game_Engine::Run(State* start_state)
         if (al_get_display_flags(pimpl->display) & ALLEGRO_FULLSCREEN_WINDOW)
         {
           al_toggle_display_flag(pimpl->display,
-                                 ALLEGRO_FULLSCREEN_WINDOW, false);
+            ALLEGRO_FULLSCREEN_WINDOW, false);
         }
         else
         {
           al_toggle_display_flag(pimpl->display,
-                                 ALLEGRO_FULLSCREEN_WINDOW, true);
+            ALLEGRO_FULLSCREEN_WINDOW, true);
         }
 
-        aspect_ratio_transform(pimpl->display, pimpl->width, pimpl->height);
+        aspect_ratio_transform(pimpl->display, width, height);
 
         al_start_timer(pimpl->timer);
       }
@@ -274,7 +272,7 @@ void Game_Engine::Run(State* start_state)
   al_destroy_font(font);
 }
 
-void Game_Engine::Change_State(State* state)
+void Game_Engine::Change_State(State *s)
 {
   if (!pimpl->states.empty())
   {
@@ -282,17 +280,17 @@ void Game_Engine::Change_State(State* state)
     pimpl->states.pop();
   }
 
-  pimpl->states.push(state);
+  pimpl->states.push(s);
 }
 
-void Game_Engine::Push_State(State* state)
+void Game_Engine::Push_State(State *s)
 {
   if (!pimpl->states.empty())
   {
     pimpl->states.top()->Pause();
   }
 
-  pimpl->states.push(state);
+  pimpl->states.push(s);
 }
 
 void Game_Engine::Pop_State()
@@ -318,13 +316,7 @@ void Game_Engine::Game_Over()
   pimpl->is_running = false;
 }
 
-void Game_Engine::Set_BG_Color(ALLEGRO_COLOR color)
+void Game_Engine::Set_BG_Color(ALLEGRO_COLOR c)
 {
-  pimpl->bg_color = color;
-}
-
-void Game_Engine::Get_Internal_Res(int& w, int& h)
-{
-  w = pimpl->width;
-  h = pimpl->height;
+  pimpl->bg_color = c;
 }

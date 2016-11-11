@@ -7,8 +7,8 @@
 #include "state.h"
 
 // Globals
-const struct Game_Config* maincfg;
-ALLEGRO_FONT* font;
+const struct Game_Config *maincfg;
+ALLEGRO_FONT *font;
 int keys[ALLEGRO_KEY_MAX];
 
 // The state that is currently updating
@@ -16,19 +16,19 @@ static int current_state;
 
 static struct // Game variables
 {
-  ALLEGRO_DISPLAY* display;
-  ALLEGRO_BITMAP* buffer;
-  ALLEGRO_TIMER* timer;
-  ALLEGRO_EVENT_QUEUE* event_queue;
+  ALLEGRO_DISPLAY *display;
+  ALLEGRO_BITMAP *buffer;
+  ALLEGRO_TIMER *timer;
+  ALLEGRO_EVENT_QUEUE *event_queue;
   ALLEGRO_COLOR bg_color;
   int initialized;
   int is_running;
-  struct State* states[MAX_STATES];
+  struct State *states[MAX_STATES];
 }
 game;
 
 // Updates the aspect ratio when going full-screen or windowed
-static void aspect_ratio_transform()
+static void aspect_ratio_transform(void)
 {
   int window_w = al_get_display_width(game.display);
   int window_h = al_get_display_height(game.display);
@@ -48,7 +48,7 @@ static void aspect_ratio_transform()
   al_use_transform(&trans);
 }
 
-int game_init(struct Game_Config* config)
+int game_init(struct Game_Config *cfg)
 {
   if (game.initialized)
   {
@@ -71,7 +71,7 @@ int game_init(struct Game_Config* config)
     return 0;
   }
 
-  if (config->audio)
+  if (cfg->audio)
   {
     if (!al_install_audio())
     {
@@ -95,13 +95,13 @@ int game_init(struct Game_Config* config)
 
   al_init_font_addon();
 
-  if (config->fullscreen)
+  if (cfg->fullscreen)
   {
     al_set_new_display_flags(ALLEGRO_FULLSCREEN_WINDOW);
   }
 
   // Initialize variables...
-  game.display = al_create_display(config->width, config->height);
+  game.display = al_create_display(cfg->width, cfg->height);
 
   if (!game.display)
   {
@@ -109,22 +109,22 @@ int game_init(struct Game_Config* config)
     return 0;
   }
 
-  al_set_window_title(game.display, config->title);
+  al_set_window_title(game.display, cfg->title);
 
-  maincfg = config;
+  maincfg = cfg;
   aspect_ratio_transform();
 
   al_add_new_bitmap_flag(ALLEGRO_MAG_LINEAR);
 
-  if (config->buffer)
+  if (cfg->buffer)
   {
-    game.buffer = al_create_bitmap(config->width, config->height);
+    game.buffer = al_create_bitmap(cfg->width, cfg->height);
     al_set_new_bitmap_flags(0);
   }
 
   font = al_create_builtin_font();
 
-  game.timer = al_create_timer(1.0 / config->framerate);
+  game.timer = al_create_timer(1.0 / cfg->framerate);
   game.event_queue = al_create_event_queue();
 
   set_bg_color(BG_COLOR_DEFAULT);
@@ -134,7 +134,7 @@ int game_init(struct Game_Config* config)
   return 1;
 }
 
-void game_run(struct State* state, void* param)
+void game_run(struct State *first, void *param)
 {
   int redraw = 0;
 
@@ -144,7 +144,7 @@ void game_run(struct State* state, void* param)
     return;
   }
 
-  change_state(state, param);
+  change_state(first, param);
 
   // Generate display events
   al_register_event_source(game.event_queue,
@@ -262,18 +262,18 @@ void game_run(struct State* state, void* param)
   }
 }
 
-void change_state(struct State* state, void* param)
+void change_state(struct State *s, void *param)
 {
   if (game.states[current_state] != NULL)
   {
     game.states[current_state]->_end(FALSE);
   }
 
-  game.states[current_state] = state;
+  game.states[current_state] = s;
   game.states[current_state]->_init(param);
 }
 
-void push_state(struct State* state, void* param)
+void push_state(struct State *s, void *param)
 {
   if (current_state < (MAX_STATES - 1))
   {
@@ -282,7 +282,7 @@ void push_state(struct State* state, void* param)
       game.states[current_state]->_pause();
     }
 
-    game.states[++current_state] = state;
+    game.states[++current_state] = s;
     game.states[current_state]->_init(param);
   }
   else
@@ -291,7 +291,7 @@ void push_state(struct State* state, void* param)
   }
 }
 
-void pop_state()
+void pop_state(void)
 {
   if (current_state > 0)
   {
@@ -305,12 +305,12 @@ void pop_state()
   }
 }
 
-void game_over()
+void game_over(void)
 {
   game.is_running = FALSE;
 }
 
-void set_bg_color(ALLEGRO_COLOR color)
+void set_bg_color(ALLEGRO_COLOR c)
 {
-  game.bg_color = color;
+  game.bg_color = c;
 }

@@ -36,7 +36,7 @@ END_OF_FUNCTION(close_button_handler)
 
 struct Game_Engine::Game_Internal
 {
-  BITMAP* buffer;
+  BITMAP *buffer;
   bool initialized;
   bool need_redraw;
   bool mouse;
@@ -57,7 +57,7 @@ Game_Engine::~Game_Engine()
   delete pimpl;
 }
 
-bool Game_Engine::Init(int _argc, char** _argv, const char* title, int width,
+bool Game_Engine::Init(int _argc, char **_argv, const char *title, int width,
                        int height, int rate, bool want_fs, bool want_mouse,
                        bool want_audio, int depth)
 {
@@ -125,7 +125,7 @@ bool Game_Engine::Init(int _argc, char** _argv, const char* title, int width,
   return true;
 }
 
-void Game_Engine::Run(State* start_state)
+void Game_Engine::Run(State *first)
 {
   if (!pimpl->initialized)
   {
@@ -137,15 +137,15 @@ void Game_Engine::Run(State* start_state)
   {
     std::cout << "WARNING: Calling Game_Engine::Run() more than once\n";
 
-    if (start_state)
+    if (first)
     {
-      delete start_state;
+      delete first;
     }
 
     return;
   }
 
-  Change_State(start_state);
+  Change_State(first);
 
   LOCK_VARIABLE(ticks);
   LOCK_FUNCTION(ticker);
@@ -220,7 +220,7 @@ void Game_Engine::Run(State* start_state)
   destroy_bitmap(pimpl->buffer);
 }
 
-void Game_Engine::Change_State(State* state)
+void Game_Engine::Change_State(State *s)
 {
   if (!pimpl->states.empty())
   {
@@ -228,17 +228,17 @@ void Game_Engine::Change_State(State* state)
     pimpl->states.pop();
   }
 
-  pimpl->states.push(state);
+  pimpl->states.push(s);
 }
 
-void Game_Engine::Push_State(State* state)
+void Game_Engine::Push_State(State *s)
 {
   if (!pimpl->states.empty())
   {
     pimpl->states.top()->Pause();
   }
 
-  pimpl->states.push(state);
+  pimpl->states.push(s);
 }
 
 void Game_Engine::Pop_State()

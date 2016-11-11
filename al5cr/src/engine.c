@@ -11,26 +11,26 @@
 // E.g. without the panels and stuff
 
 // Globals
-const struct Game_Config* maincfg;
-ALLEGRO_FONT* font;
+const struct Game_Config *maincfg;
+ALLEGRO_FONT *font;
 int keys[ALLEGRO_KEY_MAX];
 
 // The state that is currently updating
 static int current_state;
 
-static struct // Game data
+static struct // Engine data
 {
-  ALLEGRO_DISPLAY* display;
-  ALLEGRO_TIMER* timer;
-  ALLEGRO_EVENT_QUEUE* event_queue;
+  ALLEGRO_DISPLAY *display;
+  ALLEGRO_TIMER *timer;
+  ALLEGRO_EVENT_QUEUE *event_queue;
   ALLEGRO_COLOR bg_color;
   int initialized;
   int is_running;
-  struct State* states[MAX_STATES];
+  struct State *states[MAX_STATES];
 }
 game;
 
-int game_init(struct Game_Config* config)
+int game_init(struct Game_Config *cfg)
 {
   if (game.initialized)
   {
@@ -47,7 +47,7 @@ int game_init(struct Game_Config* config)
     return 0;
   }
 
-  if (config->audio)
+  if (cfg->audio)
   {
     if (!al_install_audio())
     {
@@ -71,8 +71,8 @@ int game_init(struct Game_Config* config)
 
   al_init_font_addon();
 
-  // Find how much the game will be scaled when config->scale <= 0
-  if (config->scale <= 0)
+  // Find how much the game will be scaled when cfg->scale <= 0
+  if (cfg->scale <= 0)
   {
     ALLEGRO_MONITOR_INFO info;
     al_get_monitor_info(0, &info);
@@ -83,30 +83,30 @@ int game_init(struct Game_Config* config)
     float new_monitor_w = (monitor_w - (monitor_w * SCREEN_RES_OVERRIDE));
     float new_monitor_h = (monitor_h - (monitor_h * SCREEN_RES_OVERRIDE));
 
-    config->scale = 2;
+    cfg->scale = 2;
 
     // Keep scaling until a suitable scale factor is found
     while (1)
     {
-      int scale_w = config->width * config->scale;
-      int scale_h = config->height * config->scale;
+      int scale_w = cfg->width * cfg->scale;
+      int scale_h = cfg->height * cfg->scale;
 
       if (scale_w > new_monitor_w || scale_h > new_monitor_h)
       {
-        --config->scale;
+        --cfg->scale;
         break;
       }
 
-      ++config->scale;
+      ++cfg->scale;
     }
   }
-  else if (config->scale < 2)
+  else if (cfg->scale < 2)
   {
-    config->scale = 2;
+    cfg->scale = 2;
   }
 
-  game.display = al_create_display(config->width * config->scale,
-                                   config->height * config->scale);
+  game.display = al_create_display(cfg->width * cfg->scale,
+    cfg->height * cfg->scale);
 
   if (!game.display)
   {
@@ -114,19 +114,19 @@ int game_init(struct Game_Config* config)
     return 0;
   }
 
-  al_set_window_title(game.display, config->title);
+  al_set_window_title(game.display, cfg->title);
 
   font = al_create_builtin_font();
 
-  game.timer = al_create_timer(1.0 / config->framerate);
+  game.timer = al_create_timer(1.0 / cfg->framerate);
   game.event_queue = al_create_event_queue();
 
-  maincfg = config;
+  maincfg = cfg;
   set_bg_color(BG_COLOR_DEFAULT);
 
   ALLEGRO_TRANSFORM trans;
   al_identity_transform(&trans);
-  al_scale_transform(&trans, config->scale, config->scale);
+  al_scale_transform(&trans, cfg->scale, cfg->scale);
   al_use_transform(&trans);
 
   game.initialized = TRUE;
@@ -134,7 +134,7 @@ int game_init(struct Game_Config* config)
   return 1;
 }
 
-void game_run(struct State* state, void* param)
+void game_run(struct State *first, void *param)
 {
   int redraw = FALSE;
 
@@ -144,7 +144,7 @@ void game_run(struct State* state, void* param)
     return;
   }
 
-  change_state(state, param);
+  change_state(first, param);
 
   // Generate display events
   al_register_event_source(game.event_queue,
@@ -221,18 +221,18 @@ void game_run(struct State* state, void* param)
   al_destroy_font(font);
 }
 
-void change_state(struct State* state, void* param)
+void change_state(struct State *s, void *param)
 {
   if (game.states[current_state] != NULL)
   {
     game.states[current_state]->_end(FALSE);
   }
 
-  game.states[current_state] = state;
+  game.states[current_state] = s;
   game.states[current_state]->_init(param);
 }
 
-void push_state(struct State* state, void* param)
+void push_state(struct State* s, void *param)
 {
   if (current_state < (MAX_STATES - 1))
   {
@@ -241,7 +241,7 @@ void push_state(struct State* state, void* param)
       game.states[current_state]->_pause();
     }
 
-    game.states[++current_state] = state;
+    game.states[++current_state] = s;
     game.states[current_state]->_init(param);
   }
   else
@@ -250,7 +250,7 @@ void push_state(struct State* state, void* param)
   }
 }
 
-void pop_state()
+void pop_state(void)
 {
   if (current_state > 0)
   {
@@ -264,12 +264,12 @@ void pop_state()
   }
 }
 
-void game_over()
+void game_over(void)
 {
   game.is_running = FALSE;
 }
 
-void set_bg_color(ALLEGRO_COLOR color)
+void set_bg_color(ALLEGRO_COLOR c)
 {
-  game.bg_color = color;
+  game.bg_color = c;
 }
