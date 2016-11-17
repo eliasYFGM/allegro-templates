@@ -2,7 +2,7 @@
 #include "game_state.h"
 #include "engine.h"
 
-static void state_init(void *param)
+static void state_init(void)
 {
 }
 
@@ -28,14 +28,12 @@ static void state_update(void)
 
 static void state_draw(void)
 {
-  al_draw_text(font, C_BLACK, 0, 0, 0, "Retro");
 }
 
-struct State *get_game_state(void)
+struct State *game_state(void)
 {
   static struct State state =
   {
-    state_init,
     state_end,
     state_pause,
     state_resume,
@@ -43,6 +41,8 @@ struct State *get_game_state(void)
     state_update,
     state_draw
   };
+
+  state_init();
 
   return &state;
 }

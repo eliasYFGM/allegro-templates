@@ -4,7 +4,6 @@
 // Main state structure
 struct State
 {
-  void (*_init)(void *param);
   void (*_end)(int exiting);
 
   void (*_pause)(void);

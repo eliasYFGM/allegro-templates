@@ -134,7 +134,7 @@ int game_init(struct Game_Config *cfg)
   return 1;
 }
 
-void game_run(struct State *first, void *param)
+void game_run(struct State *first)
 {
   int redraw = 0;
 
@@ -144,7 +144,7 @@ void game_run(struct State *first, void *param)
     return;
   }
 
-  change_state(first, param);
+  change_state(first);
 
   // Generate display events
   al_register_event_source(game.event_queue,
@@ -262,7 +262,7 @@ void game_run(struct State *first, void *param)
   }
 }
 
-void change_state(struct State *s, void *param)
+void change_state(struct State *s)
 {
   if (game.states[current_state] != NULL)
   {
@@ -270,10 +270,9 @@ void change_state(struct State *s, void *param)
   }
 
   game.states[current_state] = s;
-  game.states[current_state]->_init(param);
 }
 
-void push_state(struct State *s, void *param)
+void push_state(struct State *s)
 {
   if (current_state < (MAX_STATES - 1))
   {
@@ -283,7 +282,6 @@ void push_state(struct State *s, void *param)
     }
 
     game.states[++current_state] = s;
-    game.states[current_state]->_init(param);
   }
   else
   {
@@ -296,7 +294,6 @@ void pop_state(void)
   if (current_state > 0)
   {
     game.states[current_state]->_end(FALSE);
-    game.states[current_state] = NULL;
     game.states[--current_state]->_resume();
   }
   else

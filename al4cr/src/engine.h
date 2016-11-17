@@ -31,11 +31,11 @@ struct Game_Config
 
 // Main
 int game_init(struct Game_Config *cfg);
-void game_run(struct State *first, void *param);
+void game_run(struct State *first);
 
 // State routines
-void change_state(struct State *s, void *param);
-void push_state(struct State *s, void *param);
+void change_state(struct State *s);
+void push_state(struct State *s);
 void pop_state(void);
 
 // Other
