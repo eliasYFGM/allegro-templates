@@ -17,7 +17,7 @@ void Game_State::Resume()
 {
 }
 
-void Game_State::Events(ALLEGRO_EVENT &ev)
+void Game_State::Events(ALLEGRO_EVENT& ev)
 {
 }
 

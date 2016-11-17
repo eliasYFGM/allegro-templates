@@ -17,7 +17,7 @@ public:
   void Pause();
   void Resume();
 
-  void Events(ALLEGRO_EVENT &ev);
+  void Events(ALLEGRO_EVENT& ev);
   void Update();
   void Draw();
 };
