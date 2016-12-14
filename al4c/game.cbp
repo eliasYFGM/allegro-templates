@@ -41,7 +41,6 @@
 					<Add option="-g" />
 				</Compiler>
 				<Linker>
-					<Add option="-mwindows" />
 					<Add library="alleg44.dll" />
 				</Linker>
 			</Target>
@@ -70,8 +69,8 @@
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
-					<Add option="-mwindows" />
 					<Add option="-static" />
+					<Add option="-mwindows" />
 					<Add library="alleg" />
 					<Add library="kernel32" />
 					<Add library="user32" />

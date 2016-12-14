@@ -3,6 +3,7 @@
 #include <allegro5/allegro_image.h>
 #include <allegro5/allegro_audio.h>
 #include <allegro5/allegro_acodec.h>
+#include <allegro5/allegro_primitives.h>
 #include "engine.h"
 #include "state.h"
 
@@ -94,6 +95,7 @@ int game_init(struct Game_Config *cfg)
   }
 
   al_init_font_addon();
+  al_init_primitives_addon();
 
   if (cfg->fullscreen)
   {
