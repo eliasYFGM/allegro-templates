@@ -91,7 +91,6 @@
 				<Option compiler="djgpp_cross-compiler" />
 				<Compiler>
 					<Add option="-O2" />
-					<Add option="-fgnu89-inline" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
