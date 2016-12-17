@@ -12,10 +12,7 @@ const struct Game_Config *maincfg;
 ALLEGRO_FONT *font;
 int keys[ALLEGRO_KEY_MAX];
 
-// The state that is currently updating
-static int current_state;
-
-static struct // Game variables
+static struct // Engine variables
 {
   ALLEGRO_DISPLAY *display;
   ALLEGRO_BITMAP *buffer;
@@ -26,13 +23,16 @@ static struct // Game variables
   int is_running;
   struct State *states[MAX_STATES];
 }
-game;
+engine;
+
+// The state that is currently updating
+static int current_state;
 
 // Updates the aspect ratio when going full-screen or windowed
 static void aspect_ratio_transform(void)
 {
-  int window_w = al_get_display_width(game.display);
-  int window_h = al_get_display_height(game.display);
+  int window_w = al_get_display_width(engine.display);
+  int window_h = al_get_display_height(engine.display);
 
   float sw = (window_w / (float) GAME_W);
   float sh = (window_h / (float) GAME_H);
@@ -51,7 +51,7 @@ static void aspect_ratio_transform(void)
 
 int game_init(struct Game_Config *cfg)
 {
-  if (game.initialized)
+  if (engine.initialized)
   {
     puts("WARNING: Calling game_init() more than once");
     return 1;
@@ -103,15 +103,15 @@ int game_init(struct Game_Config *cfg)
   }
 
   // Initialize variables...
-  game.display = al_create_display(cfg->width, cfg->height);
+  engine.display = al_create_display(cfg->width, cfg->height);
 
-  if (!game.display)
+  if (!engine.display)
   {
     puts("ERROR: Could not create a display window...");
     return 0;
   }
 
-  al_set_window_title(game.display, cfg->title);
+  al_set_window_title(engine.display, cfg->title);
 
   maincfg = cfg;
   aspect_ratio_transform();
@@ -120,18 +120,18 @@ int game_init(struct Game_Config *cfg)
 
   if (cfg->buffer)
   {
-    game.buffer = al_create_bitmap(cfg->width, cfg->height);
+    engine.buffer = al_create_bitmap(cfg->width, cfg->height);
     al_set_new_bitmap_flags(0);
   }
 
   font = al_create_builtin_font();
 
-  game.timer = al_create_timer(1.0 / cfg->framerate);
-  game.event_queue = al_create_event_queue();
+  engine.timer = al_create_timer(1.0 / cfg->framerate);
+  engine.event_queue = al_create_event_queue();
 
   set_bg_color(BG_COLOR_DEFAULT);
 
-  game.initialized = TRUE;
+  engine.initialized = TRUE;
 
   return 1;
 }
@@ -140,7 +140,7 @@ void game_run(struct State *first)
 {
   int redraw = 0;
 
-  if (game.is_running)
+  if (engine.is_running)
   {
     puts("WARNING: Calling game_run() more than once");
     return;
@@ -149,35 +149,35 @@ void game_run(struct State *first)
   change_state(first);
 
   // Generate display events
-  al_register_event_source(game.event_queue,
-    al_get_display_event_source(game.display));
+  al_register_event_source(engine.event_queue,
+    al_get_display_event_source(engine.display));
 
   // Timer events
-  al_register_event_source(game.event_queue,
-    al_get_timer_event_source(game.timer));
+  al_register_event_source(engine.event_queue,
+    al_get_timer_event_source(engine.timer));
 
   // Keyboard events
-  al_register_event_source(game.event_queue, al_get_keyboard_event_source());
+  al_register_event_source(engine.event_queue, al_get_keyboard_event_source());
 
   // Mouse events
-  al_register_event_source(game.event_queue, al_get_mouse_event_source());
+  al_register_event_source(engine.event_queue, al_get_mouse_event_source());
 
-  al_start_timer(game.timer);
-  game.is_running = TRUE;
+  al_start_timer(engine.timer);
+  engine.is_running = TRUE;
 
   // Main game loop
-  while (game.is_running)
+  while (engine.is_running)
   {
     ALLEGRO_EVENT event;
-    al_wait_for_event(game.event_queue, &event);
+    al_wait_for_event(engine.event_queue, &event);
 
     // Event processing
-    game.states[current_state]->_events(&event);
+    engine.states[current_state]->_events(&event);
 
     // If the close button was pressed...
     if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
     {
-      game.is_running = FALSE;
+      engine.is_running = FALSE;
       break;
     }
     else if (event.type == ALLEGRO_EVENT_KEY_DOWN)
@@ -187,27 +187,27 @@ void game_run(struct State *first)
       // Escape key will end the game
       if (event.keyboard.keycode == ALLEGRO_KEY_ESCAPE)
       {
-        game.is_running = FALSE;
+        engine.is_running = FALSE;
         break;
       }
 
       // F4 key will toggle full-screen (maintains aspect ratio)
       if (event.keyboard.keycode == ALLEGRO_KEY_F4)
       {
-        al_stop_timer(game.timer);
+        al_stop_timer(engine.timer);
 
-        if (al_get_display_flags(game.display) & ALLEGRO_FULLSCREEN_WINDOW)
+        if (al_get_display_flags(engine.display) & ALLEGRO_FULLSCREEN_WINDOW)
         {
-          al_toggle_display_flag(game.display, ALLEGRO_FULLSCREEN_WINDOW, 0);
+          al_toggle_display_flag(engine.display, ALLEGRO_FULLSCREEN_WINDOW, 0);
         }
         else
         {
-          al_toggle_display_flag(game.display, ALLEGRO_FULLSCREEN_WINDOW, 1);
+          al_toggle_display_flag(engine.display, ALLEGRO_FULLSCREEN_WINDOW, 1);
         }
 
         aspect_ratio_transform();
 
-        al_start_timer(game.timer);
+        al_start_timer(engine.timer);
       }
     }
     else if (event.type == ALLEGRO_EVENT_KEY_UP)
@@ -216,32 +216,32 @@ void game_run(struct State *first)
     }
     else if (event.type == ALLEGRO_EVENT_TIMER)
     {
-      game.states[current_state]->_update();
+      engine.states[current_state]->_update();
       redraw = TRUE;
     }
 
-    if (redraw && al_event_queue_is_empty(game.event_queue))
+    if (redraw && al_event_queue_is_empty(engine.event_queue))
     {
       redraw = FALSE;
 
       if (maincfg->buffer)
       {
-        al_set_target_bitmap(game.buffer);
+        al_set_target_bitmap(engine.buffer);
       }
       else
       {
-        al_set_target_backbuffer(game.display);
+        al_set_target_backbuffer(engine.display);
       }
 
-      al_clear_to_color(game.bg_color);
+      al_clear_to_color(engine.bg_color);
 
-      game.states[current_state]->_draw();
+      engine.states[current_state]->_draw();
 
       if (maincfg->buffer)
       {
-        al_set_target_backbuffer(game.display);
+        al_set_target_backbuffer(engine.display);
         al_clear_to_color(C_BLACK);
-        al_draw_bitmap(game.buffer, 0, 0, 0);
+        al_draw_bitmap(engine.buffer, 0, 0, 0);
       }
 
       al_flip_display();
@@ -250,40 +250,40 @@ void game_run(struct State *first)
 
   while (current_state >= 0)
   {
-    game.states[current_state--]->_end(TRUE);
+    engine.states[current_state--]->_end(TRUE);
   }
 
-  al_destroy_display(game.display);
-  al_destroy_timer(game.timer);
-  al_destroy_event_queue(game.event_queue);
+  al_destroy_display(engine.display);
+  al_destroy_timer(engine.timer);
+  al_destroy_event_queue(engine.event_queue);
   al_destroy_font(font);
 
   if (maincfg->buffer)
   {
-    al_destroy_bitmap(game.buffer);
+    al_destroy_bitmap(engine.buffer);
   }
 }
 
 void change_state(struct State *s)
 {
-  if (game.states[current_state] != NULL)
+  if (engine.states[current_state] != NULL)
   {
-    game.states[current_state]->_end(FALSE);
+    engine.states[current_state]->_end(FALSE);
   }
 
-  game.states[current_state] = s;
+  engine.states[current_state] = s;
 }
 
 void push_state(struct State *s)
 {
   if (current_state < (MAX_STATES - 1))
   {
-    if (game.states[current_state] != NULL)
+    if (engine.states[current_state] != NULL)
     {
-      game.states[current_state]->_pause();
+      engine.states[current_state]->_pause();
     }
 
-    game.states[++current_state] = s;
+    engine.states[++current_state] = s;
   }
   else
   {
@@ -295,8 +295,8 @@ void pop_state(void)
 {
   if (current_state > 0)
   {
-    game.states[current_state]->_end(FALSE);
-    game.states[--current_state]->_resume();
+    engine.states[current_state]->_end(FALSE);
+    engine.states[--current_state]->_resume();
   }
   else
   {
@@ -306,10 +306,10 @@ void pop_state(void)
 
 void game_over(void)
 {
-  game.is_running = FALSE;
+  engine.is_running = FALSE;
 }
 
 void set_bg_color(ALLEGRO_COLOR c)
 {
-  game.bg_color = c;
+  engine.bg_color = c;
 }

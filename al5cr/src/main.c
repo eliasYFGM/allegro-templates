@@ -24,7 +24,7 @@ int main(int argc, char **argv)
   if (game_init(&config))
   {
     // Run the game, with a starting state
-    game_run(game_state());
+    game_run(Game_State());
   }
 
   return 0;

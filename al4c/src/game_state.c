@@ -26,7 +26,7 @@ static void state_draw(BITMAP *bmp)
 {
 }
 
-struct State *game_state(void)
+struct State* Game_State(void)
 {
   static struct State state =
   {

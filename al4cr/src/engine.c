@@ -3,12 +3,11 @@
 #include "engine.h"
 #include "state.h"
 
-const struct Game_Config *maincfg;
-static int current_state;
-
 #define SCREEN_RES_OVERRIDE   0.1
 // Used to simulate a slightly lower screen resolution
 // E.g. without the panels and stuff
+
+const struct Game_Config *maincfg;
 
 static struct // Game variables
 {
@@ -17,7 +16,9 @@ static struct // Game variables
   int bg_color;
   struct State *states[MAX_STATES];
 }
-game;
+engine;
+
+static int current_state;
 
 static volatile unsigned int ticks = 0;
 
@@ -48,7 +49,7 @@ END_OF_FUNCTION(close_button_handler)
 // Main game initialization
 int game_init(struct Game_Config *cfg)
 {
-  if (game.initialized)
+  if (engine.initialized)
   {
     puts("WARNING: Calling game_init() more than once");
     return 1;
@@ -108,14 +109,14 @@ int game_init(struct Game_Config *cfg)
 
   set_window_title(cfg->title);
 
-  game.buffer = create_bitmap(cfg->width, cfg->height);
+  engine.buffer = create_bitmap(cfg->width, cfg->height);
 
   set_close_button_callback(close_button_handler);
   set_bg_color(BG_COLOR_DEFAULT);
 
   maincfg = cfg;
 
-  game.initialized = TRUE;
+  engine.initialized = TRUE;
 
   return 1;
 }
@@ -161,7 +162,7 @@ void game_run(struct State *first)
           break;
         }
 
-        game.states[current_state]->_update();
+        engine.states[current_state]->_update();
         redraw = TRUE;
       }
 
@@ -169,11 +170,11 @@ void game_run(struct State *first)
       {
         redraw = FALSE;
 
-        clear_to_color(game.buffer, game.bg_color);
+        clear_to_color(engine.buffer, engine.bg_color);
 
-        game.states[current_state]->_draw(game.buffer);
+        engine.states[current_state]->_draw(engine.buffer);
 
-        stretch_blit(game.buffer, screen,
+        stretch_blit(engine.buffer, screen,
           0, 0, GAME_W, GAME_H, 0, 0, SCREEN_W, SCREEN_H);
 
         ++frame_counter;
@@ -187,21 +188,21 @@ void game_run(struct State *first)
 
   while (current_state >= 0)
   {
-    game.states[current_state--]->_end(TRUE);
+    engine.states[current_state--]->_end(TRUE);
   }
 
-  destroy_bitmap(game.buffer);
+  destroy_bitmap(engine.buffer);
 }
 
 // Changes the state directly to another
 void change_state(struct State *s)
 {
-  if (game.states[current_state] != NULL)
+  if (engine.states[current_state] != NULL)
   {
-    game.states[current_state]->_end(FALSE);
+    engine.states[current_state]->_end(FALSE);
   }
 
-  game.states[current_state] = s;
+  engine.states[current_state] = s;
 }
 
 // Push a new state onto the stack (previous one is 'paused')
@@ -209,12 +210,12 @@ void push_state(struct State *s)
 {
   if (current_state < (MAX_STATES - 1))
   {
-    if (game.states[current_state] != NULL)
+    if (engine.states[current_state] != NULL)
     {
-      game.states[current_state]->_pause();
+      engine.states[current_state]->_pause();
     }
 
-    game.states[++current_state] = s;
+    engine.states[++current_state] = s;
   }
   else
   {
@@ -227,8 +228,8 @@ void pop_state(void)
 {
   if (current_state > 0)
   {
-    game.states[current_state]->_end(FALSE);
-    game.states[--current_state]->_resume();
+    engine.states[current_state]->_end(FALSE);
+    engine.states[--current_state]->_resume();
   }
   else
   {
@@ -244,5 +245,5 @@ void game_over(void)
 
 void set_bg_color(int c)
 {
-  game.bg_color = c;
+  engine.bg_color = c;
 }
