@@ -1,9 +1,5 @@
 # Allegro Game Templates
 
-These templates implement a basic game-state pattern with global functions in C, and classes in C++ in which states can be derived.
-
-## Features:
-
 * Fixed-rate and automatic frame skipping
 * Checks return value for each module initialization
 * Basic state change/push/pop implementation with a stack
