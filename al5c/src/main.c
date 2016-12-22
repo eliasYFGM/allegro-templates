@@ -3,8 +3,8 @@
 
 int main(int argc, char **argv)
 {
-  // Default configuration that the game will make use of
-  struct Game_Config config =
+  // Default configuration that the engine will make use of
+  struct Engine_Conf conf =
   {
     // Argument list
     argc, argv,
@@ -16,16 +16,16 @@ int main(int argc, char **argv)
     40,
     // Full-screen?
     FALSE,
-    // Enable audio module?
+    // Enable audio?
     FALSE,
     // Additional back-buffer? (black bars on full-screen)
     FALSE
   };
 
-  if (game_init(&config))
+  if (engine_init(&conf))
   {
-    // Run the game, with a starting state
-    game_run(Game_State());
+    // Run with a starting state
+    engine_run(Game_State());
   }
 
   return 0;

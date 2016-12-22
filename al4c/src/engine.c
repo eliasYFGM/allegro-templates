@@ -3,7 +3,7 @@
 #include "engine.h"
 #include "state.h"
 
-const struct Game_Config *maincfg;
+const struct Engine_Conf *mainconf;
 
 static struct // Engine variables
 {
@@ -17,7 +17,7 @@ engine;
 
 static int current_state;
 
-static volatile unsigned int ticks = 0;
+static volatile unsigned int ticks;
 
 static void ticker(void)
 {
@@ -25,8 +25,8 @@ static void ticker(void)
 }
 END_OF_FUNCTION(ticker)
 
-volatile int fps = 0;
-static volatile int frame_counter = 0;
+volatile int fps;
+static volatile int frame_counter;
 
 static void update_fps(void)
 {
@@ -35,18 +35,18 @@ static void update_fps(void)
 }
 END_OF_FUNCTION(update_fps)
 
-static volatile int is_running;
+volatile int engine_active;
 
 #ifndef ALLEGRO_DOS
 static void close_button_handler(void)
 {
-  is_running = 0;
+  engine_active = 0;
 }
 END_OF_FUNCTION(close_button_handler)
 #endif // ALLEGRO_DOS
 
 // Main game initialization
-int game_init(struct Game_Config *cfg)
+int engine_init(struct Engine_Conf *conf)
 {
   if (engine.initialized)
   {
@@ -58,12 +58,12 @@ int game_init(struct Game_Config *cfg)
   install_keyboard();
   install_timer();
 
-  if (cfg->mouse)
+  if (conf->mouse)
   {
     install_mouse();
   }
 
-  if (cfg->audio)
+  if (conf->audio)
   {
     if (install_sound(DIGI_AUTODETECT, MIDI_NONE, 0))
     {
@@ -71,14 +71,14 @@ int game_init(struct Game_Config *cfg)
     }
   }
 
-  set_color_depth(cfg->depth);
+  set_color_depth(conf->depth);
 
 #ifdef ALLEGRO_DOS
-  if (set_gfx_mode(GFX_AUTODETECT, cfg->width, cfg->height, 0, 0))
+  if (set_gfx_mode(GFX_AUTODETECT, conf->width, conf->height, 0, 0))
 #else
   if (set_gfx_mode(
-    cfg->fullscreen ? GFX_AUTODETECT_FULLSCREEN : GFX_AUTODETECT_WINDOWED,
-    cfg->width, cfg->height, 0, 0))
+    conf->fullscreen ? GFX_AUTODETECT_FULLSCREEN : GFX_AUTODETECT_WINDOWED,
+    conf->width, conf->height, 0, 0))
 #endif
   {
     set_gfx_mode(GFX_TEXT, 0, 0, 0, 0);
@@ -87,15 +87,15 @@ int game_init(struct Game_Config *cfg)
   }
 
 #ifndef ALLEGRO_DOS
-  set_window_title(cfg->title);
+  set_window_title(conf->title);
   set_close_button_callback(close_button_handler);
 #endif // ALLEGRO_DOS
 
   engine.buffer = create_bitmap(SCREEN_W, SCREEN_H);
   engine.bg_color = BG_COLOR_DEFAULT;
-  engine.cursor = cfg->mouse;
+  engine.cursor = conf->mouse;
 
-  maincfg = cfg;
+  mainconf = conf;
 
   engine.initialized = TRUE;
 
@@ -103,11 +103,11 @@ int game_init(struct Game_Config *cfg)
 }
 
 // Game loop
-void game_run(struct State *first)
+void engine_run(struct State *first)
 {
   int redraw = FALSE;
 
-  if (is_running)
+  if (engine_active)
   {
     puts("WARNING: Calling game_run() more than once");
     return;
@@ -118,7 +118,7 @@ void game_run(struct State *first)
   // Main game timer
   LOCK_VARIABLE(ticks);
   LOCK_FUNCTION(ticker);
-  install_int_ex(ticker, BPS_TO_TIMER(maincfg->framerate));
+  install_int_ex(ticker, BPS_TO_TIMER(mainconf->framerate));
 
   // FPS timer
   LOCK_VARIABLE(fps);
@@ -126,10 +126,10 @@ void game_run(struct State *first)
   LOCK_FUNCTION(update_fps);
   install_int(update_fps, 1000);
 
-  is_running = TRUE;
+  engine_active = TRUE;
 
   // Game loop
-  while (is_running)
+  while (engine_active)
   {
     if (ticks > 0)
     {
@@ -139,7 +139,7 @@ void game_run(struct State *first)
 
         if (key[KEY_ESC])
         {
-          is_running = FALSE;
+          engine_active = FALSE;
           break;
         }
 
@@ -147,7 +147,7 @@ void game_run(struct State *first)
         redraw = TRUE;
       }
 
-      if (is_running && redraw)
+      if (engine_active && redraw)
       {
         redraw = FALSE;
 
@@ -155,14 +155,14 @@ void game_run(struct State *first)
 
         engine.states[current_state]->_draw(engine.buffer);
 
-        if (maincfg->mouse && engine.cursor)
+        if (mainconf->mouse && engine.cursor)
         {
           show_mouse(engine.buffer);
         }
 
         blit(engine.buffer, screen, 0, 0, 0, 0, SCREEN_W, SCREEN_H);
 
-        if (maincfg->mouse && engine.cursor)
+        if (mainconf->mouse && engine.cursor)
         {
           show_mouse(NULL);
         }
@@ -181,7 +181,7 @@ void game_run(struct State *first)
   while (current_state >= 0)
   {
     // Always pass TRUE to the state when the game is exiting
-    engine.states[current_state--]->_end(TRUE);
+    engine.states[current_state--]->_end();
   }
 
   destroy_bitmap(engine.buffer);
@@ -192,7 +192,7 @@ void change_state(struct State *s)
 {
   if (engine.states[current_state] != NULL)
   {
-    engine.states[current_state]->_end(FALSE);
+    engine.states[current_state]->_end();
   }
 
   engine.states[current_state] = s;
@@ -221,19 +221,13 @@ void pop_state(void)
 {
   if (current_state > 0)
   {
-    engine.states[current_state]->_end(FALSE);
+    engine.states[current_state]->_end();
     engine.states[--current_state]->_resume();
   }
   else
   {
     puts("WARNING: Can't remove any more states (current_state = 0)");
   }
-}
-
-// Ends the game
-void game_over(void)
-{
-  is_running = FALSE;
 }
 
 void enable_cursor(int enable)

@@ -8,9 +8,10 @@
 #include "state.h"
 
 // Globals
-const struct Game_Config *maincfg;
+int engine_active;
 ALLEGRO_FONT *font;
 int keys[ALLEGRO_KEY_MAX];
+const struct Engine_Conf *mainconf;
 
 static struct // Engine variables
 {
@@ -20,7 +21,6 @@ static struct // Engine variables
   ALLEGRO_EVENT_QUEUE *event_queue;
   ALLEGRO_COLOR bg_color;
   int initialized;
-  int is_running;
   struct State *states[MAX_STATES];
 }
 engine;
@@ -49,7 +49,7 @@ static void aspect_ratio_transform(void)
   al_use_transform(&trans);
 }
 
-int game_init(struct Game_Config *cfg)
+int engine_init(struct Engine_Conf *conf)
 {
   if (engine.initialized)
   {
@@ -72,7 +72,7 @@ int game_init(struct Game_Config *cfg)
     return 0;
   }
 
-  if (cfg->audio)
+  if (conf->audio)
   {
     if (!al_install_audio())
     {
@@ -97,13 +97,13 @@ int game_init(struct Game_Config *cfg)
   al_init_font_addon();
   al_init_primitives_addon();
 
-  if (cfg->fullscreen)
+  if (conf->fullscreen)
   {
     al_set_new_display_flags(ALLEGRO_FULLSCREEN_WINDOW);
   }
 
   // Initialize variables...
-  engine.display = al_create_display(cfg->width, cfg->height);
+  engine.display = al_create_display(conf->width, conf->height);
 
   if (!engine.display)
   {
@@ -111,22 +111,22 @@ int game_init(struct Game_Config *cfg)
     return 0;
   }
 
-  al_set_window_title(engine.display, cfg->title);
+  al_set_window_title(engine.display, conf->title);
 
-  maincfg = cfg;
+  mainconf = conf;
   aspect_ratio_transform();
 
   al_add_new_bitmap_flag(ALLEGRO_MAG_LINEAR);
 
-  if (cfg->buffer)
+  if (conf->buffer)
   {
-    engine.buffer = al_create_bitmap(cfg->width, cfg->height);
+    engine.buffer = al_create_bitmap(conf->width, conf->height);
     al_set_new_bitmap_flags(0);
   }
 
   font = al_create_builtin_font();
 
-  engine.timer = al_create_timer(1.0 / cfg->framerate);
+  engine.timer = al_create_timer(1.0 / conf->framerate);
   engine.event_queue = al_create_event_queue();
 
   set_bg_color(BG_COLOR_DEFAULT);
@@ -136,11 +136,11 @@ int game_init(struct Game_Config *cfg)
   return 1;
 }
 
-void game_run(struct State *first)
+void engine_run(struct State *first)
 {
   int redraw = 0;
 
-  if (engine.is_running)
+  if (engine_active)
   {
     puts("WARNING: Calling game_run() more than once");
     return;
@@ -163,10 +163,10 @@ void game_run(struct State *first)
   al_register_event_source(engine.event_queue, al_get_mouse_event_source());
 
   al_start_timer(engine.timer);
-  engine.is_running = TRUE;
+  engine_active = TRUE;
 
   // Main game loop
-  while (engine.is_running)
+  while (engine_active)
   {
     ALLEGRO_EVENT event;
     al_wait_for_event(engine.event_queue, &event);
@@ -177,7 +177,7 @@ void game_run(struct State *first)
     // If the close button was pressed...
     if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
     {
-      engine.is_running = FALSE;
+      engine_active = FALSE;
       break;
     }
     else if (event.type == ALLEGRO_EVENT_KEY_DOWN)
@@ -187,7 +187,7 @@ void game_run(struct State *first)
       // Escape key will end the game
       if (event.keyboard.keycode == ALLEGRO_KEY_ESCAPE)
       {
-        engine.is_running = FALSE;
+        engine_active = FALSE;
         break;
       }
 
@@ -224,7 +224,7 @@ void game_run(struct State *first)
     {
       redraw = FALSE;
 
-      if (maincfg->buffer)
+      if (mainconf->buffer)
       {
         al_set_target_bitmap(engine.buffer);
       }
@@ -237,7 +237,7 @@ void game_run(struct State *first)
 
       engine.states[current_state]->_draw();
 
-      if (maincfg->buffer)
+      if (mainconf->buffer)
       {
         al_set_target_backbuffer(engine.display);
         al_clear_to_color(C_BLACK);
@@ -250,7 +250,7 @@ void game_run(struct State *first)
 
   while (current_state >= 0)
   {
-    engine.states[current_state--]->_end(TRUE);
+    engine.states[current_state--]->_end();
   }
 
   al_destroy_display(engine.display);
@@ -258,7 +258,7 @@ void game_run(struct State *first)
   al_destroy_event_queue(engine.event_queue);
   al_destroy_font(font);
 
-  if (maincfg->buffer)
+  if (mainconf->buffer)
   {
     al_destroy_bitmap(engine.buffer);
   }
@@ -268,7 +268,7 @@ void change_state(struct State *s)
 {
   if (engine.states[current_state] != NULL)
   {
-    engine.states[current_state]->_end(FALSE);
+    engine.states[current_state]->_end();
   }
 
   engine.states[current_state] = s;
@@ -295,18 +295,13 @@ void pop_state(void)
 {
   if (current_state > 0)
   {
-    engine.states[current_state]->_end(FALSE);
+    engine.states[current_state]->_end();
     engine.states[--current_state]->_resume();
   }
   else
   {
     puts("WARNING: Can't remove any more states (current_state = 0)");
   }
-}
-
-void game_over(void)
-{
-  engine.is_running = FALSE;
 }
 
 void set_bg_color(ALLEGRO_COLOR c)

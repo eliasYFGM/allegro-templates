@@ -4,13 +4,13 @@
 
 int main(int argc, char **argv)
 {
-  struct Game_Config config =
+  struct Engine_Conf conf =
   {
     // Argument list
     argc, argv,
     // Window title
     "Allegro application",
-    // Game resolution
+    // Resolution
     320, 200,
     // Scaling factor (<= 0 for auto)
     0,
@@ -22,10 +22,10 @@ int main(int argc, char **argv)
     FALSE
   };
 
-  if (game_init(&config))
+  if (engine_init(&conf))
   {
-    // Run the game, with a starting state
-    game_run(Game_State());
+    // Run with a starting state
+    engine_run(Game_State());
   }
 
   return 0;

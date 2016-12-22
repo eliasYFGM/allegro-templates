@@ -4,13 +4,13 @@
 
 int main(int argc, char **argv)
 {
-  struct Game_Config config =
+  struct Engine_Conf conf =
   {
     // Argument list
     argc, argv,
     // Window title
     "Allegro application",
-    // Game resolution
+    // Resolution
     640, 480,
     // Refresh rate (or FPS)
     40,
@@ -20,14 +20,14 @@ int main(int argc, char **argv)
     FALSE,
     // Enable mouse?
     FALSE,
-    // Enable audio module?
+    // Enable audio?
     FALSE
   };
 
-  if (game_init(&config))
+  if (engine_init(&conf))
   {
-    // Run the game, with a starting state
-    game_run(Game_State());
+    // Run with a starting state
+    engine_run(Game_State());
   }
 
   return 0;

@@ -6,7 +6,7 @@ static void state_init(void)
 {
 }
 
-static void state_end(int exiting)
+static void state_end(void)
 {
 }
 

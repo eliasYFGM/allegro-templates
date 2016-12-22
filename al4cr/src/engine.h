@@ -13,7 +13,7 @@
 // Defined in state.h
 struct State;
 
-struct Game_Config
+struct Engine_Conf
 {
   // Argument list
   int argc;
@@ -30,26 +30,29 @@ struct Game_Config
 };
 
 // Main
-int game_init(struct Game_Config *cfg);
-void game_run(struct State *first);
+int engine_init(struct Engine_Conf *conf);
+void engine_run(struct State *first);
 
-// State routines
+// States
 void change_state(struct State *s);
 void push_state(struct State *s);
 void pop_state(void);
 
 // Other
-void game_over(void);
 void set_bg_color(int c);
+
+// Whether the engine is active (started or running)
+// set to FALSE to stop
+extern volatile int engine_active;
 
 // FPS is updated each second
 extern volatile int fps;
 
 // Pointer to the original settings (in main.c)
-extern const struct Game_Config *maincfg;
+extern const struct Engine_Conf *mainconf;
 
-#define GAME_W  maincfg->width  // Instead of SCREEN_W
-#define GAME_H  maincfg->height // Instead of SCREEN_H
+#define GAME_W  mainconf->width  // Instead of SCREEN_W
+#define GAME_H  mainconf->height // Instead of SCREEN_H
 
 // Bounding box collision (taken from Alex4)
 #define check_bb_collision(x1,y1,w1,h1,x2,y2,w2,h2) \
