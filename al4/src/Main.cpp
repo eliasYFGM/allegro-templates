@@ -3,29 +3,31 @@
 
 int main(int argc, char **argv)
 {
-  Game_Engine game;
+  Game_Engine engine;
 
-  bool result = game.Init(
+  bool result = engine.Init(
     // Argument list
     argc, argv,
     // Window title
     "Allegro application",
-    // Screen size
+    // Resolution
     640, 480,
     // Frame-rate (FPS)
     40,
+    // Color depth (8, 15, 16, 24, 32)
+    8,
     // Full-screen?
     false,
     // Enable mouse?
     false,
-    // Enable audio module?
+    // Enable audio?
     false
   );
 
   if (result)
   {
-    // Run the game, with a starting state
-    game.Run(new Game_State(&game));
+    // Run with a starting state
+    engine.Run(new Game_State());
   }
 
   return 0;

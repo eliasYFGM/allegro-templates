@@ -4,21 +4,17 @@
 #include <allegro5/allegro.h>
 #include "State.h"
 
-class Game_Engine;
-
 class Game_State : public State
 {
-  Game_Engine *engine;
-
 public:
-  Game_State(Game_Engine *ge);
+  Game_State();
   ~Game_State();
 
   void Pause();
   void Resume();
 
-  void Events(ALLEGRO_EVENT& ev);
-  void Update();
+  void Events(Game_Engine *engine, ALLEGRO_EVENT& ev);
+  void Update(Game_Engine *engine);
   void Draw();
 };
 

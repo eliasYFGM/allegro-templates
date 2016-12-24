@@ -8,6 +8,7 @@
 #include "Game_Engine.h"
 #include "State.h"
 
+bool engine_active;
 bool key[ALLEGRO_KEY_MAX];
 ALLEGRO_FONT *font;
 
@@ -31,7 +32,7 @@ static void aspect_ratio_transform(ALLEGRO_DISPLAY *display, int w, int h)
   al_use_transform(&trans);
 }
 
-struct Game_Engine::Game_Internal
+struct Game_Engine::Impl
 {
   ALLEGRO_DISPLAY *display;
   ALLEGRO_BITMAP *buffer;
@@ -40,26 +41,22 @@ struct Game_Engine::Game_Internal
   ALLEGRO_COLOR bg_color;
   bool initialized;
   bool redraw;
-  bool is_running;
   std::stack<State*> states;
 };
 
-Game_Engine::Game_Engine() : pimpl(new Game_Internal())
+Game_Engine::Game_Engine() : pimpl(new Impl())
 {
   pimpl->initialized = false;
   pimpl->buffer = 0;
   pimpl->redraw = false;
-  pimpl->is_running = false;
 }
 
 Game_Engine::~Game_Engine()
 {
-  delete pimpl;
 }
 
-bool Game_Engine::Init(int _argc, char** _argv, const char* title, int _width,
-                       int _height, int rate, bool want_fs, bool want_audio,
-                       bool want_bb)
+bool Game_Engine::Init(int argc, char** argv, const char* title, int w, int h,
+                       int rate, bool full, bool audio, bool backbuff)
 {
   if (pimpl->initialized)
   {
@@ -72,7 +69,7 @@ bool Game_Engine::Init(int _argc, char** _argv, const char* title, int _width,
   al_install_mouse();
   al_init_image_addon();
 
-  if (want_audio)
+  if (audio)
   {
     if (al_install_audio())
     {
@@ -90,15 +87,15 @@ bool Game_Engine::Init(int _argc, char** _argv, const char* title, int _width,
   al_init_font_addon();
   al_init_primitives_addon();
 
-  if (want_fs)
+  if (full)
   {
     al_set_new_display_flags(ALLEGRO_FULLSCREEN);
   }
 
-  width = _width;
-  height = _height;
+  width = w;
+  height = h;
 
-  pimpl->display = al_create_display(width, height);
+  pimpl->display = al_create_display(w, h);
 
   if (!pimpl->display)
   {
@@ -106,15 +103,15 @@ bool Game_Engine::Init(int _argc, char** _argv, const char* title, int _width,
     return false;
   }
 
-  aspect_ratio_transform(pimpl->display, width, height);
+  aspect_ratio_transform(pimpl->display, w, h);
 
   al_set_window_title(pimpl->display, title);
 
   al_add_new_bitmap_flag(ALLEGRO_MAG_LINEAR);
 
-  if (want_bb)
+  if (backbuff)
   {
-    pimpl->buffer = al_create_bitmap(width, height);
+    pimpl->buffer = al_create_bitmap(w, h);
 
     if (!pimpl->buffer)
     {
@@ -132,10 +129,7 @@ bool Game_Engine::Init(int _argc, char** _argv, const char* title, int _width,
 
   Set_BG_Color(BG_COLOR_DEFAULT);
 
-  argv = _argv;
-  argc = _argc;
-
-  exiting = false;
+  args.assign(argv, argv + argc);
 
   pimpl->initialized = true;
 
@@ -150,7 +144,7 @@ void Game_Engine::Run(State *first)
     return;
   }
 
-  if (pimpl->is_running)
+  if (engine_active)
   {
     std::cout << "WARNING: Calling Game_Engine::Run() more than once\n";
 
@@ -175,18 +169,18 @@ void Game_Engine::Run(State *first)
 
   al_start_timer(pimpl->timer);
 
-  pimpl->is_running = true;
+  engine_active = true;
 
-  while (pimpl->is_running)
+  while (engine_active)
   {
     ALLEGRO_EVENT event;
     al_wait_for_event(pimpl->event_queue, &event);
 
-    pimpl->states.top()->Events(event);
+    pimpl->states.top()->Events(this, event);
 
     if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
     {
-      pimpl->is_running = false;
+      engine_active = false;
       break;
     }
     else if (event.type == ALLEGRO_EVENT_KEY_DOWN)
@@ -195,7 +189,7 @@ void Game_Engine::Run(State *first)
 
       if (event.keyboard.keycode == ALLEGRO_KEY_ESCAPE)
       {
-        pimpl->is_running = false;
+        engine_active = false;
         break;
       }
 
@@ -225,7 +219,7 @@ void Game_Engine::Run(State *first)
     }
     else if (event.type == ALLEGRO_EVENT_TIMER)
     {
-      pimpl->states.top()->Update();
+      pimpl->states.top()->Update(this);
       pimpl->redraw = true;
     }
 
@@ -256,8 +250,6 @@ void Game_Engine::Run(State *first)
       al_flip_display();
     }
   }
-
-  exiting = true;
 
   while (!pimpl->states.empty())
   {
@@ -307,13 +299,8 @@ void Game_Engine::Pop_State()
   }
   else
   {
-    pimpl->is_running = false;
+    engine_active = false;
   }
-}
-
-void Game_Engine::Game_Over()
-{
-  pimpl->is_running = false;
 }
 
 void Game_Engine::Set_BG_Color(ALLEGRO_COLOR c)

@@ -6,7 +6,7 @@
 #include "Game_Engine.h"
 #include "State.h"
 
-static volatile unsigned int ticks = 0;
+static volatile unsigned int ticks;
 
 static void ticker()
 {
@@ -14,8 +14,8 @@ static void ticker()
 }
 END_OF_FUNCTION(ticker)
 
-volatile int fps = 0;
-static volatile int fps_counter = 0;
+volatile int fps;
+static volatile int fps_counter;
 
 static void update_fps()
 {
@@ -24,17 +24,17 @@ static void update_fps()
 }
 END_OF_FUNCTION(update_fps)
 
-static volatile bool is_running = false;
+volatile bool engine_active;
 
 #ifndef ALLEGRO_DOS
 static void close_button_handler()
 {
-  is_running = false;
+  engine_active = false;
 }
 END_OF_FUNCTION(close_button_handler)
 #endif
 
-struct Game_Engine::Game_Internal
+struct Game_Engine::Impl
 {
   BITMAP *buffer;
   bool initialized;
@@ -46,7 +46,7 @@ struct Game_Engine::Game_Internal
   std::stack<State*> states;
 };
 
-Game_Engine::Game_Engine() : pimpl(new Game_Internal())
+Game_Engine::Game_Engine() : pimpl(new Impl())
 {
   pimpl->initialized = false;
   pimpl->need_redraw = false;
@@ -54,12 +54,11 @@ Game_Engine::Game_Engine() : pimpl(new Game_Internal())
 
 Game_Engine::~Game_Engine()
 {
-  delete pimpl;
 }
 
-bool Game_Engine::Init(int _argc, char **_argv, const char *title, int width,
-                       int height, int rate, bool want_fs, bool want_mouse,
-                       bool want_audio, int depth)
+bool Game_Engine::Init(int argc, char **argv, const char *title, int width,
+                       int height, int rate,  int depth, bool full, bool mouse,
+                       bool audio)
 {
   if (pimpl->initialized)
   {
@@ -71,12 +70,12 @@ bool Game_Engine::Init(int _argc, char **_argv, const char *title, int width,
   install_keyboard();
   install_timer();
 
-  if (want_mouse)
+  if (mouse)
   {
     install_mouse();
   }
 
-  if (want_audio)
+  if (audio)
   {
     if (install_sound(DIGI_AUTODETECT, MIDI_NONE, 0))
     {
@@ -90,7 +89,7 @@ bool Game_Engine::Init(int _argc, char **_argv, const char *title, int width,
   if (set_gfx_mode(GFX_AUTODETECT, width, height, 0, 0))
 #else
   if (set_gfx_mode(
-    want_fs ? GFX_AUTODETECT_FULLSCREEN : GFX_AUTODETECT_WINDOWED,
+    full ? GFX_AUTODETECT_FULLSCREEN : GFX_AUTODETECT_WINDOWED,
     width, height, 0, 0))
 #endif
   {
@@ -101,8 +100,8 @@ bool Game_Engine::Init(int _argc, char **_argv, const char *title, int width,
 
   pimpl->buffer = create_bitmap(SCREEN_W, SCREEN_H);
   pimpl->framerate = rate;
-  pimpl->mouse = want_mouse;
-  pimpl->cursor = want_mouse;
+  pimpl->mouse = mouse;
+  pimpl->cursor = mouse;
 
 #ifndef ALLEGRO_DOS
   set_window_title(title);
@@ -113,10 +112,7 @@ bool Game_Engine::Init(int _argc, char **_argv, const char *title, int width,
 
   Set_BG_Color(BG_COLOR_DEFAULT);
 
-  argc = _argc;
-  argv = _argv;
-
-  exiting = false;
+  args.assign(argv, argv + argc);
 
   srand(time(0));
 
@@ -133,7 +129,7 @@ void Game_Engine::Run(State *first)
     return;
   }
 
-  if (is_running)
+  if (engine_active)
   {
     std::cout << "WARNING: Calling Game_Engine::Run() more than once\n";
 
@@ -156,9 +152,9 @@ void Game_Engine::Run(State *first)
   LOCK_FUNCTION(update_fps);
   install_int(update_fps, 1000);
 
-  is_running = true;
+  engine_active = true;
 
-  while (is_running)
+  while (engine_active)
   {
     if (ticks > 0)
     {
@@ -168,18 +164,18 @@ void Game_Engine::Run(State *first)
 
         if (key[KEY_ESC])
         {
-          Game_Over();
+          engine_active = false;
           break;
         }
 
-        if (is_running)
+        if (engine_active)
         {
-          pimpl->states.top()->Update();
+          pimpl->states.top()->Update(this);
           pimpl->need_redraw = true;
         }
       }
 
-      if (pimpl->need_redraw && is_running)
+      if (pimpl->need_redraw && engine_active)
       {
         pimpl->need_redraw = false;
         clear_to_color(pimpl->buffer, pimpl->bg_color);
@@ -208,8 +204,6 @@ void Game_Engine::Run(State *first)
     }
 #endif
   }
-
-  exiting = true;
 
   while (!pimpl->states.empty())
   {
@@ -255,13 +249,8 @@ void Game_Engine::Pop_State()
   }
   else
   {
-    is_running = false;
+    engine_active = false;
   }
-}
-
-void Game_Engine::Game_Over()
-{
-  is_running = false;
 }
 
 void Game_Engine::Enable_Cursor(bool enable)
