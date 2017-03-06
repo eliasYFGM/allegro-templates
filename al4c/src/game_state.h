@@ -5,4 +5,6 @@
 
 struct State* Game_State(void);
 
+#define GAME_STATE  Game_State()
+
 #endif // GAMESTATE_H_INCLUDED

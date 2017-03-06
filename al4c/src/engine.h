@@ -35,8 +35,8 @@ int engine_init(struct Engine_Conf *conf);
 void engine_run(struct State *first);
 
 // States
-void change_state(struct State *s);
-void push_state(struct State *s);
+void change_state(struct State *s, void *param);
+void push_state(struct State *s, void *param);
 void pop_state(void);
 
 // Other

@@ -1,5 +1,7 @@
 #include <iostream>
 #include <stack>
+#include <cstdlib>
+#include <ctime>
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_image.h>
 #include <allegro5/allegro_audio.h>
@@ -131,6 +133,8 @@ bool Game_Engine::Init(int argc, char** argv, const char* title, int w, int h,
 
   args.assign(argv, argv + argc);
 
+  srand(time(0));
+
   pimpl->initialized = true;
 
   return true;
@@ -253,7 +257,7 @@ void Game_Engine::Run(State *first)
 
   while (!pimpl->states.empty())
   {
-    delete pimpl->states.top();
+    pimpl->states.top()->End();
     pimpl->states.pop();
   }
 
@@ -268,11 +272,12 @@ void Game_Engine::Change_State(State *s)
 {
   if (!pimpl->states.empty())
   {
-    delete pimpl->states.top();
+    pimpl->states.top()->End();
     pimpl->states.pop();
   }
 
   pimpl->states.push(s);
+  pimpl->states.top()->Init();
 }
 
 void Game_Engine::Push_State(State *s)
@@ -283,13 +288,14 @@ void Game_Engine::Push_State(State *s)
   }
 
   pimpl->states.push(s);
+  pimpl->states.top()->Init();
 }
 
 void Game_Engine::Pop_State()
 {
   if (!pimpl->states.empty())
   {
-    delete pimpl->states.top();
+    pimpl->states.top()->End();
     pimpl->states.pop();
   }
 

@@ -1,11 +1,11 @@
 #include "Game_State.h"
 #include "Game_Engine.h"
 
-Game_State::Game_State()
+void Game_State::Init()
 {
 }
 
-Game_State::~Game_State()
+void Game_State::End()
 {
 }
 
@@ -21,6 +21,12 @@ void Game_State::Update(Game_Engine *engine)
 {
 }
 
-void Game_State::Draw(BITMAP *bmp)
+void Game_State::Draw(BITMAP *dest)
 {
+}
+
+State* Game_State::Get_State()
+{
+  static Game_State state;
+  return &state;
 }

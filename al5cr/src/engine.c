@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_image.h>
 #include <allegro5/allegro_audio.h>
@@ -131,6 +133,8 @@ int engine_init(struct Engine_Conf *conf)
   al_scale_transform(&trans, conf->scale, conf->scale);
   al_use_transform(&trans);
 
+  srand(time(NULL));
+
   engine.initialized = TRUE;
 
   return 1;
@@ -146,7 +150,7 @@ void engine_run(struct State *first)
     return;
   }
 
-  change_state(first);
+  change_state(first, NULL);
 
   // Generate display events
   al_register_event_source(engine.event_queue,
@@ -223,7 +227,7 @@ void engine_run(struct State *first)
   al_destroy_font(font);
 }
 
-void change_state(struct State *s)
+void change_state(struct State *s, void *param)
 {
   if (engine.states[current_state] != NULL)
   {
@@ -231,9 +235,10 @@ void change_state(struct State *s)
   }
 
   engine.states[current_state] = s;
+  engine.states[current_state]->_init(param);
 }
 
-void push_state(struct State* s)
+void push_state(struct State* s, void *param)
 {
   if (current_state < (MAX_STATES - 1))
   {
@@ -243,6 +248,7 @@ void push_state(struct State* s)
     }
 
     engine.states[++current_state] = s;
+    engine.states[current_state]->_init(param);
   }
   else
   {

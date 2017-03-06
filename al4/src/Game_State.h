@@ -7,14 +7,19 @@
 class Game_State : public State
 {
 public:
-  Game_State();
-  ~Game_State();
+  void Init();
+  void End();
 
   void Pause();
   void Resume();
 
   void Update(Game_Engine *engine);
-  void Draw(BITMAP *bmp);
+  void Draw(BITMAP *dest);
+
+public:
+  static State* Get_State();
 };
+
+#define GAME_STATE  Game_State::Get_State()
 
 #endif // GAMESTATE_H_INCLUDED

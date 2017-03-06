@@ -27,7 +27,7 @@ int main(int argc, char **argv)
   if (result)
   {
     // Run with a starting state
-    engine.Run(new Game_State());
+    engine.Run(GAME_STATE);
   }
 
   return 0;

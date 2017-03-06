@@ -27,7 +27,7 @@ int main(int argc, char **argv)
   if (engine_init(&conf))
   {
     // Run with a starting state
-    engine_run(Game_State());
+    engine_run(GAME_STATE);
   }
 
   return 0;
