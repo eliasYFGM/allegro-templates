@@ -9,19 +9,16 @@
 #include "engine.h"
 #include "state.h"
 
-#define SCREEN_RES_OVERRIDE   0.1
-// Used to simulate a slightly lower screen resolution
-// E.g. without the panels and stuff
-
 // Globals
 int engine_active;
 ALLEGRO_FONT *font;
 int keys[ALLEGRO_KEY_MAX];
 const struct Engine_Conf *mainconf;
 
-static struct // Engine data
+static struct // Engine variables
 {
   ALLEGRO_DISPLAY *display;
+  ALLEGRO_BITMAP *buffer;
   ALLEGRO_TIMER *timer;
   ALLEGRO_EVENT_QUEUE *event_queue;
   ALLEGRO_COLOR bg_color;
@@ -32,6 +29,27 @@ engine;
 
 // The state that is currently updating
 static int current_state;
+
+// Updates the aspect ratio when going full-screen or windowed
+static void aspect_ratio_transform(void)
+{
+  int window_w = al_get_display_width(engine.display);
+  int window_h = al_get_display_height(engine.display);
+
+  float sw = (window_w / (float) GAME_W);
+  float sh = (window_h / (float) GAME_H);
+  float scale = (sw < sh ? sw : sh);
+
+  float scale_w = ((float) GAME_W * scale);
+  float scale_h = ((float) GAME_H * scale);
+  int scale_x_pos = (window_w - scale_w) / 2;
+  int scale_y_pos = (window_h - scale_h) / 2;
+
+  ALLEGRO_TRANSFORM trans;
+  al_identity_transform(&trans);
+  al_build_transform(&trans, scale_x_pos, scale_y_pos, scale, scale, 0);
+  al_use_transform(&trans);
+}
 
 int engine_init(struct Engine_Conf *conf)
 {
@@ -47,6 +65,12 @@ int engine_init(struct Engine_Conf *conf)
   if (!al_install_keyboard())
   {
     puts("ERROR: Could not initialize the keyboard...");
+    return 0;
+  }
+
+  if (!al_install_mouse())
+  {
+    puts("ERROR: Could not initialize the mouse...");
     return 0;
   }
 
@@ -75,42 +99,13 @@ int engine_init(struct Engine_Conf *conf)
   al_init_font_addon();
   al_init_primitives_addon();
 
-  // Find how much the game will be scaled when conf->scale <= 0
-  if (conf->scale <= 0)
+  if (conf->fullscreen)
   {
-    ALLEGRO_MONITOR_INFO info;
-    al_get_monitor_info(0, &info);
-
-    int monitor_w = info.x2 - info.x1;
-    int monitor_h = info.y2 - info.y1;
-
-    float new_monitor_w = (monitor_w - (monitor_w * SCREEN_RES_OVERRIDE));
-    float new_monitor_h = (monitor_h - (monitor_h * SCREEN_RES_OVERRIDE));
-
-    conf->scale = 2;
-
-    // Keep scaling until a suitable scale factor is found
-    while (1)
-    {
-      int scale_w = conf->width * conf->scale;
-      int scale_h = conf->height * conf->scale;
-
-      if (scale_w > new_monitor_w || scale_h > new_monitor_h)
-      {
-        --conf->scale;
-        break;
-      }
-
-      ++conf->scale;
-    }
-  }
-  else if (conf->scale < 2)
-  {
-    conf->scale = 2;
+    al_set_new_display_flags(ALLEGRO_FULLSCREEN_WINDOW);
   }
 
-  engine.display = al_create_display(conf->width * conf->scale,
-    conf->height * conf->scale);
+  // Initialize variables...
+  engine.display = al_create_display(conf->width, conf->height);
 
   if (!engine.display)
   {
@@ -120,18 +115,23 @@ int engine_init(struct Engine_Conf *conf)
 
   al_set_window_title(engine.display, conf->title);
 
+  mainconf = conf;
+  aspect_ratio_transform();
+
+  al_add_new_bitmap_flag(ALLEGRO_MAG_LINEAR);
+
+  if (conf->buffer)
+  {
+    engine.buffer = al_create_bitmap(conf->width, conf->height);
+    al_set_new_bitmap_flags(0);
+  }
+
   font = al_create_builtin_font();
 
   engine.timer = al_create_timer(1.0 / conf->framerate);
   engine.event_queue = al_create_event_queue();
 
-  mainconf = conf;
   set_bg_color(BG_COLOR_DEFAULT);
-
-  ALLEGRO_TRANSFORM trans;
-  al_identity_transform(&trans);
-  al_scale_transform(&trans, conf->scale, conf->scale);
-  al_use_transform(&trans);
 
   srand(time(NULL));
 
@@ -142,7 +142,7 @@ int engine_init(struct Engine_Conf *conf)
 
 void engine_run(struct State *first)
 {
-  int redraw = FALSE;
+  int redraw = 0;
 
   if (engine_active)
   {
@@ -162,6 +162,9 @@ void engine_run(struct State *first)
 
   // Keyboard events
   al_register_event_source(engine.event_queue, al_get_keyboard_event_source());
+
+  // Mouse events
+  al_register_event_source(engine.event_queue, al_get_mouse_event_source());
 
   al_start_timer(engine.timer);
   engine_active = TRUE;
@@ -191,6 +194,25 @@ void engine_run(struct State *first)
         engine_active = FALSE;
         break;
       }
+
+      // F4 key will toggle full-screen (maintains aspect ratio)
+      if (event.keyboard.keycode == ALLEGRO_KEY_F4)
+      {
+        al_stop_timer(engine.timer);
+
+        if (al_get_display_flags(engine.display) & ALLEGRO_FULLSCREEN_WINDOW)
+        {
+          al_toggle_display_flag(engine.display, ALLEGRO_FULLSCREEN_WINDOW, 0);
+        }
+        else
+        {
+          al_toggle_display_flag(engine.display, ALLEGRO_FULLSCREEN_WINDOW, 1);
+        }
+
+        aspect_ratio_transform();
+
+        al_start_timer(engine.timer);
+      }
     }
     else if (event.type == ALLEGRO_EVENT_KEY_UP)
     {
@@ -206,11 +228,25 @@ void engine_run(struct State *first)
     {
       redraw = FALSE;
 
-      al_set_target_backbuffer(engine.display);
+      if (mainconf->buffer)
+      {
+        al_set_target_bitmap(engine.buffer);
+      }
+      else
+      {
+        al_set_target_backbuffer(engine.display);
+      }
 
       al_clear_to_color(engine.bg_color);
 
       engine.states[current_state]->_draw();
+
+      if (mainconf->buffer)
+      {
+        al_set_target_backbuffer(engine.display);
+        al_clear_to_color(C_BLACK);
+        al_draw_bitmap(engine.buffer, 0, 0, 0);
+      }
 
       al_flip_display();
     }
@@ -225,21 +261,40 @@ void engine_run(struct State *first)
   al_destroy_timer(engine.timer);
   al_destroy_event_queue(engine.event_queue);
   al_destroy_font(font);
+
+  if (mainconf->buffer)
+  {
+    al_destroy_bitmap(engine.buffer);
+  }
 }
 
+// Changes the state directly to another
 void change_state(struct State *s, void *param)
 {
+  if (s == engine.states[current_state])
+  {
+    puts("WARNING: State is the same as the current state");
+    return;
+  }
+
   if (engine.states[current_state] != NULL)
   {
     engine.states[current_state]->_end();
   }
 
+  s->_init(param);
   engine.states[current_state] = s;
-  engine.states[current_state]->_init(param);
 }
 
-void push_state(struct State* s, void *param)
+// Add a new state to the stack (previous one is 'paused')
+void push_state(struct State *s, void *param)
 {
+  if (s == engine.states[current_state])
+  {
+    puts("WARNING: State is the same as the current state");
+    return;
+  }
+
   if (current_state < (MAX_STATES - 1))
   {
     if (engine.states[current_state] != NULL)
@@ -247,8 +302,8 @@ void push_state(struct State* s, void *param)
       engine.states[current_state]->_pause();
     }
 
+    s->_init(param);
     engine.states[++current_state] = s;
-    engine.states[current_state]->_init(param);
   }
   else
   {

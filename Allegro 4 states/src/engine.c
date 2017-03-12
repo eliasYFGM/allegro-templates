@@ -5,16 +5,13 @@
 #include "engine.h"
 #include "state.h"
 
-#define SCREEN_RES_OVERRIDE   0.1
-// Used to simulate a slightly lower screen resolution
-// E.g. without the panels and stuff
-
 const struct Engine_Conf *mainconf;
 
-static struct // Game variables
+static struct // Engine variables
 {
   BITMAP *buffer;
   int initialized;
+  int cursor;
   int bg_color;
   struct State *states[MAX_STATES];
 }
@@ -42,11 +39,13 @@ END_OF_FUNCTION(update_fps)
 
 volatile int engine_active;
 
+#ifndef ALLEGRO_DOS
 static void close_button_handler(void)
 {
   engine_active = 0;
 }
 END_OF_FUNCTION(close_button_handler)
+#endif // ALLEGRO_DOS
 
 // Main game initialization
 int engine_init(struct Engine_Conf *conf)
@@ -61,6 +60,11 @@ int engine_init(struct Engine_Conf *conf)
   install_keyboard();
   install_timer();
 
+  if (conf->mouse)
+  {
+    install_mouse();
+  }
+
   if (conf->audio)
   {
     if (install_sound(DIGI_AUTODETECT, MIDI_NONE, 0))
@@ -71,50 +75,27 @@ int engine_init(struct Engine_Conf *conf)
 
   set_color_depth(conf->depth);
 
-  if (conf->scale <= 0)
-  {
-    int w, h;
-    get_desktop_resolution(&w, &h);
-
-    float new_w = w - (w * SCREEN_RES_OVERRIDE);
-    float new_h = h - (h * SCREEN_RES_OVERRIDE);
-
-    conf->scale = 2;
-
-    // Keep scaling until a suitable scale factor is found
-    while (1)
-    {
-      int scale_w = conf->width * conf->scale;
-      int scale_h = conf->height * conf->scale;
-
-      if (scale_w > new_w || scale_h > new_h)
-      {
-        --conf->scale;
-        break;
-      }
-
-      ++conf->scale;
-    }
-  }
-  else if (conf->scale < 2)
-  {
-    conf->scale = 2;
-  }
-
-  if (set_gfx_mode(GFX_AUTODETECT_WINDOWED, conf->width * conf->scale,
-    conf->height * conf->scale, 0, 0))
+#ifdef ALLEGRO_DOS
+  if (set_gfx_mode(GFX_AUTODETECT, conf->width, conf->height, 0, 0))
+#else
+  if (set_gfx_mode(
+    conf->fullscreen ? GFX_AUTODETECT_FULLSCREEN : GFX_AUTODETECT_WINDOWED,
+    conf->width, conf->height, 0, 0))
+#endif
   {
     set_gfx_mode(GFX_TEXT, 0, 0, 0, 0);
-    allegro_message("ERROR: Could not create a window:\n%s", allegro_error);
+    allegro_message("ERROR: Could not init graphics mode:\n%s", allegro_error);
     return 0;
   }
 
+#ifndef ALLEGRO_DOS
   set_window_title(conf->title);
-
-  engine.buffer = create_bitmap(conf->width, conf->height);
-
   set_close_button_callback(close_button_handler);
-  set_bg_color(BG_COLOR_DEFAULT);
+#endif // ALLEGRO_DOS
+
+  engine.buffer = create_bitmap(SCREEN_W, SCREEN_H);
+  engine.bg_color = BG_COLOR_DEFAULT;
+  engine.cursor = conf->mouse;
 
   mainconf = conf;
 
@@ -178,16 +159,27 @@ void engine_run(struct State *first)
 
         engine.states[current_state]->_draw(engine.buffer);
 
-        stretch_blit(engine.buffer, screen,
-          0, 0, GAME_W, GAME_H, 0, 0, SCREEN_W, SCREEN_H);
+        if (mainconf->mouse && engine.cursor)
+        {
+          show_mouse(engine.buffer);
+        }
+
+        blit(engine.buffer, screen, 0, 0, 0, 0, SCREEN_W, SCREEN_H);
+
+        if (mainconf->mouse && engine.cursor)
+        {
+          show_mouse(NULL);
+        }
 
         ++frame_counter;
       }
     }
+#ifndef ALLEGRO_DOS
     else
     {
       rest(1);
     }
+#endif // ALLEGRO_DOS
   }
 
   while (current_state >= 0)
@@ -198,19 +190,33 @@ void engine_run(struct State *first)
   destroy_bitmap(engine.buffer);
 }
 
+// Changes the state directly to another
 void change_state(struct State *s, void *param)
 {
+  if (s == engine.states[current_state])
+  {
+    puts("WARNING: State is the same as the current state");
+    return;
+  }
+
   if (engine.states[current_state] != NULL)
   {
     engine.states[current_state]->_end();
   }
 
+  s->_init(param);
   engine.states[current_state] = s;
-  engine.states[current_state]->_init(param);
 }
 
+// Add a new state to the stack (previous one is 'paused')
 void push_state(struct State *s, void *param)
 {
+  if (s == engine.states[current_state])
+  {
+    puts("WARNING: State is the same as the current state");
+    return;
+  }
+
   if (current_state < (MAX_STATES - 1))
   {
     if (engine.states[current_state] != NULL)
@@ -218,8 +224,8 @@ void push_state(struct State *s, void *param)
       engine.states[current_state]->_pause();
     }
 
+    s->_init(param);
     engine.states[++current_state] = s;
-    engine.states[current_state]->_init(param);
   }
   else
   {
@@ -239,6 +245,11 @@ void pop_state(void)
   {
     puts("WARNING: Can't remove any more states (current_state = 0)");
   }
+}
+
+void enable_cursor(int enable)
+{
+  engine.cursor = enable;
 }
 
 void set_bg_color(int c)
