@@ -27,11 +27,11 @@ static struct // Engine data
   ALLEGRO_COLOR bg_color;
   int initialized;
   struct State *states[MAX_STATES];
+  struct State *initd_states[MAX_STATES * 2];
 }
 engine;
 
-// The state that is currently updating
-static int current_state;
+static int current_state, initd_count;
 
 int engine_init(struct Engine_Conf *conf)
 {
@@ -216,9 +216,9 @@ void engine_run(struct State *first)
     }
   }
 
-  while (current_state >= 0)
+  while (initd_count > 0)
   {
-    engine.states[current_state--]->_end();
+    engine.initd_states[--initd_count]->_end();
   }
 
   al_destroy_display(engine.display);
@@ -227,41 +227,41 @@ void engine_run(struct State *first)
   al_destroy_font(font);
 }
 
-// Changes the state directly to another
 void change_state(struct State *s, void *param)
 {
-  if (s == engine.states[current_state])
+  if (!s->initd)
   {
-    puts("WARNING: State is the same as the current state");
-    return;
+    s->_init(param);
+    s->initd = TRUE;
+    engine.initd_states[initd_count++] = s;
   }
 
   if (engine.states[current_state] != NULL)
   {
-    engine.states[current_state]->_end();
+    engine.states[current_state]->_exit();
   }
 
-  s->_init(param);
+  s->_enter(param);
   engine.states[current_state] = s;
 }
 
-// Add a new state to the stack (previous one is 'paused')
 void push_state(struct State *s, void *param)
 {
-  if (s == engine.states[current_state])
-  {
-    puts("WARNING: State is the same as the current state");
-    return;
-  }
-
   if (current_state < (MAX_STATES - 1))
   {
+    if (!s->initd)
+    {
+      s->_init(param);
+      s->initd = TRUE;
+      engine.initd_states[initd_count++] = s;
+    }
+
     if (engine.states[current_state] != NULL)
     {
       engine.states[current_state]->_pause();
     }
 
-    s->_init(param);
+    s->_enter(param);
     engine.states[++current_state] = s;
   }
   else
@@ -274,7 +274,7 @@ void pop_state(void)
 {
   if (current_state > 0)
   {
-    engine.states[current_state]->_end();
+    engine.states[current_state]->_exit();
     engine.states[--current_state]->_resume();
   }
   else
