@@ -115,7 +115,7 @@ int engine_init(struct Engine_Conf *conf)
   engine.buffer = create_bitmap(conf->width, conf->height);
 
   set_close_button_callback(close_button_handler);
-  set_bg_color(BG_COLOR_DEFAULT);
+  set_bg_color(makecol(192, 192, 192));
 
   mainconf = conf;
 
@@ -199,7 +199,6 @@ void engine_run(struct State *first)
   destroy_bitmap(engine.buffer);
 }
 
-// Changes the state directly to another
 void change_state(struct State *s, void *param)
 {
   if (!s->initd)
@@ -218,7 +217,6 @@ void change_state(struct State *s, void *param)
   engine.states[current_state] = s;
 }
 
-// Add a new state to the stack (previous one is 'paused')
 void push_state(struct State *s, void *param)
 {
   if (current_state < (MAX_STATES - 1))

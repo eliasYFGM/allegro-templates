@@ -5,13 +5,8 @@
 #define C_WHITE   makecol(255, 255, 255)
 #define C_TRANS   makecol(255, 0, 255)
 
-#define BG_COLOR_DEFAULT  makecol(192, 192, 192)
-
 // Max states to allocate
 #define MAX_STATES  8
-
-// Defined in state.h
-struct State;
 
 struct Engine_Conf
 {
@@ -29,9 +24,12 @@ struct Engine_Conf
   int audio;
 };
 
-//------------------------------------------------------------------------------
-// Main
-//------------------------------------------------------------------------------
+// Defined in state.h
+struct State;
+
+/*******************************************************************************
+  Main
+*******************************************************************************/
 
 // Initializes the engine with a configuration structure
 int engine_init(struct Engine_Conf *conf);
@@ -39,9 +37,9 @@ int engine_init(struct Engine_Conf *conf);
 // Run the engine with a starting state, until [engine_active = FALSE]
 void engine_run(struct State *first);
 
-//------------------------------------------------------------------------------
-// State manipulation
-//------------------------------------------------------------------------------
+/*******************************************************************************
+  State manipulation
+*******************************************************************************/
 
 // change_state() - Changes the state directly to another
 // "param" can be anything passed as a pointer or NULL.
@@ -56,14 +54,14 @@ void push_state(struct State *s, void *param);
 // pop_state() - removes the last state added with push_state()
 void pop_state(void);
 
-//------------------------------------------------------------------------------
-// Misc functions
-//------------------------------------------------------------------------------
+/*******************************************************************************
+  Misc functions
+*******************************************************************************/
 void set_bg_color(int c);
 
-//------------------------------------------------------------------------------
-// Globals
-//------------------------------------------------------------------------------
+/*******************************************************************************
+  Globals
+*******************************************************************************/
 
 // Whether the engine is active (started or running)
 // set to FALSE to stop

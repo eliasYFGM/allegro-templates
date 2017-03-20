@@ -9,9 +9,9 @@
 #include "engine.h"
 #include "state.h"
 
-#define SCREEN_RES_OVERRIDE   0.1
 // Used to simulate a slightly lower screen resolution
 // E.g. without the panels and stuff
+#define SCREEN_RES_OVERRIDE   0.1
 
 // Globals
 int engine_active;
@@ -126,7 +126,7 @@ int engine_init(struct Engine_Conf *conf)
   engine.event_queue = al_create_event_queue();
 
   mainconf = conf;
-  set_bg_color(BG_COLOR_DEFAULT);
+  set_bg_color(al_map_rgb(192, 192, 192));
 
   ALLEGRO_TRANSFORM trans;
   al_identity_transform(&trans);

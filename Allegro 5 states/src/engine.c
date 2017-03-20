@@ -131,7 +131,7 @@ int engine_init(struct Engine_Conf *conf)
   engine.timer = al_create_timer(1.0 / conf->framerate);
   engine.event_queue = al_create_event_queue();
 
-  set_bg_color(BG_COLOR_DEFAULT);
+  set_bg_color(al_map_rgb(192, 192, 192));
 
   srand(time(NULL));
 
