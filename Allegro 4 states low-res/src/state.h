@@ -14,7 +14,7 @@ struct State
   void (*_resume)(void);
 
   void (*_update)(void);
-  void (*_draw)(BITMAP *dest);
+  void (*_draw)(BITMAP *bmp);
 
   // Private
   int initd;
