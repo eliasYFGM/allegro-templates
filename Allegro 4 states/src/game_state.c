@@ -70,7 +70,7 @@ state_update(void)
   For drawing to the screen - huds, sprites, backgrounds, etc.
 *******************************************************************************/
 static void
-state_draw(BITMAP *dest)
+state_draw(BITMAP *bmp)
 {
 }
 
