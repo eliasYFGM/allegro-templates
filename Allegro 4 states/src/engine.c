@@ -20,7 +20,7 @@ engine;
 
 static int current_state, initd_count;
 
-static volatile unsigned int ticks;
+volatile unsigned int ticks;
 
 static void ticker(void)
 {
@@ -53,7 +53,6 @@ int engine_init(struct Engine_Conf *conf)
 {
   if (engine.initialized)
   {
-    puts("WARNING: Calling game_init() more than once");
     return 1;
   }
 
@@ -66,12 +65,9 @@ int engine_init(struct Engine_Conf *conf)
     install_mouse();
   }
 
-  if (conf->audio)
+  if (install_sound(DIGI_AUTODETECT, MIDI_NONE, 0))
   {
-    if (install_sound(DIGI_AUTODETECT, MIDI_NONE, 0))
-    {
-      puts("WARNING: Could not initialize audio");
-    }
+    puts("WARNING: Could not initialize audio");
   }
 
   set_color_depth(conf->depth);
@@ -108,7 +104,7 @@ int engine_init(struct Engine_Conf *conf)
 }
 
 // Game loop
-void engine_run(struct State *first)
+void engine_run(struct State *s)
 {
   int redraw = FALSE;
 
@@ -118,7 +114,7 @@ void engine_run(struct State *first)
     return;
   }
 
-  change_state(first, NULL);
+  change_state(s, NULL);
 
   // Main game timer
   LOCK_VARIABLE(ticks);
@@ -191,11 +187,11 @@ void engine_run(struct State *first)
   destroy_bitmap(engine.buffer);
 }
 
-void change_state(struct State *s, void *param)
+void change_state(struct State *s, void *p)
 {
   if (!s->initd)
   {
-    s->_init(param);
+    s->_init(p);
     s->initd = TRUE;
     engine.initd_states[initd_count++] = s;
   }
@@ -205,17 +201,20 @@ void change_state(struct State *s, void *param)
     engine.states[current_state]->_exit();
   }
 
-  s->_enter(param);
+  s->_enter(p);
   engine.states[current_state] = s;
+
+  // Reset tick counter
+  ticks = 0;
 }
 
-void push_state(struct State *s, void *param)
+void push_state(struct State *s, void *p)
 {
   if (current_state < (MAX_STATES - 1))
   {
     if (!s->initd)
     {
-      s->_init(param);
+      s->_init(p);
       s->initd = TRUE;
       engine.initd_states[initd_count++] = s;
     }
@@ -225,8 +224,11 @@ void push_state(struct State *s, void *param)
       engine.states[current_state]->_pause();
     }
 
-    s->_enter(param);
+    s->_enter(p);
     engine.states[++current_state] = s;
+
+    // Reset tick counter
+    ticks = 0;
   }
   else
   {

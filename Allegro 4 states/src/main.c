@@ -19,8 +19,6 @@ int main(int argc, char **argv)
     // Full-screen?
     FALSE,
     // Enable mouse?
-    FALSE,
-    // Enable audio?
     FALSE
   };
 

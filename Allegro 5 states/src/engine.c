@@ -74,19 +74,16 @@ int engine_init(struct Engine_Conf *conf)
     return 0;
   }
 
-  if (conf->audio)
+  if (al_install_audio())
   {
-    if (!al_install_audio())
-    {
-      puts("ERROR: Could not initialize audio...");
-      return 0;
-    }
-
     if (!al_init_acodec_addon())
     {
-      puts("ERROR: Could not initialize acodec addon...");
-      return 0;
+      puts("WARNING: Could not initialize audio codecs...");
     }
+  }
+  else
+  {
+    puts("WARNING: Could not initialize audio...");
   }
 
   // Add-ons
@@ -140,7 +137,7 @@ int engine_init(struct Engine_Conf *conf)
   return 1;
 }
 
-void engine_run(struct State *first)
+void engine_run(struct State *s)
 {
   int redraw = 0;
 
@@ -150,7 +147,7 @@ void engine_run(struct State *first)
     return;
   }
 
-  change_state(first, NULL);
+  change_state(s, NULL);
 
   // Generate display events
   al_register_event_source(engine.event_queue,
@@ -166,7 +163,6 @@ void engine_run(struct State *first)
   // Mouse events
   al_register_event_source(engine.event_queue, al_get_mouse_event_source());
 
-  al_start_timer(engine.timer);
   engine_active = TRUE;
 
   // Main game loop
@@ -224,7 +220,7 @@ void engine_run(struct State *first)
       redraw = TRUE;
     }
 
-    if (redraw && al_event_queue_is_empty(engine.event_queue))
+    if (redraw && al_is_event_queue_empty(engine.event_queue))
     {
       redraw = FALSE;
 
@@ -270,6 +266,8 @@ void engine_run(struct State *first)
 
 void change_state(struct State *s, void *param)
 {
+  al_stop_timer(engine.timer);
+
   if (!s->initd)
   {
     s->_init(param);
@@ -284,12 +282,16 @@ void change_state(struct State *s, void *param)
 
   s->_enter(param);
   engine.states[current_state] = s;
+
+  al_start_timer(engine.timer);
 }
 
 void push_state(struct State *s, void *param)
 {
   if (current_state < (MAX_STATES - 1))
   {
+    al_stop_timer(engine.timer);
+
     if (!s->initd)
     {
       s->_init(param);
@@ -304,6 +306,8 @@ void push_state(struct State *s, void *param)
 
     s->_enter(param);
     engine.states[++current_state] = s;
+
+    al_start_timer(engine.timer);
   }
   else
   {

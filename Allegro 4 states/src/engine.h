@@ -22,7 +22,6 @@ struct Engine_Conf
   int depth;
   int fullscreen;
   int mouse;
-  int audio;
 };
 
 // Defined in state.h
@@ -32,27 +31,27 @@ struct State;
   Main
 *******************************************************************************/
 
-// Initializes the engine with a configuration structure
+// Initializes the engine with a configuration structure.
 int engine_init(struct Engine_Conf *conf);
 
-// Run the engine with a starting state, until [engine_active = FALSE]
-void engine_run(struct State *first);
+// Run the engine with a starting state, until [engine_active = FALSE].
+void engine_run(struct State *s);
 
 /*******************************************************************************
   State manipulation
 *******************************************************************************/
 
-// change_state() - Changes the state directly to another
-// "param" can be anything passed as a pointer or NULL.
-// The parameter is then passed to state_init() and/or state_enter()
+// change_state() - Changes the state directly to another.
+// "param" is a parameter that will be passed to the new state. Use NULL to not
+// pass anything.
 void change_state(struct State *s, void *param);
 
-// push_state() - Add a new state to the stack (previous one is 'paused')
-// "param" can be anything passed as a pointer or NULL.
-// The parameter is then passed to state_init() and/or state_enter()
+// push_state() - Add a new state to the stack (previous one is 'paused').
+// "param" is a parameter that will be passed to the new state. Use NULL to not
+// pass anything.
 void push_state(struct State *s, void *param);
 
-// pop_state() - removes the last state added with push_state()
+// pop_state() - removes the last state added with push_state().
 void pop_state(void);
 
 /*******************************************************************************
@@ -65,14 +64,14 @@ void set_bg_color(int c);
   Globals
 *******************************************************************************/
 
-// Whether the engine is active (started or running)
-// set to FALSE to stop
+// Whether the engine is active (started or running),
+// set to FALSE to stop.
 extern volatile int engine_active;
 
-// FPS is updated each second
+// FPS is updated each second.
 extern volatile int fps;
 
-// Pointer to the original settings (in main.c)
+// Pointer to the original settings (in main.c).
 extern const struct Engine_Conf *mainconf;
 
 // Bounding box collision (taken from Alex4)

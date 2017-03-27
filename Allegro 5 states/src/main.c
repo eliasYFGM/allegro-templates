@@ -16,8 +16,6 @@ int main(int argc, char **argv)
     40,
     // Full-screen?
     FALSE,
-    // Enable audio?
-    FALSE,
     // Additional back-buffer? (black bars on full-screen)
     FALSE
   };
