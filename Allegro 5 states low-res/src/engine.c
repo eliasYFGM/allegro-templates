@@ -33,6 +33,9 @@ engine;
 
 static int current_state, initd_count;
 
+// Scale factor
+static int scale = 1;
+
 int engine_init(struct Engine_Conf *conf)
 {
   if (engine.initialized)
@@ -50,19 +53,16 @@ int engine_init(struct Engine_Conf *conf)
     return 0;
   }
 
-  if (conf->audio)
+  if (al_install_audio())
   {
-    if (!al_install_audio())
-    {
-      puts("ERROR: Could not initialize audio...");
-      return 0;
-    }
-
     if (!al_init_acodec_addon())
     {
-      puts("ERROR: Could not initialize acodec addon...");
-      return 0;
+      puts("WARNING: Could not initialize acodec addon...");
     }
+  }
+  else
+  {
+    puts("WARNING: Could not initialize audio...");
   }
 
   // Add-ons
@@ -75,42 +75,32 @@ int engine_init(struct Engine_Conf *conf)
   al_init_font_addon();
   al_init_primitives_addon();
 
-  // Find how much the game will be scaled when conf->scale <= 0
-  if (conf->scale <= 0)
+  // Find how much the game will be scaled
+  ALLEGRO_MONITOR_INFO info;
+  al_get_monitor_info(0, &info);
+
+  int monitor_w = info.x2 - info.x1;
+  int monitor_h = info.y2 - info.y1;
+
+  float new_monitor_w = (monitor_w - (monitor_w * SCREEN_RES_OVERRIDE));
+  float new_monitor_h = (monitor_h - (monitor_h * SCREEN_RES_OVERRIDE));
+
+  // Keep scaling until a suitable scale factor is found
+  while (1)
   {
-    ALLEGRO_MONITOR_INFO info;
-    al_get_monitor_info(0, &info);
+    int scale_w = conf->width * scale;
+    int scale_h = conf->height * scale;
 
-    int monitor_w = info.x2 - info.x1;
-    int monitor_h = info.y2 - info.y1;
-
-    float new_monitor_w = (monitor_w - (monitor_w * SCREEN_RES_OVERRIDE));
-    float new_monitor_h = (monitor_h - (monitor_h * SCREEN_RES_OVERRIDE));
-
-    conf->scale = 2;
-
-    // Keep scaling until a suitable scale factor is found
-    while (1)
+    if (scale_w > new_monitor_w || scale_h > new_monitor_h)
     {
-      int scale_w = conf->width * conf->scale;
-      int scale_h = conf->height * conf->scale;
-
-      if (scale_w > new_monitor_w || scale_h > new_monitor_h)
-      {
-        --conf->scale;
-        break;
-      }
-
-      ++conf->scale;
+      --scale;
+      break;
     }
-  }
-  else if (conf->scale < 2)
-  {
-    conf->scale = 2;
+
+    ++scale;
   }
 
-  engine.display = al_create_display(conf->width * conf->scale,
-    conf->height * conf->scale);
+  engine.display = al_create_display(conf->width * scale, conf->height * scale);
 
   if (!engine.display)
   {
@@ -130,7 +120,7 @@ int engine_init(struct Engine_Conf *conf)
 
   ALLEGRO_TRANSFORM trans;
   al_identity_transform(&trans);
-  al_scale_transform(&trans, conf->scale, conf->scale);
+  al_scale_transform(&trans, scale, scale);
   al_use_transform(&trans);
 
   srand(time(NULL));
@@ -140,7 +130,7 @@ int engine_init(struct Engine_Conf *conf)
   return 1;
 }
 
-void engine_run(struct State *first)
+void engine_run(struct State *s)
 {
   int redraw = FALSE;
 
@@ -150,7 +140,7 @@ void engine_run(struct State *first)
     return;
   }
 
-  change_state(first, NULL);
+  change_state(s, NULL);
 
   // Generate display events
   al_register_event_source(engine.event_queue,
@@ -163,7 +153,6 @@ void engine_run(struct State *first)
   // Keyboard events
   al_register_event_source(engine.event_queue, al_get_keyboard_event_source());
 
-  al_start_timer(engine.timer);
   engine_active = TRUE;
 
   // Main game loop
@@ -202,7 +191,7 @@ void engine_run(struct State *first)
       redraw = TRUE;
     }
 
-    if (redraw && al_event_queue_is_empty(engine.event_queue))
+    if (redraw && al_is_event_queue_empty(engine.event_queue))
     {
       redraw = FALSE;
 
@@ -229,6 +218,8 @@ void engine_run(struct State *first)
 
 void change_state(struct State *s, void *param)
 {
+  al_stop_timer(engine.timer);
+
   if (!s->initd)
   {
     s->_init(param);
@@ -243,12 +234,16 @@ void change_state(struct State *s, void *param)
 
   s->_enter(param);
   engine.states[current_state] = s;
+
+  al_start_timer(engine.timer);
 }
 
 void push_state(struct State *s, void *param)
 {
   if (current_state < (MAX_STATES - 1))
   {
+    al_stop_timer(engine.timer);
+
     if (!s->initd)
     {
       s->_init(param);
@@ -263,6 +258,8 @@ void push_state(struct State *s, void *param)
 
     s->_enter(param);
     engine.states[++current_state] = s;
+
+    al_start_timer(engine.timer);
   }
   else
   {

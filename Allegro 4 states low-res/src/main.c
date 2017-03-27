@@ -12,14 +12,10 @@ int main(int argc, char **argv)
     "Allegro application",
     // Resolution
     320, 200,
-    // Scaling factor (<= 0 for auto)
-    0,
     // Frame-rate (or FPS)
     40,
     // Color depth (8, 15, 16, 24, 32)
-    8,
-    // Enable audio module?
-    FALSE
+    8
   };
 
   if (engine_init(&conf))

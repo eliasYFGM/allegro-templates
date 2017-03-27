@@ -5,9 +5,8 @@
 #include "engine.h"
 #include "state.h"
 
+// Used to simulate a slightly lower monitor resolution
 #define SCREEN_RES_OVERRIDE   0.1
-// Used to simulate a slightly lower screen resolution
-// E.g. without the panels and stuff
 
 const struct Engine_Conf *mainconf;
 
@@ -49,6 +48,9 @@ static void close_button_handler(void)
 }
 END_OF_FUNCTION(close_button_handler)
 
+// Amount of scaling
+static int scale = 1;
+
 // Main game initialization
 int engine_init(struct Engine_Conf *conf)
 {
@@ -62,48 +64,36 @@ int engine_init(struct Engine_Conf *conf)
   install_keyboard();
   install_timer();
 
-  if (conf->audio)
+  if (install_sound(DIGI_AUTODETECT, MIDI_NONE, 0))
   {
-    if (install_sound(DIGI_AUTODETECT, MIDI_NONE, 0))
-    {
-      puts("WARNING: Could not initialize audio");
-    }
+    puts("WARNING: Could not initialize audio");
   }
 
   set_color_depth(conf->depth);
 
-  if (conf->scale <= 0)
+  int w, h;
+  get_desktop_resolution(&w, &h);
+
+  float new_w = w - (w * SCREEN_RES_OVERRIDE);
+  float new_h = h - (h * SCREEN_RES_OVERRIDE);
+
+  // Keep scaling until a suitable scale factor is found
+  while (1)
   {
-    int w, h;
-    get_desktop_resolution(&w, &h);
+    int scale_w = conf->width * scale;
+    int scale_h = conf->height * scale;
 
-    float new_w = w - (w * SCREEN_RES_OVERRIDE);
-    float new_h = h - (h * SCREEN_RES_OVERRIDE);
-
-    conf->scale = 2;
-
-    // Keep scaling until a suitable scale factor is found
-    while (1)
+    if (scale_w > new_w || scale_h > new_h)
     {
-      int scale_w = conf->width * conf->scale;
-      int scale_h = conf->height * conf->scale;
-
-      if (scale_w > new_w || scale_h > new_h)
-      {
-        --conf->scale;
-        break;
-      }
-
-      ++conf->scale;
+      --scale;
+      break;
     }
-  }
-  else if (conf->scale < 2)
-  {
-    conf->scale = 2;
+
+    ++scale;
   }
 
-  if (set_gfx_mode(GFX_AUTODETECT_WINDOWED, conf->width * conf->scale,
-    conf->height * conf->scale, 0, 0))
+  if (set_gfx_mode(GFX_AUTODETECT_WINDOWED, conf->width * scale,
+    conf->height * scale, 0, 0))
   {
     set_gfx_mode(GFX_TEXT, 0, 0, 0, 0);
     allegro_message("ERROR: Could not create a window:\n%s", allegro_error);
@@ -127,7 +117,7 @@ int engine_init(struct Engine_Conf *conf)
 }
 
 // Game loop
-void engine_run(struct State *first)
+void engine_run(struct State *s)
 {
   int redraw = FALSE;
 
@@ -137,7 +127,7 @@ void engine_run(struct State *first)
     return;
   }
 
-  change_state(first, NULL);
+  change_state(s, NULL);
 
   // Main game timer
   LOCK_VARIABLE(ticks);
@@ -215,6 +205,9 @@ void change_state(struct State *s, void *param)
 
   s->_enter(param);
   engine.states[current_state] = s;
+
+  // Reset tick counter
+  ticks = 0;
 }
 
 void push_state(struct State *s, void *param)
@@ -235,6 +228,9 @@ void push_state(struct State *s, void *param)
 
     s->_enter(param);
     engine.states[++current_state] = s;
+
+    // Reset tick counter
+    ticks = 0;
   }
   else
   {

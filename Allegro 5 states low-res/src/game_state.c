@@ -3,7 +3,7 @@
 #include "engine.h"
 
 /*******************************************************************************
-  state_init(param)
+  state_init(param) - State initialization
   Executed ONLY ONCE by: change_state(), push_state()
 *******************************************************************************/
 static void
@@ -12,7 +12,7 @@ state_init(void *param)
 }
 
 /*******************************************************************************
-  state_end()
+  state_end() - State "shutdown"
   Executed when [engine_active = FALSE]
 *******************************************************************************/
 static void

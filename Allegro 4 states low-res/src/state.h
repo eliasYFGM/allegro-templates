@@ -16,7 +16,8 @@ struct State
   void (*_update)(void);
   void (*_draw)(BITMAP *bmp);
 
-  // Private
+  // Private and used only by engine.c
+  // Indicates if the state was already initialized.
   int initd;
 };
 
