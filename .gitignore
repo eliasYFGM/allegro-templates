@@ -1,15 +1,11 @@
-al4/Debug/
-al4/Release*/
-al4c/Debug/
-al4c/Release*/
-al4cr/Debug/
-al4cr/Release*/
-al5/Debug/
-al5/Release*/
-al5c/Debug/
-al5c/Release*/
-al5cr/Debug/
-al5cr/Release*/
+Allegro 4 states/Debug/
+Allegro 4 states/Release*/
+Allegro 4 states low-res/Debug/
+Allegro 4 states low-res/Release*/
+Allegro 5 states/Debug/
+Allegro 5 states/Release*/
+Allegro 5 states low-res/Debug/
+Allegro 5 states low-res/Release*/
 *.depend
 *.layout
 *.exe
