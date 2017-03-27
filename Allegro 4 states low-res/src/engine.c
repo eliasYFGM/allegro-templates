@@ -207,7 +207,7 @@ void change_state(struct State *s, void *param)
   engine.states[current_state] = s;
 
   // Reset tick counter
-  ticks = 0;
+  ticks = 1;
 }
 
 void push_state(struct State *s, void *param)
@@ -230,7 +230,7 @@ void push_state(struct State *s, void *param)
     engine.states[++current_state] = s;
 
     // Reset tick counter
-    ticks = 0;
+    ticks = 1;
   }
   else
   {

@@ -187,11 +187,11 @@ void engine_run(struct State *s)
   destroy_bitmap(engine.buffer);
 }
 
-void change_state(struct State *s, void *p)
+void change_state(struct State *s, void *param)
 {
   if (!s->initd)
   {
-    s->_init(p);
+    s->_init(param);
     s->initd = TRUE;
     engine.initd_states[initd_count++] = s;
   }
@@ -201,20 +201,20 @@ void change_state(struct State *s, void *p)
     engine.states[current_state]->_exit();
   }
 
-  s->_enter(p);
+  s->_enter(param);
   engine.states[current_state] = s;
 
   // Reset tick counter
-  ticks = 0;
+  ticks = 1;
 }
 
-void push_state(struct State *s, void *p)
+void push_state(struct State *s, void *param)
 {
   if (current_state < (MAX_STATES - 1))
   {
     if (!s->initd)
     {
-      s->_init(p);
+      s->_init(param);
       s->initd = TRUE;
       engine.initd_states[initd_count++] = s;
     }
@@ -224,11 +224,11 @@ void push_state(struct State *s, void *p)
       engine.states[current_state]->_pause();
     }
 
-    s->_enter(p);
+    s->_enter(param);
     engine.states[++current_state] = s;
 
     // Reset tick counter
-    ticks = 0;
+    ticks = 1;
   }
   else
   {
