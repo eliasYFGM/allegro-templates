@@ -25,8 +25,7 @@ static struct // Engine variables
   int initialized;
   struct State *states[MAX_STATES];
   struct State *initd_states[MAX_STATES * 2];
-}
-engine;
+} engine;
 
 static int current_state, initd_count;
 

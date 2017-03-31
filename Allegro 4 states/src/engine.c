@@ -15,8 +15,7 @@ static struct // Engine variables
   int bg_color;
   struct State *states[MAX_STATES];
   struct State *initd_states[MAX_STATES * 2];
-}
-engine;
+} engine;
 
 static int current_state, initd_count;
 
@@ -26,7 +25,7 @@ static void ticker(void)
 {
   ++ticks;
 }
-END_OF_FUNCTION(ticker)
+END_OF_FUNCTION(ticker);
 
 volatile int fps;
 static volatile int frame_counter;
@@ -36,7 +35,7 @@ static void update_fps(void)
   fps = frame_counter;
   frame_counter = 0;
 }
-END_OF_FUNCTION(update_fps)
+END_OF_FUNCTION(update_fps);
 
 volatile int engine_active;
 
@@ -45,7 +44,7 @@ static void close_button_handler(void)
 {
   engine_active = 0;
 }
-END_OF_FUNCTION(close_button_handler)
+END_OF_FUNCTION(close_button_handler);
 #endif // ALLEGRO_DOS
 
 // Main game initialization
@@ -81,7 +80,7 @@ int engine_init(struct Engine_Conf *conf)
 #endif
   {
     set_gfx_mode(GFX_TEXT, 0, 0, 0, 0);
-    allegro_message("ERROR: Could not init graphics mode:\n%s", allegro_error);
+    allegro_message("ERROR: Could not init graphics:\n%s", allegro_error);
     return 0;
   }
 
