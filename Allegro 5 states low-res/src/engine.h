@@ -46,12 +46,12 @@ void engine_run(struct State *s);
 *******************************************************************************/
 
 // change_state() - Changes the state directly to another.
-// "param" is a parameter that will be passed to the new state. Use NULL to not
+// "param" is a pointer that can be passed to the new state. Use NULL to not
 // pass anything.
 void change_state(struct State *s, void *param);
 
 // push_state() - Add a new state to the stack (previous one is 'paused').
-// "param" is a parameter that will be passed to the new state. Use NULL to not
+// "param" is a pointer that can be passed to the new state. Use NULL to not
 // pass anything.
 void push_state(struct State *s, void *param);
 

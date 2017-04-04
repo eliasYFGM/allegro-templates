@@ -158,10 +158,6 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/engine.h" />
-		<Unit filename="src/game_state.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="src/game_state.h" />
 		<Unit filename="src/main.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -174,6 +170,10 @@
 			<Option target="Release-mingw-x86_64-static" />
 		</Unit>
 		<Unit filename="src/state.h" />
+		<Unit filename="src/state_game.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/state_game.h" />
 		<Extensions>
 			<envvars />
 			<code_completion />

@@ -1,5 +1,5 @@
-#include <allegro.h>
-#include "game_state.h"
+#include <allegro5/allegro.h>
+#include "state_game.h"
 #include "engine.h"
 
 /*******************************************************************************
@@ -57,6 +57,15 @@ state_resume(void)
 }
 
 /*******************************************************************************
+  state_events(ev)
+  For event handling - keyboard, mouse, joystick, etc.
+*******************************************************************************/
+static void
+state_events(ALLEGRO_EVENT *ev)
+{
+}
+
+/*******************************************************************************
   state_update()
   Runs every step/frame - for game logic
 *******************************************************************************/
@@ -70,7 +79,7 @@ state_update(void)
   For drawing to the screen - huds, sprites, backgrounds, etc.
 *******************************************************************************/
 static void
-state_draw(BITMAP *bmp)
+state_draw(void)
 {
 }
 
@@ -78,7 +87,7 @@ state_draw(BITMAP *bmp)
   Definition of the state function
 *******************************************************************************/
 struct State*
-Game_State(void)
+State_Game(void)
 {
   static struct State state =
   {
@@ -88,6 +97,7 @@ Game_State(void)
     state_exit,
     state_pause,
     state_resume,
+    state_events,
     state_update,
     state_draw
   };

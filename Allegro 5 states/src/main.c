@@ -1,5 +1,5 @@
 #include "engine.h"
-#include "game_state.h"
+#include "state_game.h"
 
 int main(int argc, char **argv)
 {
@@ -23,7 +23,7 @@ int main(int argc, char **argv)
   if (engine_init(&conf))
   {
     // Run with a starting state
-    engine_run(GAME_STATE);
+    engine_run(STATE_GAME);
   }
 
   return 0;
