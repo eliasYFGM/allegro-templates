@@ -15,15 +15,21 @@ static struct // Game variables
   BITMAP *buffer;
   int initialized;
   int bg_color;
-  struct State *states[MAX_STATES];
-  struct State *initd_states[MAX_STATES * 2];
+
+  // Stack of states
+  struct State *states[MAX_STATES * 2];
+
+  // Initialized states
+  struct State *initd_states[MAX_STATES];
+
 } engine;
 
 static int current_state, initd_count;
 
 static volatile unsigned int ticks;
 
-static void ticker(void)
+static void
+ticker(void)
 {
   ++ticks;
 }
@@ -32,7 +38,8 @@ END_OF_FUNCTION(ticker);
 volatile int fps;
 static volatile int frame_counter;
 
-static void update_fps(void)
+static void
+update_fps(void)
 {
   fps = frame_counter;
   frame_counter = 0;
@@ -41,7 +48,8 @@ END_OF_FUNCTION(update_fps);
 
 volatile int engine_active;
 
-static void close_button_handler(void)
+static void
+close_button_handler(void)
 {
   engine_active = 0;
 }
@@ -192,9 +200,17 @@ void change_state(struct State *s, void *param)
 {
   if (!s->initd)
   {
-    s->_init(param);
-    s->initd = TRUE;
-    engine.initd_states[initd_count++] = s;
+    if (initd_count < MAX_STATES - 1)
+    {
+      s->_init(param);
+      s->initd = TRUE;
+      engine.initd_states[initd_count++] = s;
+    }
+    else
+    {
+      puts("WARNING: Cannot initialize another state (reached MAX_STATES)");
+      return;
+    }
   }
 
   if (engine.states[current_state] != NULL)
@@ -211,13 +227,21 @@ void change_state(struct State *s, void *param)
 
 void push_state(struct State *s, void *param)
 {
-  if (current_state < (MAX_STATES - 1))
+  if (current_state < (MAX_STATES * 2) - 1)
   {
     if (!s->initd)
     {
-      s->_init(param);
-      s->initd = TRUE;
-      engine.initd_states[initd_count++] = s;
+      if (initd_count < MAX_STATES - 1)
+      {
+        s->_init(param);
+        s->initd = TRUE;
+        engine.initd_states[initd_count++] = s;
+      }
+      else
+      {
+        puts("WARNING: Cannot initialize another state (reached MAX_STATES)");
+        return;
+      }
     }
 
     if (engine.states[current_state] != NULL)
@@ -233,7 +257,7 @@ void push_state(struct State *s, void *param)
   }
   else
   {
-    puts("WARNING: Can't add new state (current_state = MAX_STATES)");
+    puts("WARNING: Couldn't add a new state (state stack is full)");
   }
 }
 

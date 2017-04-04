@@ -23,14 +23,20 @@ static struct // Engine variables
   ALLEGRO_EVENT_QUEUE *event_queue;
   ALLEGRO_COLOR bg_color;
   int initialized;
-  struct State *states[MAX_STATES];
-  struct State *initd_states[MAX_STATES * 2];
+
+  // Stack of states
+  struct State *states[MAX_STATES * 2];
+
+  // Initialized states
+  struct State *initd_states[MAX_STATES];
+
 } engine;
 
 static int current_state, initd_count;
 
 // Updates the aspect ratio when going full-screen or windowed
-static void aspect_ratio_transform(void)
+static void
+aspect_ratio_transform(void)
 {
   int window_w = al_get_display_width(engine.display);
   int window_h = al_get_display_height(engine.display);
@@ -269,9 +275,18 @@ void change_state(struct State *s, void *param)
 
   if (!s->initd)
   {
-    s->_init(param);
-    s->initd = TRUE;
-    engine.initd_states[initd_count++] = s;
+    if (initd_count < MAX_STATES - 1)
+    {
+      s->_init(param);
+      s->initd = TRUE;
+      engine.initd_states[initd_count++] = s;
+    }
+    else
+    {
+      puts("WARNING: Cannot initialize another state (reached MAX_STATES)");
+      al_start_timer(engine.timer);
+      return;
+    }
   }
 
   if (engine.states[current_state] != NULL)
@@ -287,15 +302,24 @@ void change_state(struct State *s, void *param)
 
 void push_state(struct State *s, void *param)
 {
-  if (current_state < (MAX_STATES - 1))
+  if (current_state < (MAX_STATES * 2) - 1)
   {
     al_stop_timer(engine.timer);
 
     if (!s->initd)
     {
-      s->_init(param);
-      s->initd = TRUE;
-      engine.initd_states[initd_count++] = s;
+      if (initd_count < MAX_STATES - 1)
+      {
+        s->_init(param);
+        s->initd = TRUE;
+        engine.initd_states[initd_count++] = s;
+      }
+      else
+      {
+        puts("WARNING: Cannot initialize another state (reached MAX_STATES)");
+        al_start_timer(engine.timer);
+        return;
+      }
     }
 
     if (engine.states[current_state] != NULL)
@@ -310,7 +334,7 @@ void push_state(struct State *s, void *param)
   }
   else
   {
-    puts("WARNING: Can't add new state (current_state = MAX_STATES)");
+    puts("WARNING: Couldn't add a new state (state stack is full)");
   }
 }
 
