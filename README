@@ -1,0 +1,19 @@
+This is a collection of templates for making games using the Allegro library, meant for use as "User templates" inside Code::Blocks IDE.
+
+For basic installation on Linux, just git-clone to the folder that is located in ~/.config/.codeblocks/UserTemplates (or ~/.codeblocks/UserTemplates if using an older version).
+
+On Windows, the folder is located at %APPDATA%\codeblocks\UserTemplates.
+
+The "low-res" templates are meant for lower-res games (like 320x200). They will be upscaled to fit the monitor resolution.
+
+Features
+========
+
+* Fixed-rate and automatic frame skipping.
+* Checks return value for each module initialization.
+* Game state implementation with a stack.
+* Separate state_init() and state_end() functions for resource loading and freeing respectively.
+* A default "STATE_GAME" already created, as an example.
+* Toggle between full-screen and window mode with F4 key (Allegro 5).
+* Supports Linux, Windows and DOS (Allegro 4) as targets.
+* DOS target needs a DJGPP cross-compiler.
