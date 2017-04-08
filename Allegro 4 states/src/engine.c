@@ -66,11 +66,7 @@ int engine_init(struct Engine_Conf *conf)
   allegro_init();
   install_keyboard();
   install_timer();
-
-  if (conf->mouse)
-  {
-    install_mouse();
-  }
+  install_mouse();
 
   if (install_sound(DIGI_AUTODETECT, MIDI_NONE, 0))
   {
@@ -99,7 +95,7 @@ int engine_init(struct Engine_Conf *conf)
 
   engine.buffer = create_bitmap(SCREEN_W, SCREEN_H);
   engine.bg_color = makecol(192, 192, 192);
-  engine.cursor = conf->mouse;
+  engine.cursor = TRUE;
 
   mainconf = conf;
 
@@ -163,14 +159,14 @@ void engine_run(struct State *s)
 
         engine.states[current_state]->_draw(engine.buffer);
 
-        if (mainconf->mouse && engine.cursor)
+        if (engine.cursor)
         {
           show_mouse(engine.buffer);
         }
 
         blit(engine.buffer, screen, 0, 0, 0, 0, SCREEN_W, SCREEN_H);
 
-        if (mainconf->mouse && engine.cursor)
+        if (engine.cursor)
         {
           show_mouse(NULL);
         }

@@ -21,7 +21,6 @@ struct Engine_Conf
   int framerate;
   int depth;
   int fullscreen;
-  int mouse;
 };
 
 // Defined in state.h

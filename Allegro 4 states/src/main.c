@@ -17,8 +17,6 @@ int main(int argc, char **argv)
     // Color depth (8, 15, 16, 24, 32)
     8,
     // Full-screen?
-    FALSE,
-    // Enable mouse?
     FALSE
   };
 
