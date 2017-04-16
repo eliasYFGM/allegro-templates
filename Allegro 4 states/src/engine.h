@@ -1,26 +1,26 @@
 #ifndef ENGINE_H_INCLUDED
 #define ENGINE_H_INCLUDED
 
-#define C_BLACK   makecol(0, 0, 0)
-#define C_WHITE   makecol(255, 255, 255)
-#define C_TRANS   makecol(255, 0, 255)
+#define C_BLACK		makecol(0, 0, 0)
+#define C_WHITE		makecol(255, 255, 255)
+#define C_TRANS		makecol(255, 0, 255)
 
 // Max states to allocate
-#define MAX_STATES  8
+#define MAX_STATES	8
 
 struct Engine_Conf
 {
-  // Argument list
-  int argc;
-  char **argv;
+	// Argument list
+	int argc;
+	char **argv;
 
-  // Other needed parameters
-  char *title;
-  int width;
-  int height;
-  int framerate;
-  int depth;
-  int fullscreen;
+	// Other needed parameters
+	char *title;
+	int width;
+	int height;
+	int framerate;
+	int depth;
+	int fullscreen;
 };
 
 // Defined in state.h

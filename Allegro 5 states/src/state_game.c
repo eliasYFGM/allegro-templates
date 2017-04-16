@@ -89,18 +89,18 @@ state_draw(void)
 struct State*
 State_Game(void)
 {
-  static struct State state =
-  {
-    state_init,
-    state_end,
-    state_enter,
-    state_exit,
-    state_pause,
-    state_resume,
-    state_events,
-    state_update,
-    state_draw
-  };
+	static struct State state =
+	{
+		state_init,
+		state_end,
+		state_enter,
+		state_exit,
+		state_pause,
+		state_resume,
+		state_events,
+		state_update,
+		state_draw
+	};
 
-  return &state;
+	return &state;
 }
