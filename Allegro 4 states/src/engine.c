@@ -5,289 +5,286 @@
 #include "engine.h"
 #include "state.h"
 
-const struct Engine_Conf *mainconf;
+const struct Engine_Conf *MAINCONF;
 
 static struct // Engine variables
-{
-	BITMAP *buffer;
-	int initialized;
-	int cursor;
-	int bg_color;
+  {
+    BITMAP *buffer;
+    int initialized;
+    int cursor;
+    int bg_color;
 
-	// Stack of states
-	struct State *states[MAX_STATES * 2];
+    // Stack of states
+    struct State *states[MAX_STATES * 2];
 
-	// Initialized states
-	struct State *initd_states[MAX_STATES];
-}
+    // Initialized states
+    struct State *loaded_states[MAX_STATES];
+  }
 engine;
 
-static int current_state, initd_count;
+static int current_state, loaded_count;
 
-volatile unsigned int ticks;
-
-static void
-ticker(void)
+static volatile unsigned int ticks;
+static void ticker(void)
 {
-	++ticks;
+  ++ticks;
 }
 END_OF_FUNCTION(ticker);
 
 volatile int fps;
 static volatile int frame_counter;
-
-static void
-update_fps(void)
+static void update_fps(void)
 {
-	fps = frame_counter;
-	frame_counter = 0;
+  fps = frame_counter;
+  frame_counter = 0;
 }
 END_OF_FUNCTION(update_fps);
 
-volatile int engine_active;
-
-#ifndef ALLEGRO_DOS
+static volatile int engine_active;
 static void
 close_button_handler(void)
 {
-	engine_active = 0;
+  engine_active = FALSE;
 }
 END_OF_FUNCTION(close_button_handler);
-#endif // ALLEGRO_DOS
 
 // Main game initialization
 int engine_init(struct Engine_Conf *conf)
 {
-	if (engine.initialized)
-	{
-		return 1;
-	}
+  if (engine.initialized)
+    {
+      return 1;
+    }
 
-	allegro_init();
-	install_keyboard();
-	install_timer();
-	install_mouse();
+  allegro_init();
+  install_keyboard();
+  install_timer();
+  install_mouse();
 
-	if (install_sound(DIGI_AUTODETECT, MIDI_NONE, 0))
-	{
-		puts("engine_init(): Could not initialize audio");
-	}
+  if (install_sound(DIGI_AUTODETECT, MIDI_NONE, 0))
+    {
+      puts("engine_init(): Failed to initialize audio");
+    }
 
-	set_color_depth(conf->depth);
+  set_color_depth(conf->depth);
 
 #ifdef ALLEGRO_DOS
-	if (set_gfx_mode(GFX_AUTODETECT, conf->width, conf->height, 0, 0))
+  if (set_gfx_mode(GFX_AUTODETECT, conf->width, conf->height, 0, 0))
 #else
-	if (set_gfx_mode(conf->fullscreen ? GFX_AUTODETECT
-		: GFX_AUTODETECT_WINDOWED, conf->width, conf->height, 0, 0))
+  if (set_gfx_mode(conf->fullscreen ? GFX_AUTODETECT
+                   : GFX_AUTODETECT_WINDOWED, conf->width, conf->height, 0, 0))
 #endif
-	{
-		set_gfx_mode(GFX_TEXT, 0, 0, 0, 0);
-		allegro_message("engine_init(): Could not init graphics\n\n%s",
-			allegro_error);
-		return 0;
-	}
+    {
+      set_gfx_mode(GFX_TEXT, 0, 0, 0, 0);
+      allegro_message("engine_init(): Failed to initialize graphics\n%s",
+                      allegro_error);
+      return 0;
+    }
 
 #ifndef ALLEGRO_DOS
-	set_window_title(conf->title);
-	set_close_button_callback(close_button_handler);
+  set_window_title(conf->title);
+  set_close_button_callback(close_button_handler);
 #endif // ALLEGRO_DOS
 
-	engine.buffer = create_bitmap(SCREEN_W, SCREEN_H);
-	engine.bg_color = makecol(192, 192, 192);
-	engine.cursor = TRUE;
+  engine.buffer = create_bitmap(SCREEN_W, SCREEN_H);
+  engine.bg_color = makecol(192, 192, 192);
+  engine.cursor = TRUE;
 
-	mainconf = conf;
+  MAINCONF = conf;
 
-	srand(time(NULL));
+  srand(time(NULL));
 
-	engine.initialized = TRUE;
+  engine.initialized = TRUE;
 
-	return 1;
+  return 1;
 }
 
 // Game loop
 void engine_run(struct State *s)
 {
-	int redraw = FALSE;
+  int redraw = FALSE;
 
-	if (engine_active)
-	{
-		return;
-	}
+  if (engine_active)
+    {
+      return;
+    }
 
-	change_state(s, NULL);
+  change_state(s, NULL);
 
-	// Main game timer
-	LOCK_VARIABLE(ticks);
-	LOCK_FUNCTION(ticker);
-	install_int_ex(ticker, BPS_TO_TIMER(mainconf->framerate));
+  // Main game timer
+  LOCK_VARIABLE(ticks);
+  LOCK_FUNCTION(ticker);
+  install_int_ex(ticker, BPS_TO_TIMER(MAINCONF->framerate));
 
-	// FPS timer
-	LOCK_VARIABLE(fps);
-	LOCK_VARIABLE(frame_counter);
-	LOCK_FUNCTION(update_fps);
-	install_int(update_fps, 1000);
+  // FPS timer
+  LOCK_VARIABLE(fps);
+  LOCK_VARIABLE(frame_counter);
+  LOCK_FUNCTION(update_fps);
+  install_int(update_fps, 1000);
 
-	engine_active = TRUE;
+  engine_active = TRUE;
 
-	// Game loop
-	while (engine_active)
-	{
-		while (ticks > 0)
-		{
-			--ticks;
+  // Game loop
+  while (engine_active)
+    {
+      while (ticks > 0)
+        {
+          --ticks;
 
-			if (key[KEY_ALT] && key[KEY_F4])
-			{
-				engine_active = FALSE;
-				break;
-			}
+          if (key[KEY_ALT] && key[KEY_F4])
+            {
+              game_over();
+              break;
+            }
 
-			engine.states[current_state]->_update();
+          engine.states[current_state]->_update();
 
-			redraw = TRUE;
-		}
+          redraw = TRUE;
+        }
 
-		if (engine_active && redraw)
-		{
-			redraw = FALSE;
+      if (engine_active && redraw)
+        {
+          redraw = FALSE;
 
-			clear_to_color(engine.buffer, engine.bg_color);
+          clear_to_color(engine.buffer, engine.bg_color);
 
-			engine.states[current_state]->_draw(engine.buffer);
+          engine.states[current_state]->_draw(engine.buffer);
 
-			if (engine.cursor)
-			{
-				show_mouse(engine.buffer);
-			}
+          if (engine.cursor)
+            {
+              show_mouse(engine.buffer);
+            }
 
-			blit(engine.buffer, screen, 0, 0, 0, 0,
-				SCREEN_W, SCREEN_H);
+          blit(engine.buffer, screen, 0, 0, 0, 0, SCREEN_W, SCREEN_H);
 
-			if (engine.cursor)
-			{
-				show_mouse(NULL);
-			}
+          if (engine.cursor)
+            {
+              show_mouse(NULL);
+            }
 
-			++frame_counter;
-		}
+          ++frame_counter;
+        }
 
 #ifndef ALLEGRO_DOS
-		rest(1);
+      rest(1);
 #endif // ALLEGRO_DOS
-	}
+    }
 
-	while (initd_count > 0)
-	{
-		engine.initd_states[--initd_count]->_end();
-	}
+  while (loaded_count > 0)
+    {
+      engine.loaded_states[--loaded_count]->_free();
+    }
 
-	destroy_bitmap(engine.buffer);
+  destroy_bitmap(engine.buffer);
 }
 
 static int can_change = TRUE;
 
 void change_state(struct State *s, void *param)
 {
-	if (!can_change)
-	{
-		puts("change_state(): A thread is already running...");
-		return;
-	}
+  if (!can_change)
+    {
+      puts("change_state(): A thread is already running...");
+      return;
+    }
 
-	can_change = FALSE;
+  can_change = FALSE;
 
-	if (!s->initd)
-	{
-		if (initd_count < MAX_STATES - 1)
-		{
-			s->_init(param);
-			s->initd = TRUE;
-			engine.initd_states[initd_count++] = s;
-		}
-		else
-		{
-			puts("change_state(): Reached MAX_STATES");
-			return;
-		}
-	}
+  if (!s->loaded)
+    {
+      if (loaded_count < MAX_STATES - 1)
+        {
+          s->_load(param);
+          s->loaded = TRUE;
+          engine.loaded_states[loaded_count++] = s;
+        }
+      else
+        {
+          puts("change_state(): Reached MAX_STATES");
+          return;
+        }
+    }
 
-	if (engine.states[current_state] != NULL)
-	{
-		engine.states[current_state]->_exit();
-	}
+  if (engine.states[current_state] != NULL)
+    {
+      engine.states[current_state]->_exit();
+    }
 
-	s->_enter(param);
-	engine.states[current_state] = s;
+  s->_enter(param);
+  engine.states[current_state] = s;
 
-	// Reset tick counter
-	ticks = 1;
+  // Reset tick counter
+  ticks = 1;
 
-	can_change = TRUE;
+  can_change = TRUE;
 }
 
 void push_state(struct State *s, void *param)
 {
-	if (current_state < (MAX_STATES * 2) - 1)
-	{
-		if (!can_change)
-		{
-			puts("push_state(): A thread is already running...");
-			return;
-		}
+  if (current_state < (MAX_STATES * 2) - 1)
+    {
+      if (!can_change)
+        {
+          puts("push_state(): A thread is already running...");
+          return;
+        }
 
-		can_change = FALSE;
+      can_change = FALSE;
 
-		if (!s->initd)
-		{
-			if (initd_count < MAX_STATES - 1)
-			{
-				s->_init(param);
-				s->initd = TRUE;
-				engine.initd_states[initd_count++] = s;
-			}
-			else
-			{
-				puts("push_state(): Reached MAX_STATES");
-				return;
-			}
-		}
+      if (!s->loaded)
+        {
+          if (loaded_count < MAX_STATES - 1)
+            {
+              s->_load(param);
+              s->loaded = TRUE;
+              engine.loaded_states[loaded_count++] = s;
+            }
+          else
+            {
+              puts("push_state(): Reached MAX_STATES");
+              return;
+            }
+        }
 
-		if (engine.states[current_state] != NULL)
-		{
-			engine.states[current_state]->_pause();
-		}
+      if (engine.states[current_state] != NULL)
+        {
+          engine.states[current_state]->_pause();
+        }
 
-		s->_enter(param);
-		engine.states[++current_state] = s;
+      s->_enter(param);
+      engine.states[++current_state] = s;
 
-		// Reset tick counter
-		ticks = 1;
+      // Reset tick counter
+      ticks = 1;
 
-		can_change = TRUE;
-	}
-	else
-	{
-		puts("push_state(): State stack is full");
-	}
+      can_change = TRUE;
+    }
+  else
+    {
+      puts("push_state(): State stack is full");
+    }
 }
 
 void pop_state(void)
 {
-	if (current_state > 0)
-	{
-		engine.states[current_state]->_exit();
-		engine.states[--current_state]->_resume();
-	}
+  if (current_state > 0)
+    {
+      engine.states[current_state]->_exit();
+      engine.states[--current_state]->_resume();
+    }
+}
+
+void game_over(void)
+{
+  engine_active = FALSE;
 }
 
 void enable_cursor(int enable)
 {
-	engine.cursor = enable;
+  engine.cursor = enable;
 }
 
 void set_bg_color(int c)
 {
-	engine.bg_color = c;
+  engine.bg_color = c;
 }

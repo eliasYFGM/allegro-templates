@@ -16,19 +16,19 @@
 #endif
 
 struct Engine_Conf
-{
-	// Argument list
-	int argc;
-	char **argv;
+  {
+    // Argument list
+    int argc;
+    char **argv;
 
-	// Other needed parameters
-	char *title;
-	int width;
-	int height;
-	int framerate;
-	int fullscreen;
-	int buffer;
-};
+    // Other needed parameters
+    char *title;
+    int width;
+    int height;
+    int framerate;
+    int fullscreen;
+    int buffer;
+  };
 
 // Defined in state.h
 struct State;
@@ -63,15 +63,12 @@ void pop_state(void);
 /*******************************************************************************
   Misc functions
 *******************************************************************************/
+void game_over(void);
 void set_bg_color(ALLEGRO_COLOR c);
 
 /*******************************************************************************
   Globals
 *******************************************************************************/
-
-// Whether the engine is active (started or running),
-// set to FALSE to stop.
-extern int engine_active;
 
 // Default Allegro font
 extern ALLEGRO_FONT *font;
@@ -80,10 +77,10 @@ extern ALLEGRO_FONT *font;
 extern int keys[ALLEGRO_KEY_MAX];
 
 // Pointer to the original settings (in main.c).
-extern const struct Engine_Conf *mainconf;
+extern const struct Engine_Conf *MAINCONF;
 
-#define GAME_W		mainconf->width
-#define GAME_H		mainconf->height
+#define GAME_W		MAINCONF->width
+#define GAME_H		MAINCONF->height
 
 // Simple bounding box collision checking (taken from Alex4 source)
 #define check_bb_collision(x1,y1,w1,h1,x2,y2,w2,h2) \

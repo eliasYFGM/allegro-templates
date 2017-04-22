@@ -9,19 +9,19 @@
 #define MAX_STATES	8
 
 struct Engine_Conf
-{
-	// Argument list
-	int argc;
-	char **argv;
+  {
+    // Argument list
+    int argc;
+    char **argv;
 
-	// Other needed parameters
-	char *title;
-	int width;
-	int height;
-	int framerate;
-	int depth;
-	int fullscreen;
-};
+    // Other needed parameters
+    char *title;
+    int width;
+    int height;
+    int framerate;
+    int depth;
+    int fullscreen;
+  };
 
 // Defined in state.h
 struct State;
@@ -56,6 +56,7 @@ void pop_state(void);
 /*******************************************************************************
   Misc functions
 *******************************************************************************/
+void game_over(void);
 void enable_cursor(int enable);
 void set_bg_color(int c);
 
@@ -63,15 +64,11 @@ void set_bg_color(int c);
   Globals
 *******************************************************************************/
 
-// Whether the engine is active (started or running),
-// set to FALSE to stop.
-extern volatile int engine_active;
-
 // FPS is updated each second.
 extern volatile int fps;
 
 // Pointer to the original settings (in main.c).
-extern const struct Engine_Conf *mainconf;
+extern const struct Engine_Conf *MAINCONF;
 
 // Bounding box collision (taken from Alex4)
 #define check_bb_collision(x1,y1,w1,h1,x2,y2,w2,h2) \

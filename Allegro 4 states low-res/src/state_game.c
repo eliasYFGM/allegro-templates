@@ -3,20 +3,20 @@
 #include "engine.h"
 
 /*******************************************************************************
-  state_init(param) - State initialization
+  state_load(param) - First state initialization
   Executed ONLY ONCE by: change_state(), push_state()
 *******************************************************************************/
 static void
-state_init(void *param)
+state_load(void *param)
 {
 }
 
 /*******************************************************************************
-  state_end() - State "shutdown"
-  Executed when [engine_active = FALSE]
+  state_free() - Shutdown, freeing of state resources
+  Executed after a call to game_over()
 *******************************************************************************/
 static void
-state_end(void)
+state_free(void)
 {
 }
 
@@ -80,17 +80,17 @@ state_draw(BITMAP *bmp)
 struct State*
 State_Game(void)
 {
-	static struct State state =
-	{
-		state_init,
-		state_end,
-		state_enter,
-		state_exit,
-		state_pause,
-		state_resume,
-		state_update,
-		state_draw
-	};
+  static struct State state =
+    {
+      state_load,
+      state_free,
+      state_enter,
+      state_exit,
+      state_pause,
+      state_resume,
+      state_update,
+      state_draw
+    };
 
-	return &state;
+  return &state;
 }
