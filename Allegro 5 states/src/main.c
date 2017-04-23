@@ -3,7 +3,6 @@
 
 int main(int argc, char **argv)
 {
-  // Default configuration that the engine will make use of
   struct Engine_Conf conf =
     {
       // Argument list

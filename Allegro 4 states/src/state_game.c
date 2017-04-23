@@ -4,7 +4,6 @@
 
 /*******************************************************************************
   state_load(param) - First state initialization
-  Executed ONLY ONCE by: change_state(), push_state()
 *******************************************************************************/
 static void
 state_load(void *param)
@@ -13,7 +12,6 @@ state_load(void *param)
 
 /*******************************************************************************
   state_free() - Shutdown, freeing of state resources
-  Executed after a call to game_over()
 *******************************************************************************/
 static void
 state_free(void)
@@ -21,8 +19,7 @@ state_free(void)
 }
 
 /*******************************************************************************
-  state_enter(param)
-  Executed by: change_state(), push_state()
+  state_enter(param) - Normal initialization
 *******************************************************************************/
 static void
 state_enter(void *param)
@@ -30,8 +27,7 @@ state_enter(void *param)
 }
 
 /*******************************************************************************
-  state_exit()
-  Executed by: change_state(), pop_state()
+  state_exit() - Normal state exiting
 *******************************************************************************/
 static void
 state_exit(void)
@@ -39,8 +35,7 @@ state_exit(void)
 }
 
 /*******************************************************************************
-  state_pause()
-  Executed by: push_state()
+  state_pause() - Pause, after push_state()
 *******************************************************************************/
 static void
 state_pause(void)
@@ -48,8 +43,7 @@ state_pause(void)
 }
 
 /*******************************************************************************
-  state_resume()
-  Executed by: pop_state()
+  state_resume() - State continuing, after pop_state()
 *******************************************************************************/
 static void
 state_resume(void)
@@ -57,8 +51,7 @@ state_resume(void)
 }
 
 /*******************************************************************************
-  state_update()
-  Runs every step/frame - Game logic
+  state_update() - Game logic
 *******************************************************************************/
 static void
 state_update(void)
@@ -66,8 +59,7 @@ state_update(void)
 }
 
 /*******************************************************************************
-  state_draw()
-  Functions for drawing to the screen
+  state_draw() - Drawing to the screen
 *******************************************************************************/
 static void
 state_draw(BITMAP *bmp)

@@ -28,39 +28,28 @@ struct Engine_Conf
     int framerate;
   };
 
-// Defined in states.h
+// states.h
 struct State;
 
 /*******************************************************************************
   Main
 *******************************************************************************/
 
-// Initializes the engine with a configuration structure.
 int engine_init(struct Engine_Conf *conf);
-
-// Run the engine with a starting state, until [engine_active = FALSE].
 void engine_run(struct State *s);
 
 /*******************************************************************************
-  State manipulation
+  States
 *******************************************************************************/
 
-// change_state() - Changes the state directly to another.
-// "param" is a pointer that can be passed to the new state. Use NULL to not
-// pass anything.
 void change_state(struct State *s, void *param);
-
-// push_state() - Add a new state to the stack (previous one is 'paused').
-// "param" is a pointer that can be passed to the new state. Use NULL to not
-// pass anything.
 void push_state(struct State *s, void *param);
-
-// pop_state() - removes the last state added with push_state().
 void pop_state(void);
 
 /*******************************************************************************
-  Misc functions
+  Misc.
 *******************************************************************************/
+
 void game_over(void);
 void set_bg_color(ALLEGRO_COLOR c);
 
