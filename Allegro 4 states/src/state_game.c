@@ -35,7 +35,7 @@ state_exit(void)
 }
 
 /*******************************************************************************
-  state_pause() - Pause, after push_state()
+  state_pause() - Pause, after a call to push_state()
 *******************************************************************************/
 static void
 state_pause(void)
@@ -43,7 +43,7 @@ state_pause(void)
 }
 
 /*******************************************************************************
-  state_resume() - State continuing, after pop_state()
+  state_resume() - State continuing, after a call to pop_state()
 *******************************************************************************/
 static void
 state_resume(void)
@@ -69,7 +69,8 @@ state_draw(BITMAP *bmp)
 /*******************************************************************************
   Definition of the state function
 *******************************************************************************/
-struct State* State_Game(void)
+struct State*
+State_Game(void)
 {
   static struct State state =
     {

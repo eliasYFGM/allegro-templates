@@ -5,13 +5,15 @@
 #include "engine.h"
 #include "state.h"
 
+// Used to simulate a slightly lower monitor resolution
+#define SCREEN_RES_OVERRIDE 0.1
+
 const struct Engine_Conf *MAINCONF;
 
 static struct // Engine variables
   {
     BITMAP *buffer;
     int initialized;
-    int cursor;
     int bg_color;
 
     // Stack of states
@@ -24,7 +26,7 @@ engine;
 
 static int current_state, loaded_count;
 
-static volatile unsigned int ticks;
+static volatile int ticks;
 static void ticker(void)
 {
   ++ticks;
@@ -41,12 +43,18 @@ static void update_fps(void)
 END_OF_FUNCTION(update_fps);
 
 static volatile int engine_active;
-static void
-close_button_handler(void)
+
+#ifndef ALLEGRO_DOS
+static void close_button_handler(void)
 {
   engine_active = FALSE;
 }
 END_OF_FUNCTION(close_button_handler);
+
+// Amount of scaling
+static int scale = 1;
+
+#endif // ALLEGRO_DOS
 
 // Main game initialization
 int engine_init(struct Engine_Conf *conf)
@@ -59,7 +67,6 @@ int engine_init(struct Engine_Conf *conf)
   allegro_init();
   install_keyboard();
   install_timer();
-  install_mouse();
 
   if (install_sound(DIGI_AUTODETECT, MIDI_NONE, 0))
     {
@@ -71,12 +78,41 @@ int engine_init(struct Engine_Conf *conf)
 #ifdef ALLEGRO_DOS
   if (set_gfx_mode(GFX_AUTODETECT, conf->width, conf->height, 0, 0))
 #else
-  if (set_gfx_mode(conf->fullscreen ? GFX_AUTODETECT
-                   : GFX_AUTODETECT_WINDOWED, conf->width, conf->height, 0, 0))
-#endif
+  if (!conf->fullscreen)
+    {
+      int w, h;
+      get_desktop_resolution(&w, &h);
+
+      float new_w = w - (w * SCREEN_RES_OVERRIDE);
+      float new_h = h - (h * SCREEN_RES_OVERRIDE);
+
+      // Keep scaling until a suitable scale factor is found
+      while (1)
+        {
+          int scale_w = conf->width * scale;
+          int scale_h = conf->height * scale;
+
+          if (scale_w > new_w || scale_h > new_h)
+            {
+              --scale;
+              break;
+            }
+
+          ++scale;
+        }
+
+      if (!scale)
+        {
+          scale = 1;
+        }
+    }
+
+  if (set_gfx_mode(conf->fullscreen ? GFX_AUTODETECT : GFX_AUTODETECT_WINDOWED,
+                   conf->width * scale, conf->height * scale, 0, 0))
+#endif // ALLEGRO_DOS
     {
       set_gfx_mode(GFX_TEXT, 0, 0, 0, 0);
-      allegro_message("engine_init(): Failed to initialize graphics\n%s",
+      allegro_message("engine_init(): Failed to create a window\n%s",
                       allegro_error);
       return 0;
     }
@@ -86,9 +122,9 @@ int engine_init(struct Engine_Conf *conf)
   set_close_button_callback(close_button_handler);
 #endif // ALLEGRO_DOS
 
-  engine.buffer = create_bitmap(SCREEN_W, SCREEN_H);
-  engine.bg_color = makecol(192, 192, 192);
-  engine.cursor = TRUE;
+  engine.buffer = create_bitmap(conf->width, conf->height);
+
+  set_bg_color(makecol(192, 192, 192));
 
   MAINCONF = conf;
 
@@ -138,7 +174,6 @@ void engine_run(struct State *s)
             }
 
           engine.states[current_state]->_update();
-
           redraw = TRUE;
         }
 
@@ -150,17 +185,19 @@ void engine_run(struct State *s)
 
           engine.states[current_state]->_draw(engine.buffer);
 
-          if (engine.cursor)
-            {
-              show_mouse(engine.buffer);
-            }
-
+#ifdef ALLEGRO_DOS
           blit(engine.buffer, screen, 0, 0, 0, 0, SCREEN_W, SCREEN_H);
-
-          if (engine.cursor)
+#else
+          if (scale > 1)
             {
-              show_mouse(NULL);
+              stretch_blit(engine.buffer, screen, 0, 0, GAME_W, GAME_H, 0, 0,
+                           SCREEN_W, SCREEN_H);
             }
+          else
+            {
+              blit(engine.buffer, screen, 0, 0, 0, 0, SCREEN_W, SCREEN_H);
+            }
+#endif // ALLEGRO_DOS
 
           ++frame_counter;
         }
@@ -277,11 +314,6 @@ void pop_state(void)
 void game_over(void)
 {
   engine_active = FALSE;
-}
-
-void enable_cursor(int enable)
-{
-  engine.cursor = enable;
 }
 
 void set_bg_color(int c)

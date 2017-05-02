@@ -46,7 +46,6 @@ void pop_state(void);
 *******************************************************************************/
 
 void game_over(void);
-void enable_cursor(int enable);
 void set_bg_color(int c);
 
 /*******************************************************************************
@@ -58,6 +57,9 @@ extern volatile int fps;
 
 // Pointer to the original settings (in main.c).
 extern const struct Engine_Conf *MAINCONF;
+
+#define GAME_W  MAINCONF->width  // Internal width
+#define GAME_H  MAINCONF->height // Internal height
 
 // Bounding box collision (taken from Alex4)
 #define check_bb_collision(x1,y1,w1,h1,x2,y2,w2,h2) \

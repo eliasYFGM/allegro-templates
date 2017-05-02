@@ -12,7 +12,7 @@ int main(int argc, char **argv)
       "Allegro application",
       // Resolution
       640, 480,
-      // Refresh rate (or FPS)
+      // Frame-rate (or FPS)
       40,
       // Color depth (8, 15, 16, 24, 32)
       8,
