@@ -83,8 +83,8 @@ int engine_init(struct Engine_Conf *conf)
   int monitor_w = info.x2 - info.x1;
   int monitor_h = info.y2 - info.y1;
 
-  float new_monitor_w = (monitor_w - (monitor_w * SCREEN_RES_OVERRIDE));
-  float new_monitor_h = (monitor_h - (monitor_h * SCREEN_RES_OVERRIDE));
+  int new_monitor_w = (monitor_w - (monitor_w * SCREEN_RES_OVERRIDE));
+  int new_monitor_h = (monitor_h - (monitor_h * SCREEN_RES_OVERRIDE));
 
   // Keep scaling until a suitable scale factor is found
   while (1)

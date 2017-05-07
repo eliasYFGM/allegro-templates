@@ -80,11 +80,12 @@ int engine_init(struct Engine_Conf *conf)
 #else
   if (!conf->fullscreen)
     {
-      int w, h;
+      int w, h, new_w, new_h;
+
       get_desktop_resolution(&w, &h);
 
-      float new_w = w - (w * SCREEN_RES_OVERRIDE);
-      float new_h = h - (h * SCREEN_RES_OVERRIDE);
+      new_w = w - (w * SCREEN_RES_OVERRIDE);
+      new_h = h - (h * SCREEN_RES_OVERRIDE);
 
       // Keep scaling until a suitable scale factor is found
       while (1)
