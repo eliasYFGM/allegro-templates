@@ -1,22 +1,33 @@
-This is a collection of templates for making games using the Allegro library, meant for use as "User templates" inside Code::Blocks IDE.
+This is a collection of templates for making games using the Allegro library,
+meant for use as "User templates" inside Code::Blocks IDE.
 
 Installation
 ============
 
-For basic installation on Linux, just git-clone to the folder that is located in ~/.config/.codeblocks/UserTemplates (or ~/.codeblocks/UserTemplates if using an older version).
+For basic installation on Linux, just git-clone to the folder that is located
+in ~/.config/.codeblocks/UserTemplates (or ~/.codeblocks/UserTemplates if
+using an older version).
 
 On Windows, the folder is located at %APPDATA%\codeblocks\UserTemplates.
 
 Features
 ========
 
-* Fixed-rate and automatic frame skipping.
-* Checks return value for each module initialization.
-* Game state implementation with a stack.
-* Separate state_load() and state_free() functions for resource loading and freeing respectively.
-* A default "STATE_GAME" already created, as an example.
-* Toggle between full-screen and window mode with F4 key (Allegro 5).
-* Supports Linux, Windows and DOS (Allegro 4) as targets.
-* DOS target needs a DJGPP cross-compiler.
+ * Fixed-rate and automatic frame skipping.
+ * Checks return value for each module initialization.
+ * Game state implementation with a stack.
+ * Separate state_load() and state_free() functions for resource loading and
+   freeing respectively.
+ * A default "STATE_GAME" already created, as an example.
+ * Toggle between full-screen and window mode with F4 key (Allegro 5).
+ * Supports Linux, Windows and DOS (Allegro 4) as targets.
+ * DOS target needs a DJGPP cross-compiler.
 
-The "low-res" Allegro 5 template is meant for small-resolution games (such as 320x200). The window is up-scaled to fit the monitor size, but will not cover it entirely.
+Notes
+=====
+
+The "low-res" template is meant for small resolution games (such as 320x200).
+The window will be up-scaled to fit the monitor size.
+
+Allegro 4 is a mix between a normal template an a low-res one. The window is
+resized only if it can fit nicely to the monitor resolution too.
