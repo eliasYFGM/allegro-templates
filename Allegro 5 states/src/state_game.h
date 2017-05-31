@@ -3,7 +3,7 @@
 
 #include "state.h"
 
-struct State* State_Game( void );
+struct State* State_Game(void);
 
 #define STATE_GAME   State_Game()
 

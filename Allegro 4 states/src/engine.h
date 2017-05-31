@@ -30,23 +30,23 @@ struct State;
   Main
 *****************************************************************************/
 
-int engine_init( struct Engine_Conf *conf );
-void engine_run( struct State *s );
+int engine_init(struct Engine_Conf *conf);
+void engine_run(struct State *s);
 
 /*****************************************************************************
   States
 *****************************************************************************/
 
-void change_state( struct State *s, void *param );
-void push_state( struct State *s, void *param );
-void pop_state( void );
+void change_state(struct State *s, void *param);
+void push_state(struct State *s, void *param);
+void pop_state(void);
 
 /*****************************************************************************
   Misc.
 *****************************************************************************/
 
-void game_over( void );
-void set_bg_color( int c );
+void game_over(void);
+void set_bg_color(int c);
 
 /*****************************************************************************
   Globals
@@ -63,7 +63,7 @@ extern const struct Engine_Conf *MAINCONF;
 
 // Bounding box collision (taken from Alex4)
 #define check_bb_collision(x1,y1,w1,h1,x2,y2,w2,h2) \
-   (!( ((x1)>=(x2)+(w2)) || ((x2)>=(x1)+(w1)) || \
-       ((y1)>=(y2)+(h2)) || ((y2)>=(y1)+(h1)) ))
+   (!(((x1)>=(x2)+(w2)) || ((x2)>=(x1)+(w1)) || \
+      ((y1)>=(y2)+(h2)) || ((y2)>=(y1)+(h1))))
 
 #endif // ENGINE_H_INCLUDED
