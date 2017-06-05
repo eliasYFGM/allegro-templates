@@ -4,8 +4,8 @@
 
 int main(int argc, char **argv)
 {
-   struct Engine_Conf conf =
-   {
+  struct Engine_Conf conf =
+    {
       // Argument list
       argc, argv,
       // Window title
@@ -18,14 +18,14 @@ int main(int argc, char **argv)
       8,
       // Full-screen?
       FALSE
-   };
+    };
 
-   if (engine_init(&conf))
-   {
+  if (engine_init(&conf))
+    {
       // Run with a starting state
       engine_run(STATE_GAME);
-   }
+    }
 
-   return 0;
+  return 0;
 }
 END_OF_MAIN()

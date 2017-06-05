@@ -77,11 +77,10 @@ state_draw(void)
 /*****************************************************************************
   Definition of the state function
 *****************************************************************************/
-struct State*
-State_Game(void)
+struct State *State_Game(void)
 {
-   static struct State state =
-   {
+  static struct State state =
+    {
       state_load,
       state_free,
       state_enter,
@@ -91,7 +90,7 @@ State_Game(void)
       state_events,
       state_update,
       state_draw
-   };
+    };
 
-   return &state;
+  return &state;
 }
