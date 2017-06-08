@@ -8,6 +8,9 @@
 // Max states to allocate for the "loaded_states" stack
 #define MAX_STATES  10
 
+// state.h
+struct State;
+
 struct Engine_Conf
 {
   // Argument list
@@ -23,8 +26,14 @@ struct Engine_Conf
   int fullscreen;
 };
 
-// state.h
-struct State;
+// A state can have an extra parameter [*param] when initialized. It is passed
+// to state_load() and state_enter() functions.
+struct State_Machine
+{
+  void (*change_state)(struct State *s, void *param);
+  void (*push_state)(struct State *s, void *param);
+  void (*pop_state)(void);
+};
 
 /*****************************************************************************
   Main
@@ -32,14 +41,6 @@ struct State;
 
 int engine_init(struct Engine_Conf *conf);
 void engine_run(struct State *s);
-
-/*****************************************************************************
-  States
-*****************************************************************************/
-
-void change_state(struct State *s, void *param);
-void push_state(struct State *s, void *param);
-void pop_state(void);
 
 /*****************************************************************************
   Misc.
@@ -52,10 +53,7 @@ void set_bg_color(int c);
   Globals
 *****************************************************************************/
 
-// FPS is updated each second.
 extern volatile int fps;
-
-// Pointer to the original settings (in main.c).
 extern const struct Engine_Conf *MAINCONF;
 
 #define GAME_W      MAINCONF->width  // Internal width

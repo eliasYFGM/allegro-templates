@@ -54,15 +54,15 @@ state_resume(void)
   state_events(ev) - Event handling
 *****************************************************************************/
 static void
-state_events(ALLEGRO_EVENT *ev)
+state_events(ALLEGRO_EVENT *ev, struct State_Machine *sm)
 {
 }
 
 /*****************************************************************************
-  state_update() - Game logic
+  state_update() - Logic
 *****************************************************************************/
 static void
-state_update(void)
+state_update(struct State_Machine *sm)
 {
 }
 
@@ -70,7 +70,7 @@ state_update(void)
   state_draw() - Drawing to the screen
 *****************************************************************************/
 static void
-state_draw(void)
+state_draw(struct State_Machine *sm)
 {
 }
 

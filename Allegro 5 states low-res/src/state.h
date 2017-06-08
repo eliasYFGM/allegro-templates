@@ -1,6 +1,8 @@
 #ifndef STATE_H_INCLUDED
 #define STATE_H_INCLUDED
 
+struct State_Machine;
+
 // Main state structure
 struct State
 {
@@ -13,9 +15,9 @@ struct State
   void (*_pause)(void);
   void (*_resume)(void);
 
-  void (*_events)(ALLEGRO_EVENT *ev);
-  void (*_update)(void);
-  void (*_draw)(void);
+  void (*_events)(ALLEGRO_EVENT *ev, struct State_Machine *sm);
+  void (*_update)(struct State_Machine *sm);
+  void (*_draw)(struct State_Machine *sm);
 
   // Private and used only by engine.c
   // Indicates if the state was already initialized.

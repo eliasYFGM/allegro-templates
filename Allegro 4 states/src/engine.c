@@ -8,6 +8,8 @@
 // Used to simulate a slightly lower monitor resolution
 #define SCREEN_RES_OVERRIDE   0.1
 
+// Globals
+volatile int fps;
 const struct Engine_Conf *MAINCONF;
 
 static struct // Engine variables
@@ -17,20 +19,94 @@ static struct // Engine variables
   int bg_color;
   struct State *states[MAX_STATES * 2];     // Regular stack of states
   struct State *loaded_states[MAX_STATES];  // Initialized (loaded) states
+  struct State_Machine sm;
 }
 engine;
 
 static int current_state, loaded_count;
-
 static volatile int ticks, frame_counter;
 
+static void change_state(struct State *s, void *param)
+{
+  if (!s->loaded)
+    {
+      if (loaded_count < MAX_STATES)
+        {
+          s->_load(param);
+          s->loaded = TRUE;
+          engine.loaded_states[loaded_count++] = s;
+        }
+      else
+        {
+          puts("change_state(): Unable to load state (reached MAX_STATES)");
+          return;
+        }
+    }
+
+  s->_enter(param);
+
+  if (engine.states[current_state] != NULL)
+    {
+      engine.states[current_state]->_exit();
+    }
+
+  engine.states[current_state] = s;
+
+  // Reset tick counter
+  ticks = 0;
+}
+
+static void push_state(struct State *s, void *param)
+{
+  if (current_state == (MAX_STATES * 2))
+    {
+      puts("push_state(): State stack is full");
+      return;
+    }
+
+  if (!s->loaded)
+    {
+      if (loaded_count < MAX_STATES)
+        {
+          s->_load(param);
+          s->loaded = TRUE;
+          engine.loaded_states[loaded_count++] = s;
+        }
+      else
+        {
+          puts("change_state(): Unable to load state (reached MAX_STATES)");
+          return;
+        }
+    }
+
+  s->_enter(param);
+
+  if (engine.states[current_state] != NULL)
+    {
+      engine.states[current_state]->_pause();
+    }
+
+  engine.states[++current_state] = s;
+
+  // Reset tick counter
+  ticks = 0;
+}
+
+static void pop_state(void)
+{
+  if (current_state > 0)
+    {
+      engine.states[current_state]->_exit();
+      engine.states[--current_state]->_resume();
+    }
+}
+
+// A single tick will update the game's FPS
 static void ticker(void)
 {
   ++ticks;
 }
 END_OF_FUNCTION(ticker);
-
-volatile int fps;
 
 static void update_fps(void)
 {
@@ -107,7 +183,7 @@ int engine_init(struct Engine_Conf *conf)
     }
 
   if (set_gfx_mode(conf->fullscreen ? GFX_AUTODETECT
-                   : GFX_AUTODETECT_WINDOWED,
+                                    : GFX_AUTODETECT_WINDOWED,
                    conf->width * scale, conf->height * scale, 0, 0))
 #endif // ALLEGRO_DOS
     {
@@ -128,6 +204,10 @@ int engine_init(struct Engine_Conf *conf)
 
   MAINCONF = conf;
 
+  engine.sm.change_state = change_state;
+  engine.sm.push_state = push_state;
+  engine.sm.pop_state = pop_state;
+
   srand(time(NULL));
 
   engine.initialized = TRUE;
@@ -135,7 +215,7 @@ int engine_init(struct Engine_Conf *conf)
   return 1;
 }
 
-// Game loop
+// Setup timers and game loop
 void engine_run(struct State *s)
 {
   int redraw = FALSE;
@@ -160,12 +240,12 @@ void engine_run(struct State *s)
 
   engine_active = TRUE;
 
-  // Game loop
+  // Main loop
   while (engine_active)
     {
       if (ticks > 0)
         {
-          while(ticks > 0)
+          while (ticks > 0)
             {
               --ticks;
 
@@ -175,7 +255,7 @@ void engine_run(struct State *s)
                   break;
                 }
 
-              engine.states[current_state]->_update();
+              engine.states[current_state]->_update(&engine.sm);
             }
 
           redraw = TRUE;
@@ -187,7 +267,7 @@ void engine_run(struct State *s)
 
           clear_to_color(engine.buffer, engine.bg_color);
 
-          engine.states[current_state]->_draw(engine.buffer);
+          engine.states[current_state]->_draw(engine.buffer, &engine.sm);
 
 #ifdef ALLEGRO_DOS
           blit(engine.buffer, screen, 0, 0, 0, 0, SCREEN_W, SCREEN_H);
@@ -206,9 +286,8 @@ void engine_run(struct State *s)
           ++frame_counter;
         }
 
-#ifndef ALLEGRO_DOS
-      rest(1);
-#endif // ALLEGRO_DOS
+      // Yield CPU
+      rest(0);
     }
 
   while (loaded_count > 0)
@@ -217,88 +296,6 @@ void engine_run(struct State *s)
     }
 
   destroy_bitmap(engine.buffer);
-}
-
-void change_state(struct State *s, void *param)
-{
-  static int can_change = TRUE;
-
-  if (!can_change)
-    {
-      puts("change_state(): A thread is already running");
-      return;
-    }
-
-  can_change = FALSE;
-
-  if (!s->loaded)
-    {
-      s->_load(param);
-      s->loaded = TRUE;
-      engine.loaded_states[loaded_count++] = s;
-    }
-
-  if (engine.states[current_state] != NULL)
-    {
-      engine.states[current_state]->_exit();
-    }
-
-  s->_enter(param);
-  engine.states[current_state] = s;
-
-  can_change = TRUE;
-
-  // Reset tick counter
-  ticks = 1;
-}
-
-void push_state(struct State *s, void *param)
-{
-  if (current_state < (MAX_STATES * 2))
-    {
-      static int can_change = TRUE;
-
-      if (!can_change)
-        {
-          puts("push_state(): A thread is already running");
-          return;
-        }
-
-      can_change = FALSE;
-
-      if (!s->loaded)
-        {
-          s->_load(param);
-          s->loaded = TRUE;
-          engine.loaded_states[loaded_count++] = s;
-        }
-
-      if (engine.states[current_state] != NULL)
-        {
-          engine.states[current_state]->_pause();
-        }
-
-      s->_enter(param);
-      engine.states[++current_state] = s;
-
-      can_change = TRUE;
-
-      // Reset tick counter
-      ticks = 1;
-    }
-  else
-    {
-      puts("push_state(): State stack is full");
-    }
-}
-
-void pop_state(void)
-{
-  if (current_state > 0)
-    {
-      engine.states[current_state]->_exit();
-      engine.states[--current_state]->_resume();
-    }
 }
 
 void game_over(void)

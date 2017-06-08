@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <allegro.h>
 #include "state_game.h"
 #include "engine.h"
@@ -11,7 +12,7 @@ state_load(void *param)
 }
 
 /*****************************************************************************
-  state_free() - Shutdown, freeing of state resources
+  state_free() - Shutdown, freeing state resources
 *****************************************************************************/
 static void
 state_free(void)
@@ -51,10 +52,10 @@ state_resume(void)
 }
 
 /*****************************************************************************
-  state_update() - Game logic
+  state_update() - Logic
 *****************************************************************************/
 static void
-state_update(void)
+state_update(struct State_Machine *sm)
 {
 }
 
@@ -62,7 +63,7 @@ state_update(void)
   state_draw() - Drawing to the screen
 *****************************************************************************/
 static void
-state_draw(BITMAP *bmp)
+state_draw(BITMAP *bmp, struct State_Machine *sm)
 {
 }
 

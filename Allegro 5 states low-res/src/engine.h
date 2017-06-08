@@ -15,6 +15,9 @@
 // Max states to allocate for the "loaded_states" stack
 #define MAX_STATES  10
 
+// states.h
+struct State;
+
 struct Engine_Conf
 {
    // Argument list
@@ -28,8 +31,14 @@ struct Engine_Conf
    int framerate;
 };
 
-// states.h
-struct State;
+// A state can have an extra parameter [*param] when initialized. It is passed
+// to state_load() and state_enter() functions.
+struct State_Machine
+{
+  void (*change_state)(struct State *s, void *param);
+  void (*push_state)(struct State *s, void *param);
+  void (*pop_state)(void);
+};
 
 /*****************************************************************************
   Main
@@ -37,14 +46,6 @@ struct State;
 
 int engine_init(struct Engine_Conf *conf);
 void engine_run(struct State *s);
-
-/*****************************************************************************
-  States
-*****************************************************************************/
-
-void change_state(struct State *s, void *param);
-void push_state(struct State *s, void *param);
-void pop_state(void);
 
 /*****************************************************************************
   Misc.

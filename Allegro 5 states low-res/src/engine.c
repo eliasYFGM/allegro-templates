@@ -26,10 +26,84 @@ static struct // Engine data
   int initialized;
   struct State *states[MAX_STATES * 2];     // Stack of states
   struct State *loaded_states[MAX_STATES];  // Initialized states
+  struct State_Machine sm;
 }
 engine;
 
 static int current_state, loaded_count, engine_active;
+
+static void change_state(struct State *s, void *param)
+{
+  if (!s->loaded)
+    {
+      if (loaded_count < MAX_STATES)
+        {
+          s->_load(param);
+          s->loaded = TRUE;
+          engine.loaded_states[loaded_count++] = s;
+        }
+      else
+        {
+          puts("change_state(): Unable to load state (reached MAX_STATES)");
+          return;
+        }
+    }
+
+  s->_enter(param);
+
+  if (engine.states[current_state] != NULL)
+    {
+      engine.states[current_state]->_exit();
+    }
+
+  engine.states[current_state] = s;
+
+  al_flush_event_queue(engine.event_queue);
+}
+
+static void push_state(struct State *s, void *param)
+{
+  if (current_state == (MAX_STATES * 2))
+    {
+      puts("push_state(): State stack is full");
+      return;
+    }
+
+  if (!s->loaded)
+    {
+      if (loaded_count < MAX_STATES)
+        {
+          s->_load(param);
+          s->loaded = TRUE;
+          engine.loaded_states[loaded_count++] = s;
+        }
+      else
+        {
+          puts("change_state(): Unable to load state (reached MAX_STATES)");
+          return;
+        }
+    }
+
+  s->_enter(param);
+
+  if (engine.states[current_state] != NULL)
+    {
+      engine.states[current_state]->_pause();
+    }
+
+  engine.states[++current_state] = s;
+
+  al_flush_event_queue(engine.event_queue);
+}
+
+static void pop_state(void)
+{
+  if (current_state > 0)
+    {
+      engine.states[current_state]->_exit();
+      engine.states[--current_state]->_resume();
+    }
+}
 
 // Scale factor
 static int scale = 1;
@@ -113,6 +187,10 @@ int engine_init(struct Engine_Conf *conf)
   engine.timer = al_create_timer(1.0 / conf->framerate);
   engine.event_queue = al_create_event_queue();
 
+  engine.sm.change_state = change_state;
+  engine.sm.push_state = push_state;
+  engine.sm.pop_state = pop_state;
+
   mainconf = conf;
   set_bg_color(al_map_rgb(192, 192, 192));
 
@@ -151,6 +229,7 @@ void engine_run(struct State *s)
   al_register_event_source(engine.event_queue,
                            al_get_keyboard_event_source());
 
+  al_start_timer(engine.timer);
   engine_active = TRUE;
 
   // Main game loop
@@ -160,7 +239,7 @@ void engine_run(struct State *s)
       al_wait_for_event(engine.event_queue, &event);
 
       // Event processing
-      engine.states[current_state]->_events(&event);
+      engine.states[current_state]->_events(&event, &engine.sm);
 
       // If the close button was pressed...
       if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
@@ -178,11 +257,12 @@ void engine_run(struct State *s)
         }
       else if (event.type == ALLEGRO_EVENT_TIMER)
         {
-          engine.states[current_state]->_update();
+          engine.states[current_state]->_update(&engine.sm);
           redraw = TRUE;
         }
 
-      if (redraw && al_is_event_queue_empty(engine.event_queue))
+      if (redraw && engine_active
+          && al_is_event_queue_empty(engine.event_queue))
         {
           redraw = FALSE;
 
@@ -190,7 +270,7 @@ void engine_run(struct State *s)
 
           al_clear_to_color(engine.bg_color);
 
-          engine.states[current_state]->_draw();
+          engine.states[current_state]->_draw(&engine.sm);
 
           al_flip_display();
         }
@@ -205,90 +285,6 @@ void engine_run(struct State *s)
   al_destroy_timer(engine.timer);
   al_destroy_event_queue(engine.event_queue);
   al_destroy_font(font);
-}
-
-void change_state(struct State *s, void *param)
-{
-  static int can_change = TRUE;
-
-  if (!can_change)
-    {
-      puts("change_state(): A thread is already running...");
-      return;
-    }
-
-  can_change = FALSE;
-
-  al_stop_timer(engine.timer);
-
-  if (!s->loaded)
-    {
-      s->_load(param);
-      s->loaded = TRUE;
-      engine.loaded_states[loaded_count++] = s;
-    }
-
-  if (engine.states[current_state] != NULL)
-    {
-      engine.states[current_state]->_exit();
-    }
-
-  s->_enter(param);
-  engine.states[current_state] = s;
-
-  al_start_timer(engine.timer);
-
-  can_change = TRUE;
-}
-
-void push_state(struct State *s, void *param)
-{
-  if (current_state < (MAX_STATES * 2))
-    {
-      static int can_change = TRUE;
-
-      if (!can_change)
-        {
-          puts("push_state(): A thread is already running...");
-          return;
-        }
-
-      can_change = FALSE;
-
-      al_stop_timer(engine.timer);
-
-      if (!s->loaded)
-        {
-          s->_load(param);
-          s->loaded = TRUE;
-          engine.loaded_states[loaded_count++] = s;
-        }
-
-      if (engine.states[current_state] != NULL)
-        {
-          engine.states[current_state]->_pause();
-        }
-
-      s->_enter(param);
-      engine.states[++current_state] = s;
-
-      al_start_timer(engine.timer);
-
-      can_change = TRUE;
-    }
-  else
-    {
-      puts("push_state(): State stack is full");
-    }
-}
-
-void pop_state(void)
-{
-  if (current_state > 0)
-    {
-      engine.states[current_state]->_exit();
-      engine.states[--current_state]->_resume();
-    }
 }
 
 void game_over(void)
