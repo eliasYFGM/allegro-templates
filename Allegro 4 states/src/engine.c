@@ -5,7 +5,7 @@
 #include "engine.h"
 #include "state.h"
 
-// Used to simulate a slightly lower monitor resolution
+// This is used to simulate a slightly lower monitor resolution
 #define SCREEN_RES_OVERRIDE   0.1
 
 // Globals

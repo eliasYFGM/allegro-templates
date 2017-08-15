@@ -1,5 +1,5 @@
 This is a collection of templates for making games using the Allegro library,
-meant for use as "User templates" inside Code::Blocks IDE.
+meant for use as "User templates" inside the Code::Blocks IDE.
 
 Installation
 ============
@@ -20,14 +20,14 @@ Features
    freeing respectively.
  * A default "STATE_GAME" already created, as an example.
  * Toggle between full-screen and window mode with F4 key (Allegro 5).
- * Supports Linux, Windows and DOS (Allegro 4) as targets.
- * DOS target needs a DJGPP cross-compiler.
+ * Supports Linux, Windows and DOS as targets.
+ * DOS target is only for Allegro 4, and it needs a DJGPP cross-compiler.
 
 Notes
 =====
 
-The "low-res" template is meant for small resolution games (such as 320x200).
-The window will be up-scaled to fit the monitor size.
+The Allegro 5 tempĺate does not have auto-scaling. As of 2017-08-14, the
+"low-res" Allegro 5 template is no longer available.
 
-Allegro 4 is a mix between a normal template an a low-res one. The window is
-resized only if it can fit nicely to the monitor resolution too.
+For retro-style games, I recommend using Allegro 4, as it has auto-scaling
+already implemented in the template.
