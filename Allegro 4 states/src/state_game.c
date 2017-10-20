@@ -65,6 +65,7 @@ state_update(struct State_Machine *sm)
 static void
 state_draw(BITMAP *bmp, struct State_Machine *sm)
 {
+  textout_ex(bmp, font, "Hola mundo!", 0, 0, C_BLACK, C_WHITE);
 }
 
 /*****************************************************************************

@@ -5,7 +5,11 @@
 #include "engine.h"
 #include "state.h"
 
-// This is used to simulate a slightly lower monitor resolution
+// 0 enables auto-scaling. Any higher value is a fixed screen scale.
+#define DEFAULT_SCALE         0
+
+// This is used to simulate a slightly lower monitor resolution when
+// auto-scaling is enabled.
 #define SCREEN_RES_OVERRIDE   0.1
 
 // Globals
@@ -158,31 +162,38 @@ int engine_init(struct Engine_Conf *conf)
 #else
   if (!conf->fullscreen)
     {
-      int w, h, new_w, new_h;
-
-      get_desktop_resolution(&w, &h);
-
-      new_w = w - (w * SCREEN_RES_OVERRIDE);
-      new_h = h - (h * SCREEN_RES_OVERRIDE);
-
-      // Keep scaling until a suitable scale factor is found
-      while (1)
+      if (DEFAULT_SCALE <= 0)
         {
-          int scale_w = conf->width * scale;
-          int scale_h = conf->height * scale;
+          int w, h, new_w, new_h;
 
-          if (scale_w > new_w || scale_h > new_h)
+          get_desktop_resolution(&w, &h);
+
+          new_w = w - (w * SCREEN_RES_OVERRIDE);
+          new_h = h - (h * SCREEN_RES_OVERRIDE);
+
+          // Keep scaling until a suitable scale factor is found
+          while (1)
             {
-              --scale;
-              break;
+              int scale_w = conf->width * scale;
+              int scale_h = conf->height * scale;
+
+              if (scale_w > new_w || scale_h > new_h)
+                {
+                  --scale;
+                  break;
+                }
+
+              ++scale;
             }
 
-          ++scale;
+          if (!scale)
+            {
+              scale = 1;
+            }
         }
-
-      if (!scale)
+      else
         {
-          scale = 1;
+          scale = DEFAULT_SCALE;
         }
     }
 
