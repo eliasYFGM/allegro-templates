@@ -5,18 +5,12 @@ int main(int argc, char **argv)
 {
   struct Engine_Conf conf =
     {
-      // Argument list
-      argc, argv,
-      // Window title
-      "Allegro application",
-      // Display resolution
-      640, 480,
-      // Framerate (FPS)
-      40,
-      // Full-screen?
-      FALSE,
-      // Additional back-buffer? (black bars on full-screen)
-      FALSE
+      argc, argv,             // Argument list
+      "Allegro application",  // Window title
+      640, 480,               // Display resolution
+      40,                     // Framerate (FPS)
+      FALSE,                  // Full-screen?
+      FALSE                   // Use back-buffer?
     };
 
   if (engine_init(&conf))

@@ -17,9 +17,13 @@ static struct // Engine variables
   BITMAP *buffer;
   int initialized;
   int bg_color;
-  struct State *states[MAX_STATES * 2];     // Regular stack of states
-  struct State *loaded_states[MAX_STATES];  // Initialized (loaded) states
   struct State_Machine sm;
+
+  // Regular stack of states
+  struct State *states[MAX_STATES * 2];
+
+  // Initialized (loaded) states
+  struct State *loaded_states[MAX_STATES];
 }
 engine;
 
@@ -243,20 +247,17 @@ void engine_run(struct State *s)
   // Main loop
   while (engine_active)
     {
-      if (ticks > 0)
+      while (ticks > 0)
         {
-          while (ticks > 0)
+          --ticks;
+
+          if (key[KEY_ALT] && key[KEY_F4])
             {
-              --ticks;
-
-              if (key[KEY_ALT] && key[KEY_F4])
-                {
-                  game_over();
-                  break;
-                }
-
-              engine.states[current_state]->_update(&engine.sm);
+              game_over();
+              break;
             }
+
+          engine.states[current_state]->_update(&engine.sm);
 
           redraw = TRUE;
         }

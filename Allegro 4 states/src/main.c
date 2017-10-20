@@ -6,18 +6,12 @@ int main(int argc, char **argv)
 {
   struct Engine_Conf conf =
     {
-      // Argument list
-      argc, argv,
-      // Window title
-      "Allegro application",
-      // Resolution
-      640, 480,
-      // Frame-rate (or FPS)
-      40,
-      // Color depth (8, 15, 16, 24, 32)
-      8,
-      // Full-screen?
-      FALSE
+      argc, argv,             // Argument list
+      "Allegro application",  // Window title
+      640, 480,               // Resolution
+      40,                     // Frame-rate (or FPS)
+      8,                      // Color depth (8, 15, 16, 24, 32)
+      FALSE                   // Full-screen?
     };
 
   if (engine_init(&conf))
