@@ -15,7 +15,7 @@
 					<Add option="-g" />
 				</Compiler>
 				<Linker>
-					<Add option="`allegro-config --libs`" />
+					<Add option="`pkg-config --libs allegro`" />
 				</Linker>
 			</Target>
 			<Target title="Release">
@@ -29,7 +29,7 @@
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
-					<Add option="`allegro-config --libs --static`" />
+					<Add option="`pkg-config --libs --static allegro`" />
 				</Linker>
 			</Target>
 			<Target title="Debug-mingw">
