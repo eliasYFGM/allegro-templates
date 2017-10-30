@@ -15,8 +15,7 @@ Features
 
  * Fixed-rate and automatic frame skipping.
  * Checks return value for each module initialization.
- * Game state implementation with a stack.
- * Separate state_load() and state_free() functions for resource loading and
+ * Separate state_load() and state_unload() functions for resource loading and
    freeing respectively.
  * A default "STATE_GAME" already created, as an example.
  * Toggle between full-screen and window mode with F4 key (Allegro 5).
