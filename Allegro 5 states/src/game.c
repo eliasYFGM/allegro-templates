@@ -271,6 +271,8 @@ void game_run(struct State *s)
       data.loaded_states[--data.loaded_count]->unload();
    }
 
+   free(data.loaded_states);
+
    al_destroy_display(data.display);
    al_destroy_timer(data.timer);
    al_destroy_event_queue(data.event_queue);
