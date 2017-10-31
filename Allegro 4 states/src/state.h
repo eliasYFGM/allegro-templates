@@ -15,8 +15,8 @@ struct State
    void (*update)(void);
    void (*draw)(BITMAP *bmp);
 
-   // Private and used only by [engine.c]
-   // Indicates if the state was already initialized.
+   // Private and used only by [game.c]
+   // Indicates if the state was already initialized with load().
    int loaded;
 };
 
