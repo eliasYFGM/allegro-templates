@@ -203,7 +203,7 @@ void game_run(struct State *s)
          key[event.keyboard.keycode] = TRUE;
 
          // F4 key will toggle full-screen
-         if (event.keyboard.keycode == ALLEGRO_KEY_F4)
+         if (key[ALLEGRO_KEY_F4])
          {
             int flags = al_get_display_flags(data.display);
 

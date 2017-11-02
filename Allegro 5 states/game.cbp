@@ -6,9 +6,9 @@
 		<Option pch_mode="2" />
 		<Option compiler="gcc" />
 		<Build>
-			<Target title="Debug">
-				<Option output="Debug/game" prefix_auto="1" extension_auto="1" />
-				<Option object_output="Debug/" />
+			<Target title="Linux Debug">
+				<Option output="bin/Linux Debug/game" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Linux Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Compiler>
@@ -18,9 +18,9 @@
 					<Add option="`pkg-config --libs allegro-5 allegro_acodec-5 allegro_audio-5 allegro_font-5 allegro_image-5 allegro_primitives-5`" />
 				</Linker>
 			</Target>
-			<Target title="Release">
-				<Option output="game" prefix_auto="1" extension_auto="1" />
-				<Option object_output="Release/" />
+			<Target title="Linux Release (static)">
+				<Option output="bin/Linux Release (static)/game" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Linux Release (static)/" />
 				<Option type="0" />
 				<Option compiler="gcc" />
 				<Compiler>
@@ -32,11 +32,12 @@
 					<Add option="`pkg-config --libs --static allegro-static-5 allegro_acodec-static-5 allegro_audio-static-5 allegro_font-static-5 allegro_image-static-5 allegro_primitives-static-5`" />
 				</Linker>
 			</Target>
-			<Target title="Debug-mingw">
-				<Option output="Debug-mingw/game.exe" prefix_auto="1" extension_auto="0" />
-				<Option object_output="Debug-mingw/" />
-				<Option type="0" />
-				<Option compiler="mingw_cross-compiler" />
+			<Target title="Windows Debug">
+				<Option output="bin/Windows Debug/game" prefix_auto="1" extension_auto="0" />
+				<Option object_output="obj/Windows Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option use_console_runner="0" />
 				<Compiler>
 					<Add option="-g" />
 				</Compiler>
@@ -49,9 +50,69 @@
 					<Add library="allegro_primitives.dll" />
 				</Linker>
 			</Target>
-			<Target title="Release-mingw">
-				<Option output="game.exe" prefix_auto="1" extension_auto="0" />
-				<Option object_output="Release-mingw/" />
+			<Target title="Windows Release">
+				<Option output="bin/Windows Release/game.exe" prefix_auto="1" extension_auto="0" />
+				<Option object_output="obj/Windows Release/" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+					<Add option="-mwindows" />
+					<Add library="allegro.dll" />
+					<Add library="allegro_acodec.dll" />
+					<Add library="allegro_audio.dll" />
+					<Add library="allegro_font.dll" />
+					<Add library="allegro_image.dll" />
+					<Add library="allegro_primitives.dll" />
+				</Linker>
+			</Target>
+			<Target title="Windows Release (static)">
+				<Option output="bin/Windows Release (static)/game.exe" prefix_auto="1" extension_auto="0" />
+				<Option object_output="obj/Windows Release (static)/" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2" />
+					<Add option="-DALLEGRO_STATICLINK" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+					<Add option="-static" />
+					<Add option="-mwindows" />
+					<Add library="allegro-static" />
+					<Add library="allegro_acodec-static" />
+					<Add library="allegro_audio-static" />
+					<Add library="allegro_font-static" />
+					<Add library="allegro_image-static" />
+					<Add library="allegro_primitives-static" />
+					<Add library="gdiplus" />
+					<Add library="uuid" />
+					<Add library="kernel32" />
+					<Add library="winmm" />
+					<Add library="psapi" />
+					<Add library="opengl32" />
+					<Add library="glu32" />
+					<Add library="user32" />
+					<Add library="comdlg32" />
+					<Add library="gdi32" />
+					<Add library="shell32" />
+					<Add library="ole32" />
+					<Add library="advapi32" />
+					<Add library="ws2_32" />
+					<Add library="shlwapi" />
+					<Add library="dsound" />
+					<Add library="FLAC" />
+					<Add library="vorbisfile" />
+					<Add library="vorbis" />
+					<Add library="ogg" />
+				</Linker>
+			</Target>
+			<Target title="Cross-Windows">
+				<Option output="bin/Cross-Windows/game.exe" prefix_auto="1" extension_auto="0" />
+				<Option object_output="obj/Cross-Windows/" />
 				<Option type="0" />
 				<Option compiler="mingw_cross-compiler" />
 				<Compiler>
@@ -68,9 +129,9 @@
 					<Add library="allegro_primitives.dll" />
 				</Linker>
 			</Target>
-			<Target title="Release-mingw-static">
-				<Option output="game.exe" prefix_auto="1" extension_auto="0" />
-				<Option object_output="Release-mingw-static/" />
+			<Target title="Cross-Windows (static)">
+				<Option output="bin/Cross-Windows (static)/game.exe" prefix_auto="1" extension_auto="0" />
+				<Option object_output="obj/Cross-Windows (static)/" />
 				<Option type="0" />
 				<Option compiler="mingw_cross-compiler" />
 				<Compiler>
@@ -109,26 +170,9 @@
 					<Add library="ogg" />
 				</Linker>
 			</Target>
-			<Target title="Debug-mingw-x86_64">
-				<Option output="Debug-mingw-x86_64/game.exe" prefix_auto="1" extension_auto="0" />
-				<Option object_output="Debug-mingw-x86_64/" />
-				<Option type="0" />
-				<Option compiler="mingw_cross-compiler_x86_64" />
-				<Compiler>
-					<Add option="-g" />
-				</Compiler>
-				<Linker>
-					<Add library="allegro.dll" />
-					<Add library="allegro_acodec.dll" />
-					<Add library="allegro_audio.dll" />
-					<Add library="allegro_font.dll" />
-					<Add library="allegro_image.dll" />
-					<Add library="allegro_primitives.dll" />
-				</Linker>
-			</Target>
-			<Target title="Release-mingw-x86_64">
-				<Option output="game.exe" prefix_auto="1" extension_auto="0" />
-				<Option object_output="Release-mingw-x86_64/" />
+			<Target title="Cross-Windows x64">
+				<Option output="bin/Cross-Windows x64/game.exe" prefix_auto="1" extension_auto="0" />
+				<Option object_output="obj/Cross-Windows x64/" />
 				<Option type="0" />
 				<Option compiler="mingw_cross-compiler_x86_64" />
 				<Compiler>
@@ -145,9 +189,9 @@
 					<Add library="allegro_primitives.dll" />
 				</Linker>
 			</Target>
-			<Target title="Release-mingw-x86_64-static">
-				<Option output="game.exe" prefix_auto="1" extension_auto="0" />
-				<Option object_output="Release-mingw-x86_64-static/" />
+			<Target title="Cross-Windows x64 (static)">
+				<Option output="bin/Cross-Windows x64 (static)/game.exe" prefix_auto="1" extension_auto="0" />
+				<Option object_output="obj/Cross-Windows x64 (static)/" />
 				<Option type="0" />
 				<Option compiler="mingw_cross-compiler_x86_64" />
 				<Compiler>
@@ -200,12 +244,13 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/resource.rc">
-			<Option target="Debug-mingw" />
-			<Option target="Release-mingw" />
-			<Option target="Release-mingw-static" />
-			<Option target="Debug-mingw-x86_64" />
-			<Option target="Release-mingw-x86_64" />
-			<Option target="Release-mingw-x86_64-static" />
+			<Option target="Windows Debug" />
+			<Option target="Windows Release" />
+			<Option target="Windows Release (static)" />
+			<Option target="Cross-Windows" />
+			<Option target="Cross-Windows (static)" />
+			<Option target="Cross-Windows x64" />
+			<Option target="Cross-Windows x64 (static)" />
 		</Unit>
 		<Unit filename="src/state.h" />
 		<Unit filename="src/state_game.c">
