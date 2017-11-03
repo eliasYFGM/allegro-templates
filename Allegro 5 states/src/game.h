@@ -18,8 +18,7 @@ struct State;
 struct Game_Conf
 {
    // Argument list
-   int argc;
-   char **argv;
+   int argc; char **argv;
 
    // Other needed parameters
    char *title;
@@ -52,16 +51,16 @@ void set_bg_color(ALLEGRO_COLOR c);
 // Allegro font
 extern ALLEGRO_FONT *font;
 
-// Array holding key presses, for state_update().
+// Array holding key presses
 extern int key[ALLEGRO_KEY_MAX];
 
-// Pointer to the original settings (in main.c).
+// Pointer to the original settings (in main.c)
 extern const struct Game_Conf *MAINCONF;
 
 #define GAME_W      MAINCONF->width
 #define GAME_H      MAINCONF->height
 
-// Simple bounding box collision checking (taken from Alex4 source)
+// Simple bounding box collision macro (from Alex4 source)
 #define check_bb_collision(x1,y1,w1,h1,x2,y2,w2,h2) \
   (!(((x1)>=(x2)+(w2)) || ((x2)>=(x1)+(w1)) || \
      ((y1)>=(y2)+(h2)) || ((y2)>=(y1)+(h1))))

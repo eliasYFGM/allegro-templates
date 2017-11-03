@@ -2,10 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <allegro5/allegro.h>
-#include <allegro5/allegro_acodec.h>
-#include <allegro5/allegro_audio.h>
 #include <allegro5/allegro_image.h>
-#include <allegro5/allegro_primitives.h>
 #include "game.h"
 #include "state.h"
 
@@ -80,20 +77,6 @@ int game_init(struct Game_Conf *conf)
       return 0;
    }
 
-   if (al_install_audio())
-   {
-      if (!al_init_acodec_addon())
-      {
-         puts("game_init():\n"
-            "Failed to initialize codecs...");
-      }
-   }
-   else
-   {
-      puts("game_init():\n"
-         "Failed to initialize audio...");
-   }
-
    // Add-ons
    if (!al_init_image_addon())
    {
@@ -102,8 +85,12 @@ int game_init(struct Game_Conf *conf)
       return 0;
    }
 
-   al_init_font_addon();
-   al_init_primitives_addon();
+   if (!al_init_font_addon())
+   {
+      puts("game_init():\n"
+         "Failed to initialize font addon...");
+      return 0;
+   }
 
    if (conf->fullscreen)
    {

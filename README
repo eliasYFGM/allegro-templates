@@ -20,9 +20,9 @@ Features
  * Separate state_load() and state_unload() functions for resource loading and
    freeing respectively.
  * A default "STATE_GAME" already created, as an example.
- * Toggle between full-screen and window mode with F4 key (Allegro 5).
- * Supports Linux, Windows and DOS as targets.
- * DOS target is only for Allegro 4 -needs a DJGPP cross-compiler-
+ * Toggle full-screen and window mode with F4 key (Allegro 5).
+ * Supports Linux, Windows and DOS as targets, as well as cross-compilation.
+ * DOS target is only for Allegro 4 (needs a DJGPP cross-compiler).
 
 Notes
 =====

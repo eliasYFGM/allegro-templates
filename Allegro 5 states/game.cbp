@@ -15,7 +15,7 @@
 					<Add option="-g" />
 				</Compiler>
 				<Linker>
-					<Add option="`pkg-config --libs allegro-5 allegro_acodec-5 allegro_audio-5 allegro_font-5 allegro_image-5 allegro_primitives-5`" />
+					<Add option="`pkg-config --libs allegro-5 allegro_font-5 allegro_image-5`" />
 				</Linker>
 			</Target>
 			<Target title="Linux Release (static)">
@@ -29,7 +29,7 @@
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
-					<Add option="`pkg-config --libs --static allegro-static-5 allegro_acodec-static-5 allegro_audio-static-5 allegro_font-static-5 allegro_image-static-5 allegro_primitives-static-5`" />
+					<Add option="`pkg-config --libs --static allegro-static-5 allegro_font-static-5 allegro_image-static-5`" />
 				</Linker>
 			</Target>
 			<Target title="Windows Debug">
@@ -42,11 +42,8 @@
 				</Compiler>
 				<Linker>
 					<Add library="allegro.dll" />
-					<Add library="allegro_acodec.dll" />
-					<Add library="allegro_audio.dll" />
 					<Add library="allegro_font.dll" />
 					<Add library="allegro_image.dll" />
-					<Add library="allegro_primitives.dll" />
 				</Linker>
 			</Target>
 			<Target title="Windows Release">
@@ -61,11 +58,8 @@
 					<Add option="-s" />
 					<Add option="-mwindows" />
 					<Add library="allegro.dll" />
-					<Add library="allegro_acodec.dll" />
-					<Add library="allegro_audio.dll" />
 					<Add library="allegro_font.dll" />
 					<Add library="allegro_image.dll" />
-					<Add library="allegro_primitives.dll" />
 				</Linker>
 			</Target>
 			<Target title="Windows Release (static)">
@@ -82,11 +76,8 @@
 					<Add option="-static" />
 					<Add option="-mwindows" />
 					<Add library="allegro-static" />
-					<Add library="allegro_acodec-static" />
-					<Add library="allegro_audio-static" />
 					<Add library="allegro_font-static" />
 					<Add library="allegro_image-static" />
-					<Add library="allegro_primitives-static" />
 					<Add library="gdiplus" />
 					<Add library="uuid" />
 					<Add library="kernel32" />
@@ -103,10 +94,6 @@
 					<Add library="ws2_32" />
 					<Add library="shlwapi" />
 					<Add library="dsound" />
-					<Add library="FLAC" />
-					<Add library="vorbisfile" />
-					<Add library="vorbis" />
-					<Add library="ogg" />
 				</Linker>
 			</Target>
 			<Target title="Cross-Windows">
@@ -121,11 +108,8 @@
 					<Add option="-s" />
 					<Add option="-mwindows" />
 					<Add library="allegro.dll" />
-					<Add library="allegro_acodec.dll" />
-					<Add library="allegro_audio.dll" />
 					<Add library="allegro_font.dll" />
 					<Add library="allegro_image.dll" />
-					<Add library="allegro_primitives.dll" />
 				</Linker>
 			</Target>
 			<Target title="Cross-Windows (static)">
@@ -142,11 +126,8 @@
 					<Add option="-static" />
 					<Add option="-mwindows" />
 					<Add library="allegro-static" />
-					<Add library="allegro_acodec-static" />
-					<Add library="allegro_audio-static" />
 					<Add library="allegro_font-static" />
 					<Add library="allegro_image-static" />
-					<Add library="allegro_primitives-static" />
 					<Add library="gdiplus" />
 					<Add library="uuid" />
 					<Add library="kernel32" />
@@ -163,10 +144,6 @@
 					<Add library="ws2_32" />
 					<Add library="shlwapi" />
 					<Add library="dsound" />
-					<Add library="FLAC" />
-					<Add library="vorbisfile" />
-					<Add library="vorbis" />
-					<Add library="ogg" />
 				</Linker>
 			</Target>
 			<Target title="Cross-Windows x64">
@@ -181,11 +158,8 @@
 					<Add option="-s" />
 					<Add option="-mwindows" />
 					<Add library="allegro.dll" />
-					<Add library="allegro_acodec.dll" />
-					<Add library="allegro_audio.dll" />
 					<Add library="allegro_font.dll" />
 					<Add library="allegro_image.dll" />
-					<Add library="allegro_primitives.dll" />
 				</Linker>
 			</Target>
 			<Target title="Cross-Windows x64 (static)">
@@ -202,11 +176,8 @@
 					<Add option="-static" />
 					<Add option="-mwindows" />
 					<Add library="allegro-static" />
-					<Add library="allegro_acodec-static" />
-					<Add library="allegro_audio-static" />
 					<Add library="allegro_font-static" />
 					<Add library="allegro_image-static" />
-					<Add library="allegro_primitives-static" />
 					<Add library="gdiplus" />
 					<Add library="uuid" />
 					<Add library="kernel32" />
@@ -223,10 +194,6 @@
 					<Add library="ws2_32" />
 					<Add library="shlwapi" />
 					<Add library="dsound" />
-					<Add library="FLAC" />
-					<Add library="vorbisfile" />
-					<Add library="vorbis" />
-					<Add library="ogg" />
 				</Linker>
 			</Target>
 		</Build>
