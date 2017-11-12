@@ -35,7 +35,7 @@ data;
 
 // Globals
 volatile int fps;
-const struct Game_Conf *MAINCONF;
+struct Game_Conf *mainconf;
 
 static void ticker(void)
 {
@@ -75,7 +75,7 @@ int game_init(struct Game_Conf *conf)
    if (install_sound(DIGI_AUTODETECT, MIDI_NONE, 0))
    {
       allegro_message("engine_init():\n"
-         "Failed to initialize audio");
+      "Failed to initialize audio");
    }
 
    set_color_depth(conf->depth);
@@ -121,13 +121,13 @@ int game_init(struct Game_Conf *conf)
    }
 
    if (set_gfx_mode(conf->fullscreen ? GFX_AUTODETECT
-      : GFX_AUTODETECT_WINDOWED, conf->width * data.scale,
-      conf->height * data.scale, 0, 0))
+   : GFX_AUTODETECT_WINDOWED, conf->width * data.scale
+   , conf->height * data.scale, 0, 0))
 #endif // ALLEGRO_DOS
    {
       set_gfx_mode(GFX_TEXT, 0, 0, 0, 0);
       allegro_message("engine_init():\n"
-         "Failed to create a window\n%s", allegro_error);
+      "Failed to create a window\n%s", allegro_error);
       return 0;
    }
 
@@ -140,7 +140,7 @@ int game_init(struct Game_Conf *conf)
 
    set_bg_color(makecol(192, 192, 192));
 
-   MAINCONF = conf;
+   mainconf = conf;
 
    srand(time(NULL));
 
@@ -163,7 +163,7 @@ void game_run(struct State *s)
    if (!change_state(s, NULL))
    {
       allegro_message("game_run():\n"
-         "Error while initializing the state");
+      "Error while initializing the state");
       destroy_bitmap(data.buffer);
       return;
    }
@@ -171,7 +171,7 @@ void game_run(struct State *s)
    // Main game timer
    LOCK_VARIABLE(ticks);
    LOCK_FUNCTION(ticker);
-   install_int_ex(ticker, BPS_TO_TIMER(MAINCONF->framerate));
+   install_int_ex(ticker, BPS_TO_TIMER(mainconf->framerate));
 
    // FPS timer
    LOCK_VARIABLE(fps);
@@ -212,8 +212,8 @@ void game_run(struct State *s)
 #else
          if (data.scale > 1)
          {
-            stretch_blit(data.buffer, screen, 0, 0, GAME_W, GAME_H, 0, 0,
-               SCREEN_W, SCREEN_H);
+            stretch_blit(data.buffer, screen, 0, 0, GAME_W, GAME_H, 0, 0
+            , SCREEN_W, SCREEN_H);
          }
          else
          {
@@ -245,8 +245,8 @@ int change_state(struct State *s, void *param)
    if (!data.can_change)
    {
       allegro_message("change_state():\n"
-         "This function can only be used within state_update() and "
-         "state_draw().");
+      "This function can only be used within state_update() and "
+      "state_draw().");
       data.ticks = 0;
       return TRUE;
    }
@@ -255,8 +255,8 @@ int change_state(struct State *s, void *param)
 
    if (!s->loaded)
    {
-      void *ptr = realloc(data.loaded_states,
-         sizeof (*data.loaded_states) * (data.loaded_count + 1));
+      void *ptr = realloc(data.loaded_states
+      , sizeof (*data.loaded_states) * (data.loaded_count + 1));
 
       if (ptr != NULL)
       {
@@ -272,7 +272,7 @@ int change_state(struct State *s, void *param)
       else
       {
          allegro_message("change_state():\n"
-            "realloc error");
+         "realloc error");
          return FALSE;
       }
    }

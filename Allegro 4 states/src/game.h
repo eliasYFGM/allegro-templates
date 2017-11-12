@@ -11,8 +11,7 @@ struct State;
 struct Game_Conf
 {
    // Argument list
-   int argc;
-   char **argv;
+   int argc; char **argv;
 
    // Other needed parameters
    char *title;
@@ -43,10 +42,10 @@ void set_bg_color(int c);
 *****************************************************************************/
 
 extern volatile int fps;
-extern const struct Game_Conf *MAINCONF;
+extern struct Game_Conf *mainconf;
 
-#define GAME_W      MAINCONF->width  // Internal width
-#define GAME_H      MAINCONF->height // Internal height
+#define GAME_W      mainconf->width  // Internal width
+#define GAME_H      mainconf->height // Internal height
 
 // Bounding box collision (taken from Alex4)
 #define check_bb_collision(x1,y1,w1,h1,x2,y2,w2,h2) \

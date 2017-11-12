@@ -9,7 +9,44 @@
 // Globals
 ALLEGRO_FONT *font;
 int key[ALLEGRO_KEY_MAX];
-const struct Game_Conf *MAINCONF;
+struct Game_Conf *mainconf;
+
+// Updates the game screen when going full-screen or windowed
+static void fix_game_screen(ALLEGRO_DISPLAY *display)
+{
+   int window_w = al_get_display_width(display);
+   int window_h = al_get_display_height(display);
+
+   float sw = (float) window_w / GAME_W;
+   float sh = (float) window_h / GAME_H;
+   float scale = (sw < sh ? sw : sh);
+
+   float scale_w = (float) GAME_W * scale;
+   float scale_h = (float) GAME_H * scale;
+   int scale_x_pos = (window_w - scale_w) / 2;
+   int scale_y_pos = (window_h - scale_h) / 2;
+
+   ALLEGRO_TRANSFORM trans;
+   al_identity_transform(&trans);
+   al_build_transform(&trans, scale_x_pos, scale_y_pos, scale, scale, 0);
+   al_use_transform(&trans);
+}
+
+static void change_video_mode(ALLEGRO_DISPLAY *display)
+{
+   int flags = al_get_display_flags(display);
+
+   if (flags & ALLEGRO_FULLSCREEN_WINDOW)
+   {
+      al_toggle_display_flag(display, ALLEGRO_FULLSCREEN_WINDOW, 0);
+   }
+   else
+   {
+      al_toggle_display_flag(display, ALLEGRO_FULLSCREEN_WINDOW, 1);
+   }
+
+   fix_game_screen(display);
+}
 
 // Engine variables
 static struct
@@ -32,27 +69,6 @@ static struct
 }
 data;
 
-// Updates the game screen when going full-screen or windowed
-static void fix_game_screen(void)
-{
-   int window_w = al_get_display_width(data.display);
-   int window_h = al_get_display_height(data.display);
-
-   float sw = (float) window_w / GAME_W;
-   float sh = (float) window_h / GAME_H;
-   float scale = (sw < sh ? sw : sh);
-
-   float scale_w = (float) GAME_W * scale;
-   float scale_h = (float) GAME_H * scale;
-   int scale_x_pos = (window_w - scale_w) / 2;
-   int scale_y_pos = (window_h - scale_h) / 2;
-
-   ALLEGRO_TRANSFORM trans;
-   al_identity_transform(&trans);
-   al_build_transform(&trans, scale_x_pos, scale_y_pos, scale, scale, 0);
-   al_use_transform(&trans);
-}
-
 int game_init(struct Game_Conf *conf)
 {
    if (data.game_initialized)
@@ -66,14 +82,14 @@ int game_init(struct Game_Conf *conf)
    if (!al_install_keyboard())
    {
       puts("game_init():\n"
-         "Failed to initialize the keyboard...");
+      "Failed to initialize the keyboard...");
       return 0;
    }
 
    if (!al_install_mouse())
    {
       puts("game_init():\n"
-         "Failed to initialize the mouse...");
+      "Failed to initialize the mouse...");
       return 0;
    }
 
@@ -81,14 +97,14 @@ int game_init(struct Game_Conf *conf)
    if (!al_init_image_addon())
    {
       puts("game_init():\n"
-         "Failed to initialize image addon...");
+      "Failed to initialize image addon...");
       return 0;
    }
 
    if (!al_init_font_addon())
    {
       puts("game_init():\n"
-         "Failed to initialize font addon...");
+      "Failed to initialize font addon...");
       return 0;
    }
 
@@ -103,14 +119,14 @@ int game_init(struct Game_Conf *conf)
    if (!data.display)
    {
       puts("game_init():\n"
-         "Failed to create a display window...");
+      "Failed to create a display window...");
       return 0;
    }
 
    al_set_window_title(data.display, conf->title);
 
-   MAINCONF = conf;
-   fix_game_screen();
+   mainconf = conf;
+   fix_game_screen(data.display);
 
    al_add_new_bitmap_flag(ALLEGRO_MAG_LINEAR);
 
@@ -146,25 +162,25 @@ void game_run(struct State *s)
    if (!change_state(s, NULL))
    {
       puts("game_run():\n"
-         "State initialization failed");
+      "State initialization failed");
       return;
    }
 
    // Generate display events
-   al_register_event_source(data.event_queue,
-      al_get_display_event_source(data.display));
+   al_register_event_source(data.event_queue
+   , al_get_display_event_source(data.display));
 
    // Timer events
-   al_register_event_source(data.event_queue,
-      al_get_timer_event_source(data.timer));
+   al_register_event_source(data.event_queue
+   , al_get_timer_event_source(data.timer));
 
    // Keyboard events
-   al_register_event_source(data.event_queue,
-      al_get_keyboard_event_source());
+   al_register_event_source(data.event_queue
+   , al_get_keyboard_event_source());
 
    // Mouse events
-   al_register_event_source(data.event_queue,
-      al_get_mouse_event_source());
+   al_register_event_source(data.event_queue
+   , al_get_mouse_event_source());
 
    al_start_timer(data.timer);
 
@@ -192,23 +208,8 @@ void game_run(struct State *s)
          // F4 key will toggle full-screen
          if (key[ALLEGRO_KEY_F4])
          {
-            int flags = al_get_display_flags(data.display);
-
             al_stop_timer(data.timer);
-
-            if (flags & ALLEGRO_FULLSCREEN_WINDOW)
-            {
-               al_toggle_display_flag(data.display, ALLEGRO_FULLSCREEN_WINDOW,
-                  0);
-            }
-            else
-            {
-               al_toggle_display_flag(data.display, ALLEGRO_FULLSCREEN_WINDOW,
-                  1);
-            }
-
-            fix_game_screen();
-
+            change_video_mode(data.display);
             al_start_timer(data.timer);
          }
       }
@@ -227,7 +228,7 @@ void game_run(struct State *s)
       {
          redraw = FALSE;
 
-         if (MAINCONF->buffer)
+         if (mainconf->buffer)
          {
             al_set_target_bitmap(data.buffer);
          }
@@ -240,7 +241,7 @@ void game_run(struct State *s)
 
          data.state->draw();
 
-         if (MAINCONF->buffer)
+         if (mainconf->buffer)
          {
             al_set_target_backbuffer(data.display);
             al_clear_to_color(C_BLACK);
@@ -265,7 +266,7 @@ void game_run(struct State *s)
    al_destroy_event_queue(data.event_queue);
    al_destroy_font(font);
 
-   if (MAINCONF->buffer)
+   if (mainconf->buffer)
    {
       al_destroy_bitmap(data.buffer);
    }
@@ -276,8 +277,8 @@ int change_state(struct State *s, void *param)
    if (!data.can_change)
    {
       puts("change_state():\n"
-         "States can only be changed within events(), update() and draw() "
-         "functions.");
+      "States can only be changed within events(), update() and draw() "
+      "functions.");
       return TRUE;
    }
 
@@ -285,8 +286,8 @@ int change_state(struct State *s, void *param)
 
    if (!s->loaded)
    {
-      void *ptr = realloc(data.loaded_states,
-         sizeof *data.loaded_states * (data.loaded_count + 1));
+      void *ptr = realloc(data.loaded_states
+      , sizeof *data.loaded_states * (data.loaded_count + 1));
 
       if (ptr != NULL)
       {
@@ -302,7 +303,7 @@ int change_state(struct State *s, void *param)
       else
       {
          puts("change_state():\n"
-            "realloc() error");
+         "realloc() error");
          return FALSE;
       }
    }

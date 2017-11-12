@@ -5,12 +5,17 @@ int main(int argc, char **argv)
 {
    struct Game_Conf conf =
    {
-      argc, argv,             // Argument list
-      "Allegro application",  // Window title
-      640, 480,               // Display resolution
-      40,                     // Framerate (FPS)
-      FALSE,                  // Full-screen?
-      FALSE                   // Use back-buffer?
+      // Argument list
+      .argc = argc,
+      .argv = argv,
+
+      // Other settings
+      .title      = "Allegro application",
+      .width      = 640,
+      .height     = 480,
+      .framerate  = 40,
+      .fullscreen = FALSE,
+      .buffer     = FALSE
    };
 
    if (game_init(&conf))
