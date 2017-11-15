@@ -1,8 +1,6 @@
 #ifndef STATE_H_INCLUDED
 #define STATE_H_INCLUDED
 
-struct State;
-
 // Main state structure
 struct State
 {
