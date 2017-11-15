@@ -1,8 +1,6 @@
 #ifndef STATE_H_INCLUDED
 #define STATE_H_INCLUDED
 
-struct State;
-
 // Main state structure
 struct State
 {
@@ -12,11 +10,11 @@ struct State
    void (*enter)(void *param);
    void (*exit)(void);
 
-   void (*events)(ALLEGRO_EVENT *ev);
-   void (*update)(void);
+   void (*events)(const ALLEGRO_EVENT *ev);
+   void (*update)(const int *key);
    void (*draw)(void);
 
-   // Private and used only by game.c
+   // Private and used only by [game.c]
    // Indicates if the state was already initialized with load().
    int loaded;
 };

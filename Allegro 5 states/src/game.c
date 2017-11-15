@@ -8,7 +8,6 @@
 
 // Globals
 ALLEGRO_FONT *font;
-int key[ALLEGRO_KEY_MAX];
 struct Game_Conf *mainconf;
 
 // Updates the game screen when going full-screen or windowed
@@ -166,6 +165,9 @@ void game_run(struct State *s)
       return;
    }
 
+   // Default array for key presses
+   int *key = calloc(ALLEGRO_KEY_MAX, sizeof *key);
+
    // Generate display events
    al_register_event_source(data.event_queue
    , al_get_display_event_source(data.display));
@@ -219,7 +221,7 @@ void game_run(struct State *s)
       }
       else if (event.type == ALLEGRO_EVENT_TIMER)
       {
-         data.state->update();
+         data.state->update(key);
          redraw = TRUE;
       }
 
@@ -270,6 +272,8 @@ void game_run(struct State *s)
    {
       al_destroy_bitmap(data.buffer);
    }
+
+   free(key);
 }
 
 int change_state(struct State *s, void *param)

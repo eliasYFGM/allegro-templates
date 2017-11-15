@@ -25,12 +25,12 @@ state_exit(void)
 }
 
 static void
-state_events(ALLEGRO_EVENT *ev)
+state_events(const ALLEGRO_EVENT *ev)
 {
 }
 
 static void
-state_update(void)
+state_update(const int *key)
 {
 }
 

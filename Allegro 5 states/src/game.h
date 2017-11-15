@@ -51,9 +51,6 @@ void set_bg_color(ALLEGRO_COLOR c);
 // Allegro font
 extern ALLEGRO_FONT *font;
 
-// Array holding key presses
-extern int key[ALLEGRO_KEY_MAX];
-
 // Pointer to the original settings (in main.c)
 extern struct Game_Conf *mainconf;
 
