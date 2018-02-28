@@ -16,9 +16,9 @@
 struct State;
 
 struct Game_Conf
-{
-   // Argument list
-   int argc; char **argv;
+{  // Argument list
+   int argc;
+   char **argv;
 
    // Other needed parameters
    char *title;

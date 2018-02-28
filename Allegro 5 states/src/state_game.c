@@ -4,8 +4,7 @@
 
 static int
 state_load(void *param)
-{
-   // This function must return non-zero on success.
+{  // This function must return non-zero on success.
    return 1;
 }
 
@@ -40,10 +39,8 @@ state_draw(void)
 }
 
 struct State *State_Game(void)
-{
-   static struct State state =
-   {
-      state_load,
+{  static struct State state =
+   {  state_load,
       state_unload,
       state_enter,
       state_exit,

@@ -1,11 +1,7 @@
-Allegro 4 states/Debug/
-Allegro 4 states/Release*/
-Allegro 4 states low-res/Debug/
-Allegro 4 states low-res/Release*/
-Allegro 5 states/Debug/
-Allegro 5 states/Release*/
-Allegro 5 states low-res/Debug/
-Allegro 5 states low-res/Release*/
+Allegro 4 states/obj/
+Allegro 4 states/bin/
+Allegro 5 states/obj/
+Allegro 5 states/bin/
 *.depend
 *.layout
 *.exe

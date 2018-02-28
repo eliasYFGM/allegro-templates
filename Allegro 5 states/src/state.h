@@ -3,8 +3,7 @@
 
 // Main state structure
 struct State
-{
-   int (*load)(void *param);
+{  int (*load)(void *param);
    void (*unload)(void);
 
    void (*enter)(void *param);

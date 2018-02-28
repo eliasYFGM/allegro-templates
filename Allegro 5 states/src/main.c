@@ -2,10 +2,8 @@
 #include "state_game.h"
 
 int main(int argc, char **argv)
-{
-   struct Game_Conf conf =
-   {
-      // Argument list
+{  struct Game_Conf conf =
+   {  // Argument list
       .argc = argc,
       .argv = argv,
 
@@ -19,8 +17,7 @@ int main(int argc, char **argv)
    };
 
    if (game_init(&conf))
-   {
-      // Run with a starting state
+   {  // Run with a starting state
       game_run(STATE_GAME);
    }
 
