@@ -30,5 +30,5 @@ Notes
 The Allegro 5 template does not have auto-scaling. As of 2017-08-14, the
 "low-res" Allegro 5 template is no longer available.
 
-For retro-style games, I recommend using Allegro 4, as the template already
-has auto-scaling implemented.
+I highly recommend the Allegro 4 template for retro-style games, as it already
+has auto-scaling and is compatible with DOS.

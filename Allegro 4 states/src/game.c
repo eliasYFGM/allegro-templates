@@ -5,6 +5,7 @@
 #include "game.h"
 #include "state.h"
 
+
 // 0 enables auto-scaling. Any higher value is a fixed screen scale.
 #define DEFAULT_SCALE         0
 
@@ -15,6 +16,8 @@
 // Globals
 volatile int fps;
 struct Game_Conf *mainconf;
+
+
 
 // Internal variables
 static struct
@@ -35,23 +38,34 @@ static struct
    int loaded_count;
 } data;
 
+
+
 static void ticker(void)
-{  ++data.ticks;
+{
+   ++data.ticks;
 }
 END_OF_FUNCTION(ticker);
 
+
+
 static void update_fps(void)
-{  fps = data.frame_counter;
+{
+   fps = data.frame_counter;
    data.frame_counter = 0;
 }
 END_OF_FUNCTION(update_fps);
 
+
+
 #ifndef ALLEGRO_DOS
 static void close_button_handler(void)
-{  data.game_active = FALSE;
+{
+   data.game_active = FALSE;
 }
 END_OF_FUNCTION(close_button_handler);
 #endif // ALLEGRO_DOS
+
+
 
 // Repaint the screen appropriately
 static void update_screen(void)
@@ -75,7 +89,8 @@ static void update_screen(void)
 
 // Main game initialization
 int game_init(struct Game_Conf *conf)
-{  if (data.game_initialized)
+{
+   if (data.game_initialized)
    {  return 1;
    }
 
@@ -154,9 +169,12 @@ int game_init(struct Game_Conf *conf)
    return 1;
 }
 
+
+
 // Setup timers and game loop
 void game_run(struct State *s)
-{  int redraw = FALSE;
+{
+   int redraw = FALSE;
 
    if (data.game_active)
    {  return;
@@ -217,8 +235,11 @@ void game_run(struct State *s)
    destroy_bitmap(data.buffer);
 }
 
+
+
 int change_state(struct State *s, void *param)
-{  if (!data.can_change)
+{
+   if (!data.can_change)
    {  allegro_message("change_state():\n"
                       "This function can only be used within state_update() "
                       "and state_draw().");
@@ -263,10 +284,16 @@ int change_state(struct State *s, void *param)
    return TRUE;
 }
 
+
+
 void game_over(void)
-{  data.game_active = FALSE;
+{
+   data.game_active = FALSE;
 }
 
+
+
 void set_bg_color(int c)
-{  data.bg_color = c;
+{
+   data.bg_color = c;
 }

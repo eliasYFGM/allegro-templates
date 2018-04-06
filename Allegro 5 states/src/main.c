@@ -2,7 +2,8 @@
 #include "state_game.h"
 
 int main(int argc, char **argv)
-{  struct Game_Conf conf =
+{
+   struct Game_Conf conf =
    {  // Argument list
       .argc = argc,
       .argv = argv,

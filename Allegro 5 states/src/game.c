@@ -10,9 +10,11 @@
 ALLEGRO_FONT *font;
 struct Game_Conf *mainconf;
 
+
 // Updates the game screen when going full-screen or windowed
 static void fix_game_screen(ALLEGRO_DISPLAY *display)
-{  int window_w = al_get_display_width(display);
+{
+   int window_w = al_get_display_width(display);
    int window_h = al_get_display_height(display);
 
    float sw = (float) window_w / GAME_W;
@@ -30,8 +32,11 @@ static void fix_game_screen(ALLEGRO_DISPLAY *display)
    al_use_transform(&trans);
 }
 
+
+
 static void change_video_mode(ALLEGRO_DISPLAY *display)
-{  int flags = al_get_display_flags(display);
+{
+   int flags = al_get_display_flags(display);
 
    if (flags & ALLEGRO_FULLSCREEN_WINDOW)
    {  al_toggle_display_flag(display, ALLEGRO_FULLSCREEN_WINDOW, 0);
@@ -42,6 +47,8 @@ static void change_video_mode(ALLEGRO_DISPLAY *display)
 
    fix_game_screen(display);
 }
+
+
 
 // Engine variables
 static struct
@@ -60,11 +67,13 @@ static struct
    // Dynamic array of initialized (loaded) states.
    struct State **loaded_states;
    int loaded_count;
-}
-data;
+} data;
+
+
 
 int game_init(struct Game_Conf *conf)
-{  if (data.game_initialized)
+{
+   if (data.game_initialized)
    {  return 1;
    }
 
@@ -135,8 +144,11 @@ int game_init(struct Game_Conf *conf)
    return 1;
 }
 
+
+
 void game_run(struct State *s)
-{  int redraw = FALSE;
+{
+   int redraw = FALSE;
 
    if (data.game_active)
    {  return;
@@ -247,8 +259,11 @@ void game_run(struct State *s)
    free(key);
 }
 
+
+
 int change_state(struct State *s, void *param)
-{  if (!data.can_change)
+{
+   if (!data.can_change)
    {  puts("change_state():\n"
            "States can only be changed within events(), update() and draw() "
            "functions.");
@@ -291,10 +306,16 @@ int change_state(struct State *s, void *param)
    return TRUE;
 }
 
+
+
 void game_over(void)
-{  data.game_active = FALSE;
+{
+   data.game_active = FALSE;
 }
 
+
+
 void set_bg_color(ALLEGRO_COLOR c)
-{  data.bg_color = c;
+{
+   data.bg_color = c;
 }
