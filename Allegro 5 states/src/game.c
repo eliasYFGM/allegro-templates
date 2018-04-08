@@ -1,13 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <allegro5/allegro.h>
 #include <allegro5/allegro_image.h>
 #include "game.h"
 #include "state.h"
 
-// Globals
-ALLEGRO_FONT *font;
 struct Game_Conf *mainconf;
 
 
@@ -54,12 +51,14 @@ static void change_video_mode(ALLEGRO_DISPLAY *display)
 static struct
 {  ALLEGRO_DISPLAY *display;
    ALLEGRO_BITMAP *buffer;
-   ALLEGRO_TIMER *timer;
+   ALLEGRO_TIMER *timer, *fps_timer;
    ALLEGRO_EVENT_QUEUE *event_queue;
+   ALLEGRO_FONT *font;
    ALLEGRO_COLOR bg_color;
    int game_initialized;
    int game_active;
    int can_change;
+   int frame_count;
 
    // Actual running state
    struct State *state;
@@ -130,8 +129,9 @@ int game_init(struct Game_Conf *conf)
       al_set_new_bitmap_flags(0);
    }
 
-   font = al_create_builtin_font();
+   data.font = al_create_builtin_font();
    data.timer = al_create_timer(1.0 / conf->framerate);
+   data.fps_timer = al_create_timer(1.0);
    data.event_queue = al_create_event_queue();
 
    set_bg_color(al_map_rgb(192, 192, 192));
@@ -149,6 +149,7 @@ int game_init(struct Game_Conf *conf)
 void game_run(struct State *s)
 {
    int redraw = FALSE;
+   int fps = 0;
 
    if (data.game_active)
    {  return;
@@ -170,6 +171,8 @@ void game_run(struct State *s)
    // Timer events
    al_register_event_source(data.event_queue
                             , al_get_timer_event_source(data.timer));
+   al_register_event_source(data.event_queue
+                            , al_get_timer_event_source(data.fps_timer));
 
    // Keyboard events
    al_register_event_source(data.event_queue
@@ -180,6 +183,7 @@ void game_run(struct State *s)
                             , al_get_mouse_event_source());
 
    al_start_timer(data.timer);
+   al_start_timer(data.fps_timer);
 
    data.game_active = TRUE;
 
@@ -210,8 +214,14 @@ void game_run(struct State *s)
       {  key[event.keyboard.keycode] = FALSE;
       }
       else if (event.type == ALLEGRO_EVENT_TIMER)
-      {  data.state->update(key);
-         redraw = TRUE;
+      {  if (event.timer.source == data.timer)
+         {  data.state->update(key);
+            redraw = TRUE;
+         }
+         else if (event.timer.source == data.fps_timer)
+         {  fps = data.frame_count;
+            data.frame_count = 0;
+         }
       }
 
       if (redraw && data.game_active
@@ -227,7 +237,7 @@ void game_run(struct State *s)
 
          al_clear_to_color(data.bg_color);
 
-         data.state->draw();
+         data.state->draw(data.font, fps);
 
          if (mainconf->buffer)
          {  al_set_target_backbuffer(data.display);
@@ -236,6 +246,7 @@ void game_run(struct State *s)
          }
 
          al_flip_display();
+         ++data.frame_count;
       }
    }
 
@@ -249,8 +260,9 @@ void game_run(struct State *s)
 
    al_destroy_display(data.display);
    al_destroy_timer(data.timer);
+   al_destroy_timer(data.fps_timer);
    al_destroy_event_queue(data.event_queue);
-   al_destroy_font(font);
+   al_destroy_font(data.font);
 
    if (mainconf->buffer)
    {  al_destroy_bitmap(data.buffer);

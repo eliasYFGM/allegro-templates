@@ -1,4 +1,3 @@
-#include <allegro5/allegro.h>
 #include "state_game.h"
 #include "game.h"
 
@@ -28,19 +27,19 @@ static void state_exit(void)
 
 
 
-static void state_events(const ALLEGRO_EVENT *ev)
+static void state_events(ALLEGRO_EVENT *ev)
 {
 }
 
 
 
-static void state_update(const int *key)
+static void state_update(int *key)
 {
 }
 
 
 
-static void state_draw(void)
+static void state_draw(ALLEGRO_FONT *font, int fps)
 {
 }
 

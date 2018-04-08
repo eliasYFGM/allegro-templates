@@ -1,7 +1,7 @@
 #ifndef GAME_H_INCLUDED
 #define GAME_H_INCLUDED
 
-#include <allegro5/allegro_font.h>
+#include <allegro5/allegro.h>
 
 // Color defines
 #define C_BLACK     al_map_rgb(0, 0, 0)
@@ -45,11 +45,8 @@ void game_over(void);
 void set_bg_color(ALLEGRO_COLOR c);
 
 /*****************************************************************************
-  Globals
+  Other variables
 *****************************************************************************/
-
-// Allegro font
-extern ALLEGRO_FONT *font;
 
 // Pointer to the original settings (in main.c)
 extern struct Game_Conf *mainconf;
