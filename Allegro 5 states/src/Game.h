@@ -29,26 +29,29 @@ struct Game_Conf
    int buffer;
 };
 
+
 /*****************************************************************************
   Main
 *****************************************************************************/
 
-int game_init(struct Game_Conf *conf);
-void game_run(struct State *s);
+int Game_Init(struct Game_Conf *conf);
+void Game_Run(struct State *s);
+
 
 /*****************************************************************************
   Misc.
 *****************************************************************************/
 
-int change_state(struct State *s, void *param);
-void game_over(void);
-void set_bg_color(ALLEGRO_COLOR c);
+int Change_State(struct State *s, void *param);
+void Game_Over(void);
+void Set_BG_Color(ALLEGRO_COLOR c);
+
 
 /*****************************************************************************
   Other variables
 *****************************************************************************/
 
-// Pointer to the original settings (in main.c)
+// Global pointer to the main settings
 extern struct Game_Conf *mainconf;
 
 #define GAME_W      mainconf->width

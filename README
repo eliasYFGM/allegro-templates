@@ -1,4 +1,4 @@
-This is a collection of templates for making games using the Allegro library,
+This is a collection of templates for projects using the Allegro library,
 meant for use as "User templates" inside the Code::Blocks IDE.
 
 Installation
@@ -17,9 +17,9 @@ Features
 
  * Fixed-rate and automatic frame skipping.
  * Checks return value for each module initialization.
- * Separate state_load() and state_unload() functions for resource loading and
+ * Separate On_Load() and On_Unload() functions for resource loading and
    freeing respectively.
- * A default "STATE_GAME" already created, as an example.
+ * A default "State_Game.c" already created, as an example.
  * Toggle full-screen and window mode with F4 key (Allegro 5).
  * Supports Linux, Windows and DOS as targets, as well as cross-compilation.
  * DOS target is only for Allegro 4 (needs a DJGPP cross-compiler).

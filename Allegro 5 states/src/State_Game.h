@@ -1,7 +1,7 @@
 #ifndef STATE_GAME_H_INCLUDED
 #define STATE_GAME_H_INCLUDED
 
-#include "state.h"
+#include "State.h"
 
 struct State *State_Game(void);
 

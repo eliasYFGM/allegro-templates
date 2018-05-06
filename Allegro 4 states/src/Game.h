@@ -3,10 +3,11 @@
 
 #define C_BLACK     makecol(0, 0, 0)
 #define C_WHITE     makecol(255, 255, 255)
-#define C_TRANS     makecol(255, 0, 255)
+
 
 // state.h
 struct State;
+
 
 struct Game_Conf
 {  // Argument list
@@ -22,27 +23,36 @@ struct Game_Conf
    int fullscreen;
 };
 
+
+
 /*****************************************************************************
   Main
 *****************************************************************************/
 
-int game_init(struct Game_Conf *conf);
-void game_run(struct State *s);
+int Game_Init(struct Game_Conf *conf);
+void Game_Run(struct State *s);
+
+
 
 /*****************************************************************************
   Misc.
 *****************************************************************************/
 
-int change_state(struct State *s, void *param);
-void game_over(void);
-void set_bg_color(int c);
+int Change_State(struct State *s, void *param);
+void Game_Over(void);
+void Set_BG_Color(int c);
+int Make_Transparent(void);
+
+
 
 /*****************************************************************************
-  Globals
+  Global(s)
 *****************************************************************************/
 
-extern volatile int fps;
+// Global pointer to the main configuration
 extern struct Game_Conf *mainconf;
+
+
 
 #define GAME_W      mainconf->width  // Internal width
 #define GAME_H      mainconf->height // Internal height

@@ -2,12 +2,12 @@
 <CodeBlocks_project_file>
 	<FileVersion major="1" minor="6" />
 	<Project>
-		<Option title="game" />
+		<Option title="Game" />
 		<Option pch_mode="2" />
 		<Option compiler="gcc" />
 		<Build>
 			<Target title="Linux Debug">
-				<Option output="bin/Linux Debug/game" prefix_auto="1" extension_auto="1" />
+				<Option output="bin/Linux Debug/Game" prefix_auto="1" extension_auto="1" />
 				<Option object_output="obj/Linux Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
@@ -19,7 +19,7 @@
 				</Linker>
 			</Target>
 			<Target title="Linux Release (static)">
-				<Option output="bin/Linux Release (static)/game" prefix_auto="1" extension_auto="1" />
+				<Option output="bin/Linux Release (static)/Game" prefix_auto="1" extension_auto="1" />
 				<Option object_output="obj/Linux Release (static)/" />
 				<Option type="0" />
 				<Option compiler="gcc" />
@@ -33,7 +33,7 @@
 				</Linker>
 			</Target>
 			<Target title="Windows Debug">
-				<Option output="bin/Windows Debug/game.exe" prefix_auto="1" extension_auto="0" />
+				<Option output="bin/Windows Debug/Game.exe" prefix_auto="1" extension_auto="0" />
 				<Option object_output="obj/Windows Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
@@ -47,7 +47,7 @@
 				</Linker>
 			</Target>
 			<Target title="Windows Release">
-				<Option output="bin/Windows Release/game.exe" prefix_auto="1" extension_auto="0" />
+				<Option output="bin/Windows Release/Game.exe" prefix_auto="1" extension_auto="0" />
 				<Option object_output="obj/Windows Release/" />
 				<Option type="0" />
 				<Option compiler="gcc" />
@@ -63,7 +63,7 @@
 				</Linker>
 			</Target>
 			<Target title="Windows Release (static)">
-				<Option output="bin/Windows Release (static)/game.exe" prefix_auto="1" extension_auto="0" />
+				<Option output="bin/Windows Release (static)/Game.exe" prefix_auto="1" extension_auto="0" />
 				<Option object_output="obj/Windows Release (static)/" />
 				<Option type="0" />
 				<Option compiler="gcc" />
@@ -97,7 +97,7 @@
 				</Linker>
 			</Target>
 			<Target title="Cross-Windows">
-				<Option output="bin/Cross-Windows/game.exe" prefix_auto="1" extension_auto="0" />
+				<Option output="bin/Cross-Windows/Game.exe" prefix_auto="1" extension_auto="0" />
 				<Option object_output="obj/Cross-Windows/" />
 				<Option type="0" />
 				<Option compiler="mingw_cross-compiler" />
@@ -113,7 +113,7 @@
 				</Linker>
 			</Target>
 			<Target title="Cross-Windows (static)">
-				<Option output="bin/Cross-Windows (static)/game.exe" prefix_auto="1" extension_auto="0" />
+				<Option output="bin/Cross-Windows (static)/Game.exe" prefix_auto="1" extension_auto="0" />
 				<Option object_output="obj/Cross-Windows (static)/" />
 				<Option type="0" />
 				<Option compiler="mingw_cross-compiler" />
@@ -147,7 +147,7 @@
 				</Linker>
 			</Target>
 			<Target title="Cross-Windows x64">
-				<Option output="bin/Cross-Windows x64/game.exe" prefix_auto="1" extension_auto="0" />
+				<Option output="bin/Cross-Windows x64/Game.exe" prefix_auto="1" extension_auto="0" />
 				<Option object_output="obj/Cross-Windows x64/" />
 				<Option type="0" />
 				<Option compiler="mingw_cross-compiler_x86_64" />
@@ -163,7 +163,7 @@
 				</Linker>
 			</Target>
 			<Target title="Cross-Windows x64 (static)">
-				<Option output="bin/Cross-Windows x64 (static)/game.exe" prefix_auto="1" extension_auto="0" />
+				<Option output="bin/Cross-Windows x64 (static)/Game.exe" prefix_auto="1" extension_auto="0" />
 				<Option object_output="obj/Cross-Windows x64 (static)/" />
 				<Option type="0" />
 				<Option compiler="mingw_cross-compiler_x86_64" />
@@ -202,13 +202,18 @@
 			<Add option="-fexceptions" />
 			<Add option="-Wno-trigraphs" />
 		</Compiler>
-		<Unit filename="src/game.c">
+		<Unit filename="src/Game.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src/game.h" />
-		<Unit filename="src/main.c">
+		<Unit filename="src/Game.h" />
+		<Unit filename="src/Main.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="src/State.h" />
+		<Unit filename="src/State_Game.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/State_Game.h" />
 		<Unit filename="src/resource.rc">
 			<Option target="Windows Debug" />
 			<Option target="Windows Release" />
@@ -218,11 +223,6 @@
 			<Option target="Cross-Windows x64" />
 			<Option target="Cross-Windows x64 (static)" />
 		</Unit>
-		<Unit filename="src/state.h" />
-		<Unit filename="src/state_game.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="src/state_game.h" />
 		<Extensions>
 			<code_completion />
 			<envvars />

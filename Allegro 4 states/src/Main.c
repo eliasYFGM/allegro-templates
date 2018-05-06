@@ -1,10 +1,10 @@
 #include <allegro.h>
-#include "game.h"
-#include "state_game.h"
+
+#include "Game.h"
+#include "State_Game.h"
 
 int main(int argc, char **argv)
-{
-   struct Game_Conf conf =
+{  struct Game_Conf conf =
    {  // Argument list
       .argc = argc,
       .argv = argv,
@@ -18,9 +18,8 @@ int main(int argc, char **argv)
       .fullscreen = FALSE
    };
 
-   if (game_init(&conf))
-   {  // Run with a starting state
-      game_run(STATE_GAME);
+   if (Game_Init(&conf))
+   {  Game_Run(STATE_GAME); // Run with a starting state
    }
 
    return 0;
